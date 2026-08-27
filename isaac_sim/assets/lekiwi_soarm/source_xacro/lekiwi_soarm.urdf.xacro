@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<robot name="lekiwi_soarm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Base STL files are exported in millimetres; SO101 meshes use metres. -->
+  <xacro:arg
+    name="base_mesh_dir"
+    default="package://lekiwi_soarm_description/meshes/base"/>
+  <xacro:arg
+    name="soarm_mesh_dir"
+    default="package://lekiwi_soarm_description/meshes/soarm"/>
+  <!--
+    Same physical arm mount fitted to 0. dumyAssem5.STL, re-expressed after
+    aligning base_footprint/base_link +X with the arm-forward direction.
+  -->
+  <xacro:arg name="mount_xyz" default="0.019988279335 0.001703025019 0.052884"/>
+  <xacro:arg name="mount_rpy" default="0 0 0"/>
+
+  <xacro:property name="base_mesh_dir" value="$(arg base_mesh_dir)"/>
+  <xacro:property name="soarm_mesh_dir" value="$(arg soarm_mesh_dir)"/>
+  <xacro:property name="base_mesh_scale" value="0.001 0.001 0.001"/>
+  <!-- Shift base_link from the body centre to the wheel-axis intersection. -->
+  <xacro:property name="base_frame_shift_x" value="0.013127"/>
+  <xacro:property name="base_frame_shift_y" value="0.001183"/>
+
+  <xacro:include filename="so101/so101_macros.xacro"/>
+  <xacro:include filename="so101/so101_materials.xacro"/>
+  <xacro:include filename="so101/so101_arm_common.xacro"/>
+  <xacro:include filename="so101/end_effectors/so101_ee_common.xacro"/>
+  <xacro:include filename="so101/end_effectors/so101_ee_follower.xacro"/>
+
+  <material name="body_gray">
+    <color rgba="0.72 0.72 0.72 1.0"/>
+  </material>
+  <material name="wheel_dark_gray">
+    <color rgba="0.12 0.12 0.12 1.0"/>
+  </material>
+  <xacro:so101_materials/>
+
+  <link name="base_footprint"/>
+
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0.055" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <visual>
+      <!-- Preserve the SolidWorks body pose in the reframed base coordinates. -->
+      <origin
+        xyz="-0.310264249096 -1.449350080211 -1.159469"
+        rpy="0 0 0.523583538371"/>
+      <geometry>
+        <mesh
+          filename="${base_mesh_dir}/lekiwi_body_soarm_mount.stl"
+          scale="${base_mesh_scale}"/>
+      </geometry>
+      <material name="body_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0.007587843843 -0.010776931094 0" rpy="0 0 2.094379865161"/>
+      <geometry>
+        <box size="0.254 0.243 0.105"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:macro name="lekiwi_wheel" params="name x y z yaw">
+    <link name="${name}_wheel_mount_link"/>
+
+    <joint name="${name}_wheel_mount_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}_wheel_mount_link"/>
+      <origin xyz="${x} ${y} ${z}" rpy="0 0 ${yaw}"/>
+    </joint>
+
+    <link name="${name}_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="-1.57079632679 0 0"/>
+        <geometry>
+          <mesh filename="${base_mesh_dir}/omni_wheel.stl" scale="${base_mesh_scale}"/>
+        </geometry>
+        <material name="wheel_dark_gray"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="-1.57079632679 0 0"/>
+        <geometry>
+          <cylinder radius="0.0508" length="0.0388"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${name}_wheel_joint" type="continuous">
+      <parent link="${name}_wheel_mount_link"/>
+      <child link="${name}_wheel_link"/>
+      <origin xyz="0 0.023764 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit effort="1.0" velocity="10.0"/>
+      <dynamics damping="0.01" friction="0.01"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:lekiwi_wheel
+    name="back"
+    x="0.065688326518"
+    y="-0.114631545219" z="-0.024939"
+    yaw="3.665176191951"/>
+  <xacro:lekiwi_wheel
+    name="left"
+    x="-0.127599301296"
+    y="0.000428428396" z="-0.024148"
+    yaw="1.570781089571"/>
+  <xacro:lekiwi_wheel
+    name="right"
+    x="0.065153184202"
+    y="0.111987337491" z="-0.023661"
+    yaw="-0.523614012829"/>
+
+  <xacro:so101_arm_common
+    mesh_dir="${soarm_mesh_dir}"
+    add_transmissions="false"/>
+  <xacro:so101_ee_follower
+    mesh_dir="${soarm_mesh_dir}"
+    add_transmissions="false"/>
+
+  <joint name="soarm_mount_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="soarm_base_link"/>
+    <origin xyz="$(arg mount_xyz)" rpy="$(arg mount_rpy)"/>
+  </joint>
+</robot>

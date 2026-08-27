@@ -1,0 +1,1366 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="LeKiwi">
+  <material name="body_gray">
+    <color rgba="0.627451 0.627451 0.627451 1.0" />
+  </material>
+  <material name="wheel_dark_gray">
+    <color rgba="0.6 0.6 0.6 1.0" />
+  </material>
+  <material name="3d_printed">
+    <color rgba="0.55 0.25 0.85 1.0" />
+  </material>
+  <material name="sts3215">
+    <color rgba="0.55 0.25 0.85 1.0" />
+  </material>
+  <link name="base_link">
+    <inertial>
+      <origin xyz="-0.010693670776 -0.000809065310 0.037199240" rpy="0 0 0" />
+      <mass value="7.784429386" />
+      <inertia ixx="0.0312966086" ixy="0.0003278457" ixz="0.0001562681" iyy="0.0265191942" iyz="-0.0026145673" izz="0.0386193512" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0.523583538371" xyz="-0.310264249096 -1.449350080211 -1.159469" />
+      <geometry>
+        <mesh filename="../meshes/base/lekiwi_body_soarm_mount.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+      <material name="body_gray" />
+    </visual>
+    <collision>
+      <origin rpy="0 0 2.094379865161" xyz="0.007587843843 -0.010776931094 0" />
+      <geometry>
+        <box size="0.254 0.243 0.105" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="back_wheel_mount_link" />
+  <joint name="back_wheel_mount_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="back_wheel_mount_link" />
+    <origin rpy="0 0 3.665176191951" xyz="0.065688326518 -0.114631545219 -0.024939" />
+  </joint>
+  <link name="back_wheel_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1.42924347076" />
+      <inertia ixx="0.00186548976902" ixy="0" ixz="0" iyy="0.0010630570456" iyz="0" izz="0.00186548976902" />
+    </inertial>
+    <visual>
+      <origin rpy="-1.57079632679 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/base/omni_wheel.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+      <material name="wheel_dark_gray" />
+    </visual>
+    <collision>
+      <origin rpy="-1.57079632679 0 0" xyz="0 0 0" />
+      <geometry>
+        <cylinder length="0.0388" radius="0.043" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_wheel_joint" type="continuous">
+    <parent link="back_wheel_mount_link" />
+    <child link="back_wheel_link" />
+    <origin rpy="0 0 0" xyz="0 0.023764 0" />
+    <axis xyz="0 1 0" />
+    <limit effort="1.0" velocity="10.0" />
+    <dynamics damping="0.01" friction="0.01" />
+  </joint>
+  <link name="left_wheel_mount_link" />
+  <joint name="left_wheel_mount_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="left_wheel_mount_link" />
+    <origin rpy="0 0 1.570781089571" xyz="-0.127599301296 0.000428428396 -0.024148" />
+  </joint>
+  <link name="left_wheel_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1.42924347076" />
+      <inertia ixx="0.00186548976902" ixy="0" ixz="0" iyy="0.0010630570456" iyz="0" izz="0.00186548976902" />
+    </inertial>
+    <visual>
+      <origin rpy="-1.57079632679 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/base/omni_wheel.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+      <material name="wheel_dark_gray" />
+    </visual>
+    <collision>
+      <origin rpy="-1.57079632679 0 0" xyz="0 0 0" />
+      <geometry>
+        <cylinder length="0.0388" radius="0.043" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="left_wheel_mount_link" />
+    <child link="left_wheel_link" />
+    <origin rpy="0 0 0" xyz="0 0.023764 0" />
+    <axis xyz="0 1 0" />
+    <limit effort="1.0" velocity="10.0" />
+    <dynamics damping="0.01" friction="0.01" />
+  </joint>
+  <link name="right_wheel_mount_link" />
+  <joint name="right_wheel_mount_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="right_wheel_mount_link" />
+    <origin rpy="0 0 -0.523614012829" xyz="0.065153184202 0.111987337491 -0.023661" />
+  </joint>
+  <link name="right_wheel_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1.42924347076" />
+      <inertia ixx="0.00186548976902" ixy="0" ixz="0" iyy="0.0010630570456" iyz="0" izz="0.00186548976902" />
+    </inertial>
+    <visual>
+      <origin rpy="-1.57079632679 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/base/omni_wheel.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+      <material name="wheel_dark_gray" />
+    </visual>
+    <collision>
+      <origin rpy="-1.57079632679 0 0" xyz="0 0 0" />
+      <geometry>
+        <cylinder length="0.0388" radius="0.043" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="right_wheel_mount_link" />
+    <child link="right_wheel_link" />
+    <origin rpy="0 0 0" xyz="0 0.023764 0" />
+    <axis xyz="0 1 0" />
+    <limit effort="1.0" velocity="10.0" />
+    <dynamics damping="0.01" friction="0.01" />
+  </joint>
+  <link name="soarm_base_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.0137179 -5.19711e-05 0.0334843" />
+      <mass value="0.147" />
+      <inertia ixx="0.000114686" ixy="-4.59787e-07" ixz="4.97151e-06" iyy="0.000136117" iyz="9.75275e-08" izz="0.000130364" />
+    </inertial>
+    <visual>
+      <origin rpy="1.5708 -1.67685e-15 1.5708" xyz="-0.00636471 -9.94414e-05 -0.0024" />
+      <geometry>
+        <mesh filename="../meshes/soarm/base_motor_holder_so101_v1.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="1.5708 -1.67685e-15 1.5708" xyz="-0.00636471 -9.94414e-05 -0.0024" />
+      <geometry>
+        <mesh filename="../meshes/soarm/base_motor_holder_so101_v1.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="1.5708 -2.78073e-29 1.5708" xyz="-0.00636471 -8.97657e-09 -0.0024" />
+      <geometry>
+        <mesh filename="../meshes/soarm/base_so101_v2.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="1.5708 -2.78073e-29 1.5708" xyz="-0.00636471 -8.97657e-09 -0.0024" />
+      <geometry>
+        <mesh filename="../meshes/soarm/base_so101_v2.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="-8.21148e-16 7.84513e-18 1.249e-15" xyz="0.0263353 -8.97657e-09 0.0437" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+      <material name="sts3215" />
+    </visual>
+    <collision>
+      <origin rpy="-8.21148e-16 7.84513e-18 1.249e-15" xyz="0.0263353 -8.97657e-09 0.0437" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="1.5708 -1.35493e-14 1.5708" xyz="-0.0309827 -0.000199441 0.0474" />
+      <geometry>
+        <mesh filename="../meshes/soarm/waveshare_mounting_plate_so101_v2.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="1.5708 -1.35493e-14 1.5708" xyz="-0.0309827 -0.000199441 0.0474" />
+      <geometry>
+        <mesh filename="../meshes/soarm/waveshare_mounting_plate_so101_v2.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="shoulder_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.0307604 -1.66727e-05 -0.0252713" />
+      <mass value="0.100006" />
+      <inertia ixx="8.3759e-05" ixy="7.55525e-08" ixz="-1.16342e-06" iyy="8.10403e-05" iyz="1.54663e-07" izz="2.39783e-05" />
+    </inertial>
+    <visual>
+      <origin rpy="1.5708 1.5708 0" xyz="-0.0303992 0.000422241 -0.0417" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+      <material name="sts3215" />
+    </visual>
+    <collision>
+      <origin rpy="1.5708 1.5708 0" xyz="-0.0303992 0.000422241 -0.0417" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="1.5708 -1.5708 0" xyz="-0.0675992 -0.000177759 0.0158499" />
+      <geometry>
+        <mesh filename="../meshes/soarm/motor_holder_so101_base_v1.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="1.5708 -1.5708 0" xyz="-0.0675992 -0.000177759 0.0158499" />
+      <geometry>
+        <mesh filename="../meshes/soarm/motor_holder_so101_base_v1.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="-1.5708 2.35221e-33 0" xyz="0.0122008 2.22413e-05 0.0464" />
+      <geometry>
+        <mesh filename="../meshes/soarm/rotation_pitch_so101_v1.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="-1.5708 2.35221e-33 0" xyz="0.0122008 2.22413e-05 0.0464" />
+      <geometry>
+        <mesh filename="../meshes/soarm/rotation_pitch_so101_v1.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="upper_arm_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.0898471 -0.00838224 0.0184089" />
+      <mass value="0.103" />
+      <inertia ixx="4.08002e-05" ixy="-1.97819e-05" ixz="-4.03016e-08" iyy="0.000147318" iyz="8.97326e-09" izz="0.000142487" />
+    </inertial>
+    <visual>
+      <origin rpy="-3.14159 -5.27356e-16 -1.5708" xyz="-0.11257 -0.0155 0.0187" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+      <material name="sts3215" />
+    </visual>
+    <collision>
+      <origin rpy="-3.14159 -5.27356e-16 -1.5708" xyz="-0.11257 -0.0155 0.0187" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="3.14159 -0 -1.30911e-30" xyz="-0.065085 0.012 0.0182" />
+      <geometry>
+        <mesh filename="../meshes/soarm/upper_arm_so101_v1.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="3.14159 -0 -1.30911e-30" xyz="-0.065085 0.012 0.0182" />
+      <geometry>
+        <mesh filename="../meshes/soarm/upper_arm_so101_v1.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="lower_arm_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.0980701 0.00324376 0.0182831" />
+      <mass value="0.104" />
+      <inertia ixx="2.87438e-05" ixy="7.41152e-06" ixz="1.26409e-06" iyy="0.000159844" iyz="-4.90188e-08" izz="0.00014529" />
+    </inertial>
+    <visual>
+      <origin rpy="3.14159 -0 6.67202e-31" xyz="-0.0648499 -0.032 0.0182" />
+      <geometry>
+        <mesh filename="../meshes/soarm/under_arm_so101_v1.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="3.14159 -0 6.67202e-31" xyz="-0.0648499 -0.032 0.0182" />
+      <geometry>
+        <mesh filename="../meshes/soarm/under_arm_so101_v1.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="-3.14159 -2.55351e-15 -1.83387e-30" xyz="-0.0648499 -0.032 0.018" />
+      <geometry>
+        <mesh filename="../meshes/soarm/motor_holder_so101_wrist_v1.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="-3.14159 -2.55351e-15 -1.83387e-30" xyz="-0.0648499 -0.032 0.018" />
+      <geometry>
+        <mesh filename="../meshes/soarm/motor_holder_so101_wrist_v1.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="-3.14159 -7.88861e-31 -3.14159" xyz="-0.1224 0.0052 0.0187" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+      <material name="sts3215" />
+    </visual>
+    <collision>
+      <origin rpy="-3.14159 -7.88861e-31 -3.14159" xyz="-0.1224 0.0052 0.0187" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="wrist_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.000103312 -0.0386143 0.0281156" />
+      <mass value="0.079" />
+      <inertia ixx="3.68263e-05" ixy="1.7893e-08" ixz="-5.28128e-08" iyy="2.5391e-05" iyz="3.6412e-06" izz="2.1e-05" />
+    </inertial>
+    <visual>
+      <origin rpy="1.5708 1.5708 0" xyz="8.32667e-17 -0.0424 0.0306" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_no_horn_v1.stl" />
+      </geometry>
+      <material name="sts3215" />
+    </visual>
+    <collision>
+      <origin rpy="1.5708 1.5708 0" xyz="8.32667e-17 -0.0424 0.0306" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_no_horn_v1.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="-1.5708 -1.5708 0" xyz="0 -0.028 0.0181" />
+      <geometry>
+        <mesh filename="../meshes/soarm/wrist_roll_pitch_so101_v2.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="-1.5708 -1.5708 0" xyz="0 -0.028 0.0181" />
+      <geometry>
+        <mesh filename="../meshes/soarm/wrist_roll_pitch_so101_v2.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="shoulder_pan" type="revolute">
+    <origin rpy="3.14159 4.18253e-17 -3.14159" xyz="0.0388353 -8.97657e-09 0.0624" />
+    <parent link="soarm_base_link" />
+    <child link="shoulder_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" lower="-1.91986" upper="1.91986" velocity="10" />
+  </joint>
+  <joint name="shoulder_lift" type="revolute">
+    <origin rpy="-1.5708 -1.5708 0" xyz="-0.0303992 -0.0182778 -0.0542" />
+    <parent link="shoulder_link" />
+    <child link="upper_arm_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" lower="-1.74533" upper="1.74533" velocity="10" />
+  </joint>
+  <joint name="elbow_flex" type="revolute">
+    <origin rpy="-3.63608e-16 8.74301e-16 1.5708" xyz="-0.11257 -0.028 1.73763e-16" />
+    <parent link="upper_arm_link" />
+    <child link="lower_arm_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" lower="-1.69" upper="1.69" velocity="10" />
+  </joint>
+  <joint name="wrist_flex" type="revolute">
+    <origin rpy="4.02456e-15 8.67362e-16 -1.5708" xyz="-0.1349 0.0052 3.62355e-17" />
+    <parent link="lower_arm_link" />
+    <child link="wrist_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" lower="-1.65806" upper="1.65806" velocity="10" />
+  </joint>
+  <link name="gripper_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000213627 0.000245138 -0.025187" />
+      <mass value="0.087" />
+      <inertia ixx="2.75087e-05" ixy="-3.35241e-07" ixz="-5.7352e-06" iyy="4.33657e-05" iyz="-5.17847e-08" izz="3.45059e-05" />
+    </inertial>
+    <visual>
+      <origin rpy="-1.5708 -5.19179e-17 -1.66533e-16" xyz="0.0077 0.0001 -0.0234" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+      <material name="sts3215" />
+    </visual>
+    <collision>
+      <origin rpy="-1.5708 -5.19179e-17 -1.66533e-16" xyz="0.0077 0.0001 -0.0234" />
+      <geometry>
+        <mesh filename="../meshes/soarm/sts3215_03a_v1.stl" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="-3.14159 -5.55112e-17 0" xyz="8.32667e-17 -0.000218214 0.000949706" />
+      <geometry>
+        <mesh filename="../meshes/soarm/wrist_roll_follower_so101_v1.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="-3.14159 -5.55112e-17 0" xyz="8.32667e-17 -0.000218214 0.000949706" />
+      <geometry>
+        <mesh filename="../meshes/soarm/wrist_roll_follower_so101_v1.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="wrist_roll" type="revolute">
+    <origin rpy="1.5708 0.0486795 3.14159" xyz="5.55112e-17 -0.0611 0.0181" />
+    <parent link="wrist_link" />
+    <child link="gripper_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" lower="-2.74385" upper="2.84121" velocity="10" />
+  </joint>
+  <link name="gripper_frame_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <mass value="1e-9" />
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+    </inertial>
+  </link>
+  <joint name="gripper_frame_joint" type="fixed">
+    <origin rpy="0 3.14159 0" xyz="0.008620 -0.000218121 -0.0981274" />
+    <parent link="gripper_link" />
+    <child link="gripper_frame_link" />
+  </joint>
+  <link name="moving_jaw_so101_v1_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00157495 -0.0300244 0.0192755" />
+      <mass value="0.012" />
+      <inertia ixx="6.61427e-06" ixy="-3.19807e-07" ixz="-5.90717e-09" iyy="1.89032e-06" iyz="-1.09945e-07" izz="5.28738e-06" />
+    </inertial>
+    <visual>
+      <origin rpy="9.53145e-17 6.93889e-18 1.24077e-24" xyz="-5.55112e-17 -5.55112e-17 0.0189" />
+      <geometry>
+        <mesh filename="../meshes/soarm/moving_jaw_so101_v1.stl" />
+      </geometry>
+      <material name="3d_printed" />
+    </visual>
+    <collision>
+      <origin rpy="9.53145e-17 6.93889e-18 1.24077e-24" xyz="-5.55112e-17 -5.55112e-17 0.0189" />
+      <geometry>
+        <mesh filename="../meshes/soarm/moving_jaw_so101_v1.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="gripper" type="revolute">
+    <origin rpy="1.5708 -5.24284e-08 -1.41553e-15" xyz="0.0202 0.0188 -0.0234" />
+    <parent link="gripper_link" />
+    <child link="moving_jaw_so101_v1_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" lower="-0.174533" upper="1.74533" velocity="10" />
+  </joint>
+  <joint name="soarm_mount_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="soarm_base_link" />
+    <origin rpy="0 0 0" xyz="0.019988279335 0.001703025019 0.052884" />
+  </joint>
+  <link name="back_roller_00">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_00_joint" type="continuous">
+    <origin xyz="-0 0.009525 0.0408953" rpy="0 -0 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_00" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_01">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_01_joint" type="continuous">
+    <origin xyz="-0.02044765 -0.009525 0.0354163686954" rpy="0 -0.523598775598 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_01" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_02">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_02_joint" type="continuous">
+    <origin xyz="-0.0354163686954 0.009525 0.02044765" rpy="0 -1.0471975512 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_02" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_03">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_03_joint" type="continuous">
+    <origin xyz="-0.0408953 -0.009525 2.50411491226e-18" rpy="0 -1.57079632679 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_03" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_04">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_04_joint" type="continuous">
+    <origin xyz="-0.0354163686954 0.009525 -0.02044765" rpy="0 -2.09439510239 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_04" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_05">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_05_joint" type="continuous">
+    <origin xyz="-0.02044765 -0.009525 -0.0354163686954" rpy="0 -2.61799387799 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_05" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_06">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_06_joint" type="continuous">
+    <origin xyz="-5.00822982452e-18 0.009525 -0.0408953" rpy="0 -3.14159265359 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_06" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_07">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_07_joint" type="continuous">
+    <origin xyz="0.02044765 -0.009525 -0.0354163686954" rpy="0 -3.66519142919 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_07" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_08">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_08_joint" type="continuous">
+    <origin xyz="0.0354163686954 0.009525 -0.02044765" rpy="0 -4.18879020479 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_08" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_09">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_09_joint" type="continuous">
+    <origin xyz="0.0408953 -0.009525 -7.51234473678e-18" rpy="0 -4.71238898038 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_09" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_10">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_10_joint" type="continuous">
+    <origin xyz="0.0354163686954 0.009525 0.02044765" rpy="0 -5.23598775598 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_10" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="back_roller_11">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="back_roller_11_joint" type="continuous">
+    <origin xyz="0.02044765 -0.009525 0.0354163686954" rpy="0 -5.75958653158 0" />
+    <parent link="back_wheel_link" />
+    <child link="back_roller_11" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_00">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_00_joint" type="continuous">
+    <origin xyz="-0 0.009525 0.0408953" rpy="0 -0 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_00" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_01">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_01_joint" type="continuous">
+    <origin xyz="-0.02044765 -0.009525 0.0354163686954" rpy="0 -0.523598775598 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_01" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_02">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_02_joint" type="continuous">
+    <origin xyz="-0.0354163686954 0.009525 0.02044765" rpy="0 -1.0471975512 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_02" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_03">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_03_joint" type="continuous">
+    <origin xyz="-0.0408953 -0.009525 2.50411491226e-18" rpy="0 -1.57079632679 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_03" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_04">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_04_joint" type="continuous">
+    <origin xyz="-0.0354163686954 0.009525 -0.02044765" rpy="0 -2.09439510239 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_04" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_05">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_05_joint" type="continuous">
+    <origin xyz="-0.02044765 -0.009525 -0.0354163686954" rpy="0 -2.61799387799 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_05" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_06">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_06_joint" type="continuous">
+    <origin xyz="-5.00822982452e-18 0.009525 -0.0408953" rpy="0 -3.14159265359 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_06" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_07">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_07_joint" type="continuous">
+    <origin xyz="0.02044765 -0.009525 -0.0354163686954" rpy="0 -3.66519142919 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_07" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_08">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_08_joint" type="continuous">
+    <origin xyz="0.0354163686954 0.009525 -0.02044765" rpy="0 -4.18879020479 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_08" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_09">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_09_joint" type="continuous">
+    <origin xyz="0.0408953 -0.009525 -7.51234473678e-18" rpy="0 -4.71238898038 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_09" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_10">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_10_joint" type="continuous">
+    <origin xyz="0.0354163686954 0.009525 0.02044765" rpy="0 -5.23598775598 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_10" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="left_roller_11">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_roller_11_joint" type="continuous">
+    <origin xyz="0.02044765 -0.009525 0.0354163686954" rpy="0 -5.75958653158 0" />
+    <parent link="left_wheel_link" />
+    <child link="left_roller_11" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_00">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_00_joint" type="continuous">
+    <origin xyz="-0 0.009525 0.0408953" rpy="0 -0 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_00" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_01">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_01_joint" type="continuous">
+    <origin xyz="-0.02044765 -0.009525 0.0354163686954" rpy="0 -0.523598775598 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_01" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_02">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_02_joint" type="continuous">
+    <origin xyz="-0.0354163686954 0.009525 0.02044765" rpy="0 -1.0471975512 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_02" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_03">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_03_joint" type="continuous">
+    <origin xyz="-0.0408953 -0.009525 2.50411491226e-18" rpy="0 -1.57079632679 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_03" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_04">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_04_joint" type="continuous">
+    <origin xyz="-0.0354163686954 0.009525 -0.02044765" rpy="0 -2.09439510239 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_04" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_05">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_05_joint" type="continuous">
+    <origin xyz="-0.02044765 -0.009525 -0.0354163686954" rpy="0 -2.61799387799 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_05" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_06">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_06_joint" type="continuous">
+    <origin xyz="-5.00822982452e-18 0.009525 -0.0408953" rpy="0 -3.14159265359 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_06" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_07">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_07_joint" type="continuous">
+    <origin xyz="0.02044765 -0.009525 -0.0354163686954" rpy="0 -3.66519142919 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_07" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_08">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_08_joint" type="continuous">
+    <origin xyz="0.0354163686954 0.009525 -0.02044765" rpy="0 -4.18879020479 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_08" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_09">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_09_joint" type="continuous">
+    <origin xyz="0.0408953 -0.009525 -7.51234473678e-18" rpy="0 -4.71238898038 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_09" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_10">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_10_joint" type="continuous">
+    <origin xyz="0.0354163686954 0.009525 0.02044765" rpy="0 -5.23598775598 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_10" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+  <link name="right_roller_11">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.00405106726982" />
+      <inertia ixx="1.58471077174e-07" ixy="0" ixz="0" iyy="1.58471077174e-07" iyz="0" izz="1.58471077174e-07" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.000001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.00988918" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_roller_11_joint" type="continuous">
+    <origin xyz="0.02044765 -0.009525 0.0354163686954" rpy="0 -5.75958653158 0" />
+    <parent link="right_wheel_link" />
+    <child link="right_roller_11" />
+    <axis xyz="1 0 0" />
+    <dynamics damping="0.0001" friction="0" />
+  </joint>
+</robot>
