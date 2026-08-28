@@ -38,11 +38,13 @@ radius, 9.88918 mm simplified sphere radius, and +/-9.525 mm alternating side
 offset. These become primitive collision links in the generated URDF/USD while
 the original STL remains the only wheel visual mesh.
 
-The generated Isaac URDF omits the ROS-only `base_footprint` fixed frame. Isaac
-5.1 otherwise creates it as a zero-mass root rigid body, which makes direct
-mobile-base velocity control rotate around the fixed constraint. `/LeKiwi` is
-lifted by the same 0.055 m offset during USD generation, so the assembled
-geometry and ground height do not change.
+The ROS-only `base_footprint` is placed on the nominal three-wheel contact plane,
+0.075 m below `base_link`. The generated Isaac URDF omits that fixed frame:
+Isaac 5.1 otherwise creates it as a zero-mass root rigid body, which makes
+direct mobile-base velocity control rotate around the fixed constraint. The
+Isaac USD keeps its existing 0.055 m root translation and -0.021 m ground plane,
+so this ROS TF correction does not move the assembled geometry or change wheel
+contact physics.
 
 Important copied source SHA-256 values:
 

@@ -9,6 +9,11 @@ simulation_app = SimulationApp(
         "width": 1440,
         "height": 900,
         "sync_loads": False,
+        "extra_args": [
+            "--enable",
+            "isaacsim.ros2.bridge",
+            "--/exts/isaacsim.ros2.bridge/ros_distro=jazzy",
+        ],
     }
 )
 
@@ -31,6 +36,8 @@ from isaacsim.core.api.objects.ground_plane import GroundPlane
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 
+from ros_odometry import RosOdometryPublisher
+
 
 USD_PATH = os.environ.get(
     "LEKIWI_USD", "/workspace/assets/lekiwi_soarm/usd/lekiwi_soarm.usd"
@@ -41,6 +48,7 @@ SPAWN_Z = float(os.environ.get("LEKIWI_SPAWN_Z", "0.055"))
 LINEAR_SPEED = float(os.environ.get("LEKIWI_LINEAR_SPEED", "0.25"))
 ANGULAR_SPEED = float(os.environ.get("LEKIWI_ANGULAR_SPEED", "0.8"))
 PHYSICS_DT = float(os.environ.get("LEKIWI_PHYSICS_DT", str(1.0 / 120.0)))
+ODOM_PUBLISH_HZ = float(os.environ.get("LEKIWI_ODOM_PUBLISH_HZ", "30.0"))
 WHEEL_RADIUS = 0.05078448
 ARM_HOLD_STIFFNESS = 10000.0
 ARM_HOLD_DAMPING = 200.0
@@ -48,6 +56,11 @@ ARM_HOLD_MAX_FORCE = 1000.0
 GRID_HALF_SIZE = 5.0
 GRID_MINOR_SPACING = 0.1
 GRID_MAJOR_SPACING = 0.5
+SETTLE_WINDOW_STEPS = 120
+SETTLE_MAX_STEPS = 1200
+SETTLE_REQUIRED_STABLE_WINDOWS = 2
+SETTLE_POSITION_TOLERANCE = 0.0005
+SETTLE_YAW_TOLERANCE = 0.0005
 
 WHEEL_JOINT_NAMES = (
     "back_wheel_joint",
@@ -218,6 +231,53 @@ def _validate_drive_kinematics():
         )
 
 
+def _settle_on_ground(
+    robot, articulation_controller, arm_indices, world, root_body
+):
+    previous_position = None
+    previous_yaw = None
+    stable_windows = 0
+    position_shift = math.inf
+    yaw_shift = math.inf
+
+    for step in range(1, SETTLE_MAX_STEPS + 1):
+        _apply_command(robot, 0.0, 0.0, 0.0)
+        _hold_arm_home(articulation_controller, arm_indices)
+        world.step(render=True)
+        if step % SETTLE_WINDOW_STEPS != 0:
+            continue
+
+        position, orientation = _base_pose(root_body)
+        yaw = _yaw(orientation)
+        if previous_position is not None:
+            position_shift = float(
+                np.linalg.norm(position[:2] - previous_position[:2])
+            )
+            yaw_shift = abs(
+                math.atan2(
+                    math.sin(yaw - previous_yaw),
+                    math.cos(yaw - previous_yaw),
+                )
+            )
+            if (
+                position_shift <= SETTLE_POSITION_TOLERANCE
+                and yaw_shift <= SETTLE_YAW_TOLERANCE
+            ):
+                stable_windows += 1
+            else:
+                stable_windows = 0
+            if stable_windows >= SETTLE_REQUIRED_STABLE_WINDOWS:
+                return position, orientation, step, position_shift, yaw_shift
+
+        previous_position = position
+        previous_yaw = yaw
+
+    raise RuntimeError(
+        "LeKiwi did not reach a stable ground pose: "
+        f"position_shift={position_shift:.6f} yaw_shift={yaw_shift:.6f}"
+    )
+
+
 def _create_lighting(stage):
     sun = UsdLux.DistantLight.Define(stage, "/World/KeyboardDriveSun")
     sun.CreateIntensityAttr(1000.0)
@@ -380,19 +440,32 @@ def main():
     articulation_controller = robot.get_articulation_controller()
     _hold_arm_home(articulation_controller, arm_indices)
 
-    # Let the three roller envelopes settle onto the PhysX ground before input.
-    for _ in range(120):
-        _apply_command(robot, 0.0, 0.0, 0.0)
-        _hold_arm_home(articulation_controller, arm_indices)
-        world.step(render=True)
-
-    settled_position, settled_orientation = _base_pose(root_body)
+    # Do not define odom until the passive rollers reach a stable ground pose.
+    (
+        settled_position,
+        settled_orientation,
+        settle_steps,
+        settle_position_shift,
+        settle_yaw_shift,
+    ) = _settle_on_ground(
+        robot, articulation_controller, arm_indices, world, root_body
+    )
     settled_yaw = _yaw(settled_orientation)
     if not 0.02 < settled_position[2] < 0.09:
         raise RuntimeError(
             f"LeKiwi did not settle on its wheels: z={settled_position[2]}"
         )
     _set_camera(settled_position, settled_yaw)
+    odometry_publisher = RosOdometryPublisher(
+        settled_position, settled_yaw
+    )
+    odometry_publish_interval = max(
+        1, round(1.0 / (PHYSICS_DT * ODOM_PUBLISH_HZ))
+    )
+    odometry_publisher.publish_clock(world.current_time)
+    odometry_publisher.publish(
+        settled_position, settled_yaw, world.current_time
+    )
 
     pressed = set()
     capture_requested = False
@@ -466,6 +539,12 @@ def main():
         flush=True,
     )
     print(
+        "LEKIWI_DRIVE settle=STABLE "
+        f"steps={settle_steps} position_shift={settle_position_shift:.6f} "
+        f"yaw_shift={settle_yaw_shift:.6f}",
+        flush=True,
+    )
+    print(
         "LEKIWI_DRIVE arm_control=HOME_HOLD "
         f"joints={len(arm_indices)} stiffness={ARM_HOLD_STIFFNESS:.1f} "
         f"damping={ARM_HOLD_DAMPING:.1f} max_force={ARM_HOLD_MAX_FORCE:.1f}",
@@ -474,6 +553,12 @@ def main():
     print(
         "LEKIWI_DRIVE ground_grid=PASS minor=0.1m major=0.5m "
         "forward_guide=base_link+X",
+        flush=True,
+    )
+    print(
+        "LEKIWI_DRIVE ros_odometry=READY topics=/clock,/odom "
+        "tf=odom->base_footprint source=ISAAC_GROUND_TRUTH "
+        f"simulation_rate_hz={ODOM_PUBLISH_HZ:.1f}",
         flush=True,
     )
     print(
@@ -543,6 +628,11 @@ def main():
 
             position, orientation = _base_pose(root_body)
             yaw = _yaw(orientation)
+            odometry_publisher.publish_clock(world.current_time)
+            if frame % odometry_publish_interval == 0:
+                odometry_publisher.publish(
+                    position, yaw, world.current_time
+                )
             if camera_tracking and frame % 4 == 0:
                 _set_camera(position, yaw)
 
@@ -583,6 +673,7 @@ def main():
         except Exception as exc:
             carb.log_warn(f"Could not stop LeKiwi cleanly: {exc}")
         keyboard_subscription = None
+        odometry_publisher.close()
 
 
 failed = False

@@ -93,6 +93,20 @@ and rotational movement come from wheel/roller/ground contact. `W` commands
 starts in free mode after its initial placement, so normal viewport mouse
 controls are not overwritten. Press `T` only when a chase view is wanted.
 
+After the passive rollers remain within 0.5 mm and 0.5 mrad for two consecutive
+one-second simulation windows, the test stores that planar pose as the `odom`
+origin. This avoids turning initial contact settling into apparent odometry
+drift.
+It publishes Isaac ground-truth `nav_msgs/msg/Odometry` on `/odom` and the
+dynamic `odom -> base_footprint` transform at 30 Hz. The transform contains
+X/Y/yaw only; `robot_state_publisher` owns the static 0.075 m
+`base_footprint -> base_link` transform. Isaac also publishes `/clock`; odometry
+and TF stamps use simulation time, so host RViz, `robot_state_publisher`, and
+joint-state tools must set `use_sim_time=true`. The configured 30 Hz is measured
+in simulation time and can be slower in wall time while the renderer is below
+real time. Set `ROS_DOMAIN_ID` before launching when a domain other than zero is
+required.
+
 For base-only evaluation, the interactive test holds all six SO101 joints at
 their URDF home position (`0 rad`) with a runtime-only position drive. The arm
 mass, inertia, gravity, and connection to the base remain active; only joint

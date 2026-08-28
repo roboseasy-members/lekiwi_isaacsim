@@ -74,6 +74,10 @@ echo "Writing complete run output to ${LOG_FILE}."
     --group-add "$(id -g)" \
     -e ACCEPT_EULA=Y \
     -e PRIVACY_CONSENT=Y \
+    -e ROS_DISTRO=jazzy \
+    -e RMW_IMPLEMENTATION=rmw_fastrtps_cpp \
+    -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}" \
+    -e LD_LIBRARY_PATH=/isaac-sim/exts/isaacsim.ros2.bridge/jazzy/lib \
     -e DISPLAY="${DISPLAY:-:0}" \
     -e XAUTHORITY=/isaac-sim/.Xauthority \
     -e LEKIWI_USD=/workspace/assets/lekiwi_soarm/usd/lekiwi_soarm.usd \
