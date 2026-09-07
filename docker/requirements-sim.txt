@@ -1,0 +1,3 @@
+# Isaac supplies its own Python, NumPy, PyTorch, and USD. Do not replace them.
+# xacro is a standalone asset development tool here; no ROS installation.
+xacro==2.1.1

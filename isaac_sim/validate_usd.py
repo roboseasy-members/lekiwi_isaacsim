@@ -11,12 +11,16 @@ simulation_app = SimulationApp({"headless": True})
 import math
 import os
 import sys
+from pathlib import Path
 
 from pxr import Usd, UsdGeom, UsdPhysics, UsdShade
 
+from bundle_dependencies import validate_bundle_dependencies
+
 
 USD_PATH = os.environ.get(
-    "LEKIWI_USD", "/workspace/assets/lekiwi_soarm/usd/lekiwi_soarm.usd"
+    "LEKIWI_USD",
+    str(Path(__file__).resolve().parent / "assets/lekiwi_soarm/usd/lekiwi_soarm.usd"),
 )
 ARM_ORDER = [
     "shoulder_pan",
@@ -63,6 +67,7 @@ def _color(material):
 
 
 def main():
+    validate_bundle_dependencies(USD_PATH)
     stage = Usd.Stage.Open(USD_PATH)
     _require(stage is not None, f"could not open {USD_PATH}")
     root = stage.GetPrimAtPath("/LeKiwi")

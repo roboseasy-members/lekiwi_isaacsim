@@ -9,6 +9,7 @@ import math
 import os
 import sys
 import traceback
+from pathlib import Path
 
 import numpy as np
 import omni.usd
@@ -21,7 +22,8 @@ from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 
 
 USD_PATH = os.environ.get(
-    "LEKIWI_USD", "/workspace/assets/lekiwi_soarm/usd/lekiwi_soarm.usd"
+    "LEKIWI_USD",
+    str(Path(__file__).resolve().parent / "assets/lekiwi_soarm/usd/lekiwi_soarm.usd"),
 )
 GROUND_Z = -0.021
 SPAWN_Z = float(os.environ.get("LEKIWI_SPAWN_Z", "0.055"))

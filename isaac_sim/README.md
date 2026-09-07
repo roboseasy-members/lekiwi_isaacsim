@@ -30,13 +30,15 @@ written. Runtime files are copied under `assets/lekiwi_soarm` before use.
 ## Build and validate
 
 ```bash
-cd /home/ysj/youn_ws/lekiwi_urdf_after
-./isaac_sim/build_usd.sh
-./isaac_sim/validate_asset.py
+# From the cloned repository root:
+ACCEPT_EULA=Y ./lekiwi build-assets
+./lekiwi validate
 ```
 
-`build_usd.sh` uses `nvcr.io/nvidia/isaac-sim:5.1.0` and may request the sudo
-password for Docker access. The generated root prim remains `/LeKiwi`.
+`build_usd.sh` forwards to the project Docker launcher. Builds produce a fresh
+bundle under `data/asset-build.*`; shipped assets are not overwritten. The
+generated root prim remains `/LeKiwi`. Normal users load the bundled USD without
+running the build. See the root README for image setup and Docker access.
 
 The read-only assembly fit was originally expressed as:
 
@@ -66,13 +68,14 @@ asset.
 ## Keyboard smoke test
 
 ```bash
-cd /home/ysj/youn_ws/lekiwi_urdf_after
-./isaac_sim/run_keyboard_drive.sh
+# From the cloned repository root:
+ACCEPT_EULA=Y ./lekiwi sim
 ```
 
 - `W` / `S`: forward / backward
 - `A` / `D`: left / right
 - `Q` / `E`: counter-clockwise / clockwise
+- `1` / `2` / `3`: base speed 1x / 1.5x / 2x (starts at 1x; numpad supported)
 - `Space`: stop
 - `P`: save the active viewport
 - `T`: toggle free camera / robot-tracking camera
@@ -93,22 +96,15 @@ and rotational movement come from wheel/roller/ground contact. `W` commands
 starts in free mode after its initial placement, so normal viewport mouse
 controls are not overwritten. Press `T` only when a chase view is wanted.
 
-After the passive rollers remain within 0.5 mm and 0.5 mrad for two consecutive
-one-second simulation windows, the test stores that planar pose as the `odom`
-origin. This avoids turning initial contact settling into apparent odometry
-drift.
-It publishes Isaac ground-truth `nav_msgs/msg/Odometry` on `/odom` and the
-dynamic `odom -> base_footprint` transform at 30 Hz. The transform contains
-X/Y/yaw only; `robot_state_publisher` owns the static 0.075 m
-`base_footprint -> base_link` transform. Isaac also publishes `/clock`; odometry
-and TF stamps use simulation time, so host RViz, `robot_state_publisher`, and
-joint-state tools must set `use_sim_time=true`. The configured 30 Hz is measured
-in simulation time and can be slower in wall time while the renderer is below
-real time. Set `ROS_DOMAIN_ID` before launching when a domain other than zero is
-required.
+The demo waits for passive rollers to remain within 0.5 mm and 0.5 mrad for two
+consecutive one-second simulation windows before accepting keyboard input.
+The runtime has no ROS bridge, topic, TF, or ROS clock dependency. Physical
+position is read directly from Isaac and reported in the console.
 
-For base-only evaluation, the interactive test holds all six SO101 joints at
-their URDF home position (`0 rad`) with a runtime-only position drive. The arm
+For base-only evaluation, the interactive test holds the SO101 at its runtime
+home pose: wrist roll -90 degrees, all other joints zero by default. This is
+clockwise looking from the wrist toward the fingertips. The same offset is
+retained during leader teleop. A runtime-only position drive is used. The arm
 mass, inertia, gravity, and connection to the base remain active; only joint
 motion is suppressed. Generated URDF/USD drive values are not overwritten on
 disk.
@@ -121,25 +117,16 @@ API, so they cannot affect wheel contact or steering.
 For a repeatable headless physics regression inside the Isaac Sim container:
 
 ```bash
-/isaac-sim/python.sh /workspace/physics_smoke_test.py
+ACCEPT_EULA=Y ./lekiwi test-physics
 ```
 
 The regression checks idle settling, forward travel, left translation, and
 counter-clockwise rotation using the actual `base_link` world transform.
 
-The first GUI launch populates five Docker volumes whose names start with
-`lekiwi-isaacsim-`. Later launches reuse them instead of compiling every RTX
-shader from scratch. To remove only this project's disposable caches after the
-Isaac containers have stopped:
-
-```bash
-docker volume rm \
-  lekiwi-isaacsim-kit-cache \
-  lekiwi-isaacsim-ov-cache \
-  lekiwi-isaacsim-pip-cache \
-  lekiwi-isaacsim-gl-cache \
-  lekiwi-isaacsim-compute-cache
-```
+The Docker launcher stores user configuration and caches under `data/home` and
+`data/cache`, with screenshots under `data/captures`. Existing volumes from the
+old launcher are not deleted or modified. Containers run with the host user's
+UID/GID and load code and assets from the image, not a host workspace mount.
 
 ## Physics policy
 

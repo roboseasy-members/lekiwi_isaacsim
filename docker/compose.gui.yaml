@@ -1,0 +1,16 @@
+services:
+  sim:
+    environment:
+      DISPLAY: ${DISPLAY:?A local X11 or XWayland display is required}
+      XAUTHORITY: /tmp/lekiwi.xauth
+    volumes:
+      - type: bind
+        source: /tmp/.X11-unix
+        target: /tmp/.X11-unix
+        read_only: true
+      - type: bind
+        source: ${LEKIWI_XAUTH_FILE:?Use ./lekiwi sim to prepare X11 authentication}
+        target: /tmp/lekiwi.xauth
+        read_only: true
+        bind:
+          create_host_path: false

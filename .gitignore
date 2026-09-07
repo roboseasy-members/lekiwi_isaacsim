@@ -4,3 +4,8 @@
 **/__pycache__/
 *.py[cod]
 .pytest_cache/
+/data/
+/.env
+# Local CAD/ROS references; deployment assets live in isaac_sim/assets.
+/src/
+/isaac_sim_bundle/

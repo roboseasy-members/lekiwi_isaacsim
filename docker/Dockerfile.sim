@@ -1,0 +1,19 @@
+FROM nvcr.io/nvidia/isaac-sim:5.1.0
+
+USER root
+WORKDIR /opt/lekiwi
+COPY docker/requirements-sim.txt /opt/lekiwi/docker/requirements-sim.txt
+RUN /isaac-sim/python.sh -m pip install --no-cache-dir -r /opt/lekiwi/docker/requirements-sim.txt
+COPY isaac_sim /opt/lekiwi/isaac_sim
+COPY docker/sim-entrypoint.sh /opt/lekiwi/docker/sim-entrypoint.sh
+COPY docker/run-checked.sh /opt/lekiwi/docker/run-checked.sh
+COPY README.md /opt/lekiwi/README.md
+COPY docs /opt/lekiwi/docs
+RUN chmod 755 /opt/lekiwi/docker/sim-entrypoint.sh /opt/lekiwi/docker/run-checked.sh \
+    && /isaac-sim/python.sh -m pip freeze > /opt/lekiwi/installed-packages.txt \
+    && /isaac-sim/python.sh /opt/lekiwi/isaac_sim/validate_asset.py
+
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+USER 1234:1234
+ENTRYPOINT ["/opt/lekiwi/docker/sim-entrypoint.sh"]
+CMD ["keyboard"]

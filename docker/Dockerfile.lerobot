@@ -1,0 +1,38 @@
+FROM python:3.12.11-slim-bookworm
+
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg libglib2.0-0 libgl1 libgomp1 libusb-1.0-0 \
+    && apt-get clean
+WORKDIR /opt/lekiwi
+COPY docker/requirements-lerobot.txt /opt/lekiwi/docker/requirements-lerobot.txt
+COPY docker/requirements-lerobot.lock /opt/lekiwi/docker/requirements-lerobot.lock
+# Install the explicit CUDA wheel variant; no system CUDA toolkit or Conda.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install --index-url https://download.pytorch.org/whl/cu128 \
+        torch==2.10.0 torchvision==0.25.0
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install -r /opt/lekiwi/docker/requirements-lerobot.lock
+# Decord's published py3-none wheel incorrectly contains a cp36-cp36m tag.
+# Its ctypes library works on Python 3.12 (video decoding is checked below).
+# Correct only installed WHEEL metadata and its RECORD entry; no library code
+# changes. The upstream wheel also has stale hashes, so do not repack it.
+COPY docker/repair-decord-metadata.py /opt/lekiwi/docker/repair-decord-metadata.py
+RUN python /opt/lekiwi/docker/repair-decord-metadata.py \
+    && python -m pip check \
+    && python -m pip freeze > /opt/lekiwi/installed-packages.txt
+COPY tools/check_runtime.py /opt/lekiwi/tools/check_runtime.py
+COPY tools/so101_leader.py /opt/lekiwi/tools/so101_leader.py
+COPY isaac_sim/teleop_bridge.py /opt/lekiwi/isaac_sim/teleop_bridge.py
+COPY docker/lerobot-entrypoint.sh /opt/lekiwi/docker/lerobot-entrypoint.sh
+COPY README.md /opt/lekiwi/README.md
+COPY docs /opt/lekiwi/docs
+RUN chmod 755 /opt/lekiwi/docker/lerobot-entrypoint.sh \
+    && python /opt/lekiwi/tools/check_runtime.py
+WORKDIR /data
+# Compose keeps the host UID, which need not have an /etc/passwd entry here.
+# getpass.getuser() honors these names; PyTorch's compiler cache stays writable.
+ENV USER=lekiwi LOGNAME=lekiwi TORCHINDUCTOR_CACHE_DIR=/data/cache/torchinductor
+USER 1000:1000
+ENTRYPOINT ["/opt/lekiwi/docker/lerobot-entrypoint.sh"]
+CMD ["check"]

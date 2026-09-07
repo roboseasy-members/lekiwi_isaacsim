@@ -1,0 +1,265 @@
+#!/usr/bin/env bash
+# Host entry point. Requires Bash and Docker Compose, not Python/ROS/Conda.
+set -euo pipefail
+
+readonly project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+readonly project_name="${LEKIWI_PROJECT_NAME:-lekiwi}"
+export LEKIWI_UID="$(id -u)" LEKIWI_GID="$(id -g)"
+export LEKIWI_DATA_DIR="${LEKIWI_DATA_DIR:-${project_dir}/data}"
+
+fail() { echo "ERROR: $*" >&2; exit 1; }
+usage() {
+    echo 'Usage: ./lekiwi COMMAND [ARGS]'
+    echo '  doctor                    Check Docker access, GPU and bundled assets'
+    echo '  config                    Validate/render Docker Compose configuration'
+    echo '  setup [sim|lerobot|all]    Build images locally (default: all)'
+    echo '  pull [sim|lerobot|all]     Pull published images configured in .env'
+    echo '  sim                       Open the keyboard-drive demo (X11/XWayland)'
+    echo '  scene [--seed N|--layout FILE] [--start-count N --middle-count N]  Open collection course'
+    echo '        [--block red|orange|yellow|green --basket COLOR] Select a task'
+    echo '  calibrate --port DEV --id NAME  Calibrate/reuse SO101 leader (interactive)'
+    echo '  teleop --port DEV --id NAME     SO101 leader + keyboard base (interactive)'
+    echo '         [--scene random|/data/scenes/course.XXXXXXXX/layout.json] Random blocks or replay'
+    echo '  validate                  Check bundled URDF and meshes inside Docker'
+    echo '  validate-usd              Check composed USD and physics configuration'
+    echo '  test-physics              Run the headless contact-drive regression'
+    echo '  test-arm                  Test six simulated joints with synthetic input (no USB)'
+    echo '  test-scene                Check course collisions, objects and basket (no USB)'
+    echo '  build-assets              Rebuild assets into a new data/asset-build.* folder'
+    echo '  check-ml                  Check LeRobot imports and CUDA'
+    echo '  train act|groot [ARGS]     Forward training arguments to lerobot-train'
+    echo '  status                    Show this project’s containers'
+    echo '  stop                      Stop only this project’s simulation container'
+    echo 'SO101 hardware validation is required; recording and evaluation are not connected yet.'
+}
+
+command_name="${1:-help}"
+if (($#)); then shift; fi
+case "$command_name" in
+    help|-h|--help) usage; exit 0 ;;
+    doctor|config|setup|pull|sim|scene|calibrate|teleop|validate|validate-usd|test-physics|test-arm|test-scene|build-assets|check-ml|train|status|stop) ;;
+    *) usage >&2; fail "Unknown command: $command_name" ;;
+esac
+
+command -v docker >/dev/null || fail 'Install Docker Engine and the Compose plugin first.'
+docker_cmd=(docker)
+if [[ "${LEKIWI_DOCKER_SUDO:-0}" == 1 ]]; then
+    # Preserve only the values used by Compose, including the login user's IDs.
+    # Do not run this entire launcher as root or inherit an arbitrary root HOME.
+    sudo -v || fail 'Could not obtain Docker sudo access.'
+    docker_cmd=(sudo --preserve-env=LEKIWI_UID,LEKIWI_GID,LEKIWI_DATA_DIR,LEKIWI_SIM_IMAGE,LEKIWI_LEROBOT_IMAGE,ACCEPT_EULA,DISPLAY,LEKIWI_XAUTH_FILE,LEKIWI_LEADER_PORT,LEKIWI_LEADER_GID,LEKIWI_TELEOP_STATE,LEKIWI_TELEOP_SESSION,LEKIWI_ARM_SIGNS,LEKIWI_ARM_OFFSETS_DEG,LEKIWI_ARM_MAX_SPEED,LEKIWI_COURSE_LAYOUT docker)
+fi
+compose=("${docker_cmd[@]}" compose --project-directory "$project_dir"
+    --project-name "$project_name" -f "$project_dir/compose.yaml")
+"${docker_cmd[@]}" compose version >/dev/null || fail 'Docker Compose plugin is required.'
+
+if [[ "$command_name" == config ]]; then
+    exec "${compose[@]}" config "$@"
+fi
+
+"${docker_cmd[@]}" info >/dev/null 2>&1 || fail \
+    'Docker is not accessible. Start Docker and grant access, or run LEKIWI_DOCKER_SUDO=1 ./lekiwi <command>.'
+
+if [[ "$command_name" == doctor ]]; then
+    echo "Project: $project_dir"
+    echo "Containers: $project_name"
+    "${docker_cmd[@]}" version --format 'Docker server: {{.Server.Version}}'
+    "${docker_cmd[@]}" compose version
+    command -v nvidia-smi >/dev/null || fail 'nvidia-smi is missing. Install the NVIDIA driver.'
+    nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
+    [[ -f "$project_dir/isaac_sim/assets/lekiwi_soarm/usd/lekiwi_soarm.usd" ]] || fail 'Bundled USD is missing.'
+    echo 'Host checks passed. Use validate-usd and check-ml to verify container GPU access.'
+    exit 0
+fi
+
+if [[ "$command_name" == status ]]; then
+    exec "${compose[@]}" ps --all
+fi
+if [[ "$command_name" == stop ]]; then
+    container_name="${project_name}-sim"
+    owner="$("${docker_cmd[@]}" inspect --format '{{index .Config.Labels "com.docker.compose.project"}}|{{index .Config.Labels "com.docker.compose.project.working_dir"}}|{{index .Config.Labels "com.docker.compose.service"}}' "$container_name")" \
+        || fail "No simulation container named $container_name"
+    [[ "$owner" == "${project_name}|${project_dir}|sim" ]] \
+        || fail "Container $container_name is not owned by this project checkout."
+    exec "${docker_cmd[@]}" stop --time 30 "$container_name"
+fi
+
+if [[ "$command_name" == setup || "$command_name" == pull ]]; then
+    target="${1:-all}"
+    (($# <= 1)) || fail 'Expected at most one image target.'
+    case "$target" in
+        sim|lerobot) services=("$target") ;;
+        all) services=(sim lerobot) ;;
+        *) fail 'Image target must be sim, lerobot, or all.' ;;
+    esac
+    if [[ "$command_name" == setup ]]; then
+        exec "${compose[@]}" build "${services[@]}"
+    fi
+    exec "${compose[@]}" pull "${services[@]}"
+fi
+
+[[ "$LEKIWI_DATA_DIR" == /* ]] || fail 'LEKIWI_DATA_DIR must be an absolute path.'
+mkdir -p "$LEKIWI_DATA_DIR"/{captures,datasets,outputs,calibration,cache/kit,isaac-data,logs/sim,home/sim,home/lerobot}
+[[ -w "$LEKIWI_DATA_DIR" ]] || fail 'The data directory is not writable by the current user.'
+
+ensure_image() {
+    local service="$1" image_name
+    image_name="$("${compose[@]}" config --images "$service")"
+    if ! "${docker_cmd[@]}" image inspect "$image_name" >/dev/null 2>&1; then
+        case "$image_name" in
+            lekiwi-sim:*|lekiwi-lerobot:*) "${compose[@]}" build "$service" ;;
+            *) "${compose[@]}" pull "$service" ;;
+        esac
+    fi
+}
+
+if [[ "$command_name" == check-ml ]]; then
+    ensure_image lerobot
+    exec "${compose[@]}" run --rm --no-deps -T lerobot check --gpu "$@"
+fi
+if [[ "$command_name" == train ]]; then
+    policy="${1:-}"
+    [[ "$policy" == act || "$policy" == groot ]] || fail 'Choose train act or train groot.'
+    shift
+    ensure_image lerobot
+    exec "${compose[@]}" run --rm --no-deps -T lerobot lerobot-train \
+        "--policy.type=$policy" --policy.push_to_hub=false --wandb.enable=false "$@"
+fi
+
+if [[ "$command_name" == calibrate || "$command_name" == teleop ]]; then
+    leader_port='' leader_id=''
+    while (($#)); do
+        case "$1" in
+            --port) (($# >= 2)) || fail '--port needs a device'; leader_port="$2"; shift 2 ;;
+            --id) (($# >= 2)) || fail '--id needs a stable name'; leader_id="$2"; shift 2 ;;
+            --scene)
+                [[ "$command_name" == teleop ]] || fail '--scene is only for teleop'
+                (($# >= 2)) || fail '--scene needs random or a saved /data/.../layout.json'
+                [[ "$2" == random || "$2" == /data/* ]] || fail '--scene must be random or a container /data/.../layout.json path'
+                export LEKIWI_COURSE_LAYOUT="$2"; shift 2 ;;
+            *) fail "Unexpected SO101 argument: $1" ;;
+        esac
+    done
+    [[ "$leader_id" =~ ^[A-Za-z0-9_-]+$ ]] || fail 'Set --id using letters, digits, underscore or hyphen.'
+    [[ -t 0 && -t 1 ]] || fail 'SO101 requires an interactive terminal for calibration and safety confirmation.'
+    export LEKIWI_LEADER_PORT="$(readlink -f -- "$leader_port")"
+    [[ "$LEKIWI_LEADER_PORT" =~ ^/dev/tty(ACM|USB)[0-9]+$ && -c "$LEKIWI_LEADER_PORT" ]] \
+        || fail 'Select an existing SO101 /dev/serial/by-id/... or /dev/ttyACM*/ttyUSB* device.'
+    export LEKIWI_LEADER_GID="$(stat -c '%g' -- "$LEKIWI_LEADER_PORT")"
+    # A host device lock also excludes this launcher's other checkouts/projects.
+    command -v flock >/dev/null || fail 'flock (util-linux) is required for exclusive leader access.'
+    lock_dir="/tmp/lekiwi-device-locks-$(id -u)"
+    (umask 077; mkdir -p "$lock_dir")
+    [[ -O "$lock_dir" && ! -L "$lock_dir" ]] || fail 'Unsafe device lock directory.'
+    exec 9>>"$lock_dir/$(stat -c '%t-%T' -- "$LEKIWI_LEADER_PORT").lock"
+    flock -n 9 || fail 'This leader device is already in use by another launcher.'
+    compose+=(-f "$project_dir/docker/compose.leader.yaml")
+    if [[ "$command_name" == teleop ]]; then
+        "${compose[@]}" config --environment | grep -x 'ACCEPT_EULA=Y' >/dev/null \
+            || fail 'Read the Isaac Sim license and set ACCEPT_EULA=Y before teleop.'
+    fi
+    existing="$("${docker_cmd[@]}" ps -q --filter "label=com.docker.compose.project=$project_name" --filter label=com.docker.compose.service=leader)"
+    [[ -z "$existing" ]] || fail 'A SO101 leader container is already running.'
+    ensure_image lerobot
+    if [[ "$command_name" == calibrate ]]; then
+        exec "${compose[@]}" run --rm --no-deps --name "${project_name}-leader" leader \
+            python /opt/lekiwi/tools/so101_leader.py --id "$leader_id" --calibrate-only
+    fi
+fi
+
+running="$("${docker_cmd[@]}" ps -q \
+    --filter "label=com.docker.compose.project=$project_name" \
+    --filter 'label=com.docker.compose.service=sim')"
+[[ -z "$running" ]] || fail 'A simulation is already running. Close it or use ./lekiwi stop first.'
+
+case "$command_name" in
+    sim|teleop) sim_command=keyboard ;;
+    scene) sim_command=course ;;
+    validate) sim_command=validate-assets ;;
+    validate-usd) sim_command=validate-usd ;;
+    test-physics) sim_command=physics-test ;;
+    test-arm) sim_command=arm-test ;;
+    test-scene) sim_command=course-test ;;
+    build-assets) sim_command=build-assets ;;
+esac
+
+auth_dir=''
+teleop_children=()
+teleop_names=()
+cleanup() {
+    local name owner child index attempt
+    for index in "${!teleop_names[@]}"; do
+        name="${teleop_names[$index]}"
+        child="${teleop_children[$index]:-}"
+        # A peer may fail while this container is still being created. Wait for
+        # its running label, but never wait forever for an interactive prompt.
+        for ((attempt=0; attempt<50; attempt++)); do
+            owner="$("${docker_cmd[@]}" inspect --format '{{index .Config.Labels "lekiwi.teleop.session"}}|{{.State.Running}}' "$name" 2>/dev/null)" || owner=''
+            if [[ "$owner" == "${LEKIWI_TELEOP_SESSION:-}|true" ]]; then
+                "${docker_cmd[@]}" stop --time 10 "$name" >/dev/null 2>&1 || true
+                break
+            fi
+            [[ -n "$child" ]] && kill -0 "$child" 2>/dev/null || break
+            sleep 0.2
+        done
+        if [[ -n "$child" ]] && kill -0 "$child" 2>/dev/null; then
+            kill -TERM "$child" 2>/dev/null || true
+        fi
+    done
+    for child in "${teleop_children[@]}"; do wait "$child" 2>/dev/null || true; done
+    # Only remove the temporary cookie created by this invocation.
+    if [[ -n "$auth_dir" ]]; then
+        rm -f -- "$auth_dir/Xauthority"
+        rmdir -- "$auth_dir"
+    fi
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+if [[ "$command_name" == sim || "$command_name" == teleop || "$command_name" == scene ]]; then
+    command -v xauth >/dev/null || fail 'Install xauth on the host for GUI authentication.'
+    [[ "${DISPLAY:-}" =~ ^:([0-9]+)(\.[0-9]+)?$ ]] \
+        || fail 'Set DISPLAY to a local X11/XWayland display, such as :0 or :1.'
+    [[ -S "/tmp/.X11-unix/X${BASH_REMATCH[1]}" ]] || fail 'The selected X11 socket does not exist.'
+    auth_source="${XAUTHORITY:-}"
+    if [[ -z "$auth_source" ]]; then
+        for candidate in "${HOME}/.Xauthority" "/run/user/$(id -u)/gdm/Xauthority"; do
+            if [[ -r "$candidate" ]]; then auth_source="$candidate"; break; fi
+        done
+    fi
+    [[ -r "$auth_source" ]] || fail 'Set XAUTHORITY to the readable cookie file for your display.'
+    auth_dir="$(mktemp -d /tmp/lekiwi-xauth.XXXXXXXX)"
+    export LEKIWI_XAUTH_FILE="$auth_dir/Xauthority"
+    touch "$LEKIWI_XAUTH_FILE"
+    chmod 600 "$LEKIWI_XAUTH_FILE"
+    # FamilyWild permits the cookie in the container without xhost + access.
+    xauth -f "$auth_source" nlist "$DISPLAY" | sed 's/^..../ffff/' \
+        | xauth -f "$LEKIWI_XAUTH_FILE" nmerge -
+    [[ -s "$LEKIWI_XAUTH_FILE" ]] || fail 'No X11 cookie was found for this display.'
+    compose+=(-f "$project_dir/docker/compose.gui.yaml")
+fi
+
+ensure_image sim
+if [[ "$command_name" == teleop ]]; then
+    # Fresh directory prevents replaying a sample from an earlier run.
+    mkdir -p "$LEKIWI_DATA_DIR/teleop"
+    session_dir="$(mktemp -d "$LEKIWI_DATA_DIR/teleop/session.XXXXXXXX")"
+    export LEKIWI_TELEOP_SESSION="${session_dir##*/}"
+    export LEKIWI_TELEOP_STATE="/data/teleop/$LEKIWI_TELEOP_SESSION/leader.json"
+    teleop_names=("${project_name}-leader" "${project_name}-sim")
+    echo "SO101 calibration prompts appear here. Simulator log: $session_dir/sim.log"
+    echo 'Close the simulator or press Ctrl+C here to stop this session.'
+    "${compose[@]}" run --rm --no-deps --name "${project_name}-leader" \
+        --label "lekiwi.teleop.session=$LEKIWI_TELEOP_SESSION" leader \
+        python /opt/lekiwi/tools/so101_leader.py --id "$leader_id" \
+        --state "$LEKIWI_TELEOP_STATE" --session "$LEKIWI_TELEOP_SESSION" < /dev/tty &
+    teleop_children+=("$!")
+    # GUI stays disarmed while calibration is in progress; its log cannot obscure prompts.
+    "${compose[@]}" run --rm --no-deps -T --name "${project_name}-sim" \
+        --label "lekiwi.teleop.session=$LEKIWI_TELEOP_SESSION" sim keyboard > "$session_dir/sim.log" 2>&1 &
+    teleop_children+=("$!")
+    result=0
+    wait -n "${teleop_children[@]}" || result=$?
+    exit "$result"
+fi
+"${compose[@]}" run --rm --no-deps -T --name "${project_name}-sim" sim "$sim_command" "$@"

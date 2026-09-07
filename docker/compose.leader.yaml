@@ -1,0 +1,23 @@
+# Applied only for explicit calibrate/teleop commands. No privileged mode,
+# host /dev mount, network ports, follower device, or GPU in the leader service.
+services:
+  leader:
+    image: ${LEKIWI_LEROBOT_IMAGE:-lekiwi-lerobot:0.1.0}
+    platform: linux/amd64
+    user: "${LEKIWI_UID:-1000}:${LEKIWI_GID:-1000}"
+    group_add: ["${LEKIWI_LEADER_GID:?Select a leader serial device}"]
+    init: true
+    environment:
+      HOME: /data/home/lerobot
+      HF_HOME: /data/cache/huggingface
+      XDG_CACHE_HOME: /data/cache/lerobot
+    devices:
+      - "${LEKIWI_LEADER_PORT:?Select a leader serial device}:/dev/so101:rw"
+    volumes:
+      - type: bind
+        source: ${LEKIWI_DATA_DIR:-../data}
+        target: /data
+        bind:
+          create_host_path: false
+    network_mode: none
+    stop_grace_period: 10s

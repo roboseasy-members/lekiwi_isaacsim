@@ -1,7 +1,7 @@
 """Convert the prepared URDF to USD and apply Isaac-specific physics.
 
-Run this file with Isaac Sim's ``python.sh``.  It deliberately operates only
-on the copied asset mounted at ``/workspace`` inside the Docker container.
+Run this file with Isaac Sim's ``python.sh``. LEKIWI_ASSET_DIR can select a
+fresh output copy, so the distributed asset is never overwritten at runtime.
 """
 
 from isaacsim import SimulationApp
@@ -14,6 +14,7 @@ import os
 import shutil
 import sys
 import traceback
+from pathlib import Path
 
 import omni.kit.commands
 import omni.usd
@@ -21,7 +22,7 @@ from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 
 ASSET_DIR = os.environ.get(
-    "LEKIWI_ASSET_DIR", "/workspace/assets/lekiwi_soarm"
+    "LEKIWI_ASSET_DIR", str(Path(__file__).resolve().parent / "assets/lekiwi_soarm")
 )
 URDF_PATH = os.path.join(ASSET_DIR, "urdf", "lekiwi_soarm.urdf")
 USD_PATH = os.path.join(ASSET_DIR, "usd", "lekiwi_soarm.usd")
