@@ -43,11 +43,11 @@ LeKiwi의 전방·손목 영상과 팔·베이스 명령을 함께 모으는 본
 | 브랜치 | 역할 |
 |---|---|
 | `main` | 최종 안정 버전 |
-| `develop` | 기능별 PR을 통합하는 개발 브랜치 |
+| `develop` | 기존 teleop을 포함하고 기능별 PR을 통합하는 개발 브랜치 |
 | `feature/isaacsim_basic` | 기존 teleop에 카메라·기초 교육자료 1~5편과 실습 창 자동 배치를 추가한 작업 브랜치 |
-| `lekiwi_isaacsim_teleop` | develop에 통합된 기존 teleop 작업 브랜치 |
 
-`feature/isaacsim_basic`은 `lekiwi_isaacsim_teleop`의 이력을 포함하며, 이후 추가 작업이 있어 서로 같은 버전은 아닙니다.
+기존 teleop 작업은 `develop`에 통합했습니다. 새 기능은 `feature/기능명`에서 작업하고 PR로 `develop`에 통합합니다.
+`feature/isaacsim_basic`에는 기존 teleop과 이후 추가한 교육자료가 함께 포함되어 있습니다.
 현재 교육자료를 사용하려면 아래처럼 `feature/isaacsim_basic`을 받으세요.
 
 ## 1. 처음 한 번: PC 준비
