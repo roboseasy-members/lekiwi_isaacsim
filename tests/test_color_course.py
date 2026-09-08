@@ -8,7 +8,49 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "isaac_sim"))
 from collection_course import EDGE, read_layout, save_course, validate_layout
 from color_course import (COLORS, LANES, RING_RADIUS, ROAD_WIDTH, BASKET_DISTANCE,
-                          generate_color_layout, make_task, select_task)
+                          generate_color_layout, make_task, select_task, road_boundary_strips)
+
+
+def _paint_contains(points, faces, position):
+    def cross(a, b, p):
+        return (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])
+    for face in faces:
+        for triangle in ((face[0], face[1], face[2]), (face[0], face[2], face[3])):
+            a, b, c = (points[i] for i in triangle)
+            if min(cross(a, b, position), cross(b, c, position), cross(c, a, position)) >= -1e-10:
+                return True
+    return False
+
+
+@pytest.mark.parametrize("quarter", range(4))
+def test_white_edges_join_without_corner_gaps_or_inner_protrusions(quarter):
+    strips = {name: (points, faces) for name, points, faces in road_boundary_strips()}
+    def painted(name, x, y):
+        for _ in range(quarter):
+            x, y = -y, x
+        return _paint_contains(*strips[name], (x, y))
+    inner, outer = RING_RADIUS - ROAD_WIDTH / 2, RING_RADIUS + ROAD_WIDTH / 2
+    # Previously missing center-corner join, inner overhang, and outer gap.
+    assert painted("Inside", .44, .44)
+    assert painted("Inside", math.sqrt(inner**2 - .44**2) - .005, .44)
+    assert not painted("Inside", inner - .015, .44)
+    assert painted("Outside", math.sqrt(outer**2 - .44**2) + .015, .44)
+    for name, radius in (("Inside", inner), ("Outside", outer)):
+        assert painted(name, radius / math.sqrt(2), radius / math.sqrt(2))
+
+
+def test_boundary_mesh_has_shared_seams_and_upward_faces():
+    from collections import Counter
+    for name, points, faces in road_boundary_strips():
+        edges = Counter()
+        for face in faces:
+            polygon = [points[i] for i in face]
+            area2 = sum(a[0]*b[1] - a[1]*b[0] for a, b in zip(polygon, polygon[1:] + polygon[:1]))
+            assert area2 > 0  # Visible from above, including outer junction caps.
+            for a, b in zip(face, face[1:] + face[:1]):
+                edges[tuple(sorted((a, b)))] += 1
+        assert set(edges.values()) == {1, 2}
+        assert len(points) - len(edges) + len(faces) == (0 if name == "Inside" else 4)
 
 
 @pytest.mark.parametrize("seed", range(12))
@@ -28,9 +70,10 @@ def test_four_matching_color_lanes_with_clear_center_and_repeatable_positions(se
     changed = generate_color_layout(seed + 100)
     assert layout["baskets"] == changed["baskets"]
     for original, new in zip(layout["objects"], changed["objects"]):
-        assert original["yaw_deg"] == new["yaw_deg"] == 0
-        assert {k: v for k, v in original.items() if k != "position"} == {
-            k: v for k, v in new.items() if k != "position"}
+        assert -180 <= original["yaw_deg"] <= 180
+        assert original["yaw_deg"] != new["yaw_deg"]
+        assert {k: v for k, v in original.items() if k not in {"position", "yaw_deg"}} == {
+            k: v for k, v in new.items() if k not in {"position", "yaw_deg"}}
 
 
 @pytest.mark.parametrize("block", COLORS)
@@ -55,8 +98,9 @@ def test_unseeded_course_randomizes_every_block_but_keeps_lanes(monkeypatch):
     assert first["baskets"] == second["baskets"]
     for old, new in zip(first["objects"], second["objects"]):
         assert old["position"] != new["position"]
-        assert {k: v for k, v in old.items() if k != "position"} == {
-            k: v for k, v in new.items() if k != "position"}
+        assert old["yaw_deg"] != new["yaw_deg"]
+        assert {k: v for k, v in old.items() if k not in {"position", "yaw_deg"}} == {
+            k: v for k, v in new.items() if k not in {"position", "yaw_deg"}}
 
 
 def test_runtime_random_course_branch_and_no_task_window():
@@ -73,7 +117,8 @@ def test_runtime_random_course_branch_and_no_task_window():
 
 
 @pytest.mark.parametrize("kind", ["count", "duplicate", "basket_color", "block_color", "position",
-                                   "nan", "rotation", "task_id", "instruction", "unknown_basket"])
+                                   "nan", "rotation", "rotation_nan", "rotation_bool",
+                                   "task_id", "instruction", "unknown_basket"])
 def test_reject_inconsistent_saved_scene_or_task(kind):
     layout = generate_color_layout(42)
     if kind == "count": layout["objects"].pop()
@@ -82,7 +127,9 @@ def test_reject_inconsistent_saved_scene_or_task(kind):
     if kind == "block_color": layout["objects"][0]["color"] = [0, 0, 1]
     if kind == "position": layout["objects"][0]["position"] = [0, 0, 0]
     if kind == "nan": layout["objects"][0]["position"][0] = math.nan
-    if kind == "rotation": layout["objects"][0]["yaw_deg"] = 20
+    if kind == "rotation": layout["objects"][0]["yaw_deg"] = 181
+    if kind == "rotation_nan": layout["objects"][0]["yaw_deg"] = math.nan
+    if kind == "rotation_bool": layout["objects"][0]["yaw_deg"] = True
     if kind == "task_id": layout["task"]["block_id"] = "block_green"
     if kind == "instruction": layout["task"]["instruction"] = "Wrong instruction"
     if kind == "unknown_basket": layout["task"]["basket"] = "blue"
@@ -102,6 +149,8 @@ def test_color_usd_is_portable_and_all_baskets_are_open(tmp_path):
         block = stage.GetPrimAtPath(root + f"/Objects/block_{name}")
         basket = stage.GetPrimAtPath(root + f"/Baskets/basket_{name}")
         assert block.HasAPI(UsdPhysics.RigidBodyAPI)
+        expected_yaw = next(obj["yaw_deg"] for obj in layout["objects"] if obj["color_name"] == name)
+        assert block.GetAttribute("xformOp:rotateZ").Get() == pytest.approx(expected_yaw)
         assert tuple(block.GetAttribute("primvars:displayColor").Get()[0]) == pytest.approx(rgb)
         assert len(basket.GetChildren()) == 5
         for wall in basket.GetChildren():
@@ -111,6 +160,12 @@ def test_color_usd_is_portable_and_all_baskets_are_open(tmp_path):
     for prim in stage.Traverse():
         if "/Road/" in str(prim.GetPath()):
             assert not prim.HasAPI(UsdPhysics.CollisionAPI)
+    for name in COLORS:
+        assert not stage.GetPrimAtPath(root + f"/Road/{name}/Left0")
+    for name, points, faces in road_boundary_strips():
+        border = stage.GetPrimAtPath(root + f"/Road/Ring/{name}")
+        assert len(border.GetAttribute("points").Get()) == len(points)
+        assert len(border.GetAttribute("faceVertexCounts").Get()) == len(faces)
     layers, assets, missing = UsdUtils.ComputeAllDependencies(str(folder / "course.usda"))
     assert len(layers) == 1 and not assets and not missing
     ring = stage.GetPrimAtPath(root + "/Road/Ring/Surface")

@@ -17,6 +17,45 @@ RING_RADIUS = 2.2
 ROAD_WIDTH = .9
 BASKET_DISTANCE = 3.05
 SPOKE_END = 3.35
+EDGE_WIDTH = .02
+
+
+def road_boundary_strips():
+    """Continuous white strips at exact line/circle intersections, in XY metres.
+
+    Each inner island is a closed outline; each outer arc joins two spoke edges.
+    Both sides of the strip have their own intersection so finite-width paint
+    meets without overlapping caps, missing wedges or protruding straight ends.
+    """
+    half = ROAD_WIDTH / 2
+    for name, radius, closed in (("Inside", RING_RADIUS - half, True),
+                                  ("Outside", RING_RADIUS + half, False)):
+        contours = []
+        for h, r in ((half - EDGE_WIDTH, radius + EDGE_WIDTH / 2 if closed else radius - EDGE_WIDTH / 2),
+                     (half, radius - EDGE_WIDTH / 2 if closed else radius + EDGE_WIDTH / 2)):
+            angle = math.asin(h / r)
+            arc = [(r * math.cos(angle + (math.pi / 2 - 2 * angle) * i / 48),
+                    r * math.sin(angle + (math.pi / 2 - 2 * angle) * i / 48))
+                   for i in range(49)]
+            # Share exact coordinates with straight segments, including corners.
+            arc[0] = (math.sqrt(r * r - h * h), h)
+            arc[-1] = (h, math.sqrt(r * r - h * h))
+            contours.append(([(h, h)] + arc) if closed else
+                            ([(SPOKE_END, h)] + arc + [(h, SPOKE_END)]))
+        points, faces = [], []
+        count = len(contours[0])
+        for quarter in range(4):
+            offset = len(points)
+            for contour in contours:
+                for x, y in contour:
+                    for _ in range(quarter):
+                        x, y = -y, x
+                    points.append((x, y))
+            for i in range(count if closed else count - 1):
+                j = (i + 1) % count
+                face = (offset + i, offset + j, offset + count + j, offset + count + i)
+                faces.append(face if closed else tuple(reversed(face)))
+        yield name, points, faces
 
 
 def make_task(block, basket):
@@ -59,8 +98,8 @@ def validate_color_layout(layout):
         if abs(xyz[2] - (GROUND_Z + EDGE / 2 + .002)) > 1e-6:
             raise ValueError("Invalid block height")
         yaw = obj.get("yaw_deg")
-        if type(yaw) not in (int, float) or yaw != 0:
-            raise ValueError("Block orientation is fixed; only position may vary")
+        if type(yaw) not in (int, float) or not math.isfinite(yaw) or not -180 <= yaw <= 180:
+            raise ValueError("Block yaw must be finite and within [-180, 180] degrees")
     task = layout.get("task")
     if not isinstance(task, dict) or task != make_task(task.get("block"), task.get("basket")):
         raise ValueError("Task instruction and object IDs must agree")
@@ -80,6 +119,9 @@ def generate_color_layout(seed=None, block="red", basket="red"):
                         "color": list(COLORS[name]), "yaw_deg": 0,
                         "position": [dx * along - dy * lateral, dy * along + dx * lateral,
                                      GROUND_Z + EDGE / 2 + .002]})
+    # Draw rotations after positions to preserve the existing seed-to-position mapping.
+    for obj in objects:
+        obj["yaw_deg"] = rng.uniform(-180, 180)
     return validate_color_layout({"version": 2, "course": "lekiwi_color_ring_cross_v2", "seed": seed,
                                   "objects": objects, "baskets": basket_specs(),
                                   "task": make_task(block, basket)})
@@ -103,17 +145,10 @@ def build_color_geometry(box, ring, layout):
         prefix = f"Road/{name}"
         box(prefix + "/Surface", (SPOKE_END, ROAD_WIDTH, .0002), point(SPOKE_END / 2, 0, GROUND_Z + .0001),
             (.09, .10, .12), yaw=yaw)
-        for suffix, lateral in (("Left", .44), ("Right", -.44)):
-            for i, (start, end) in enumerate(((.45, RING_RADIUS - ROAD_WIDTH / 2),
-                                               (RING_RADIUS + ROAD_WIDTH / 2, SPOKE_END))):
-                box(prefix + "/" + suffix + str(i), (end - start, .02, .0002),
-                    point((start + end) / 2, lateral, GROUND_Z + .0003), (.95, .95, .95), yaw=yaw)
         for i in range(5):
             box(prefix + f"/Dash_{i}", (.13, .015, .0002), point(.6 + i * .3, 0, GROUND_Z + .0003), rgb, yaw=yaw)
         box(prefix + "/Goal", (.6, .85, .0002), point(BASKET_DISTANCE, 0, GROUND_Z + .0005), rgb, yaw=yaw)
     ring("Road/Ring/Surface", RING_RADIUS, ROAD_WIDTH, (.09, .10, .12), GROUND_Z + .00025)
-    for name, radius in (("Inside", RING_RADIUS - ROAD_WIDTH / 2), ("Outside", RING_RADIUS + ROAD_WIDTH / 2)):
-        ring("Road/Ring/" + name, radius, .02, (.95, .95, .95), GROUND_Z + .00045, junction_gaps=True)
     ring("Road/Ring/Dashes", RING_RADIUS, .015, (.8, .7, .25), GROUND_Z + .00045,
          junction_gaps=True, dashed=True)
     box("Start", (.65, .65, .0002), (0, 0, GROUND_Z + .0007), (.65, .65, .65))
