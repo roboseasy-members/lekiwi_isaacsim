@@ -1,7 +1,7 @@
-# Isaac Sim Basic · 1~4편
+# Isaac Sim Basic · 1~5편
 
 Isaac Sim **5.1.0**, Ubuntu 데스크톱, Docker 기준 교육자료입니다.
-객체 물리 → 관절 → 카메라 → 조작 순서로 진행합니다.
+객체 물리 → 관절 → 카메라 → 조작 → 데이터 기록 순서로 진행합니다.
 각 편은 **교재 MD · 실습 기록지 · 실제 화면과 빨간 표시 · 출처 · 노션용 ZIP**을 포함합니다.
 1~3편과 4편 앞부분은 실물 장비 없이 가능합니다. 4편의 리더 실습에는 실제 SO101 리더와 LeRobot 이미지가 필요합니다.
 
@@ -13,8 +13,9 @@ Isaac Sim **5.1.0**, Ubuntu 데스크톱, Docker 기준 교육자료입니다.
 | 2 | [로봇 구조와 관절](02_robot_joints/README.md) | 링크, 회전 중심·축·제한, Drive 목표·구동값, SO101 대응 | [다운로드](02_robot_joints/02_robot_joints_notion.zip) | 5장 |
 | 3 | [전방·손목 카메라와 좌표](03_robot_cameras/README.md) | 시점·화각·클리핑, 렌즈 중심, TF 환산, 가림 진단 | [다운로드](03_robot_cameras/03_robot_cameras_notion.zip) | 7장 |
 | 4 | [키보드·리더암 조작](04_teleoperation/README.md) | 주행·정지·속도, 리더 준비·보정·활성화, 로그와 집기 과제 | [다운로드](04_teleoperation/04_teleoperation_notion.zip) | 4장 |
+| 5 | [데이터 수집과 저장·재생](05_data_recording/README.md) | 관측·행동·시간 대응, 에피소드 저장·재생·검사 | [다운로드](05_data_recording/05_data_recording_notion.zip) | 6장 |
 
-5·6편의 데이터 수집·학습은 이번 범위에 포함하지 않습니다.
+5편은 실물 없이 한 관절의 상태·명령 JSON 기록을 실습합니다. 영상 포함 LeRobot 데이터셋과 6편 학습은 후속 범위입니다.
 4편 실물 리더 절차는 구현과 기존 안내를 바탕으로 작성했으며, 이번 교재 제작에서 실물 연결·보정을 새로 수행하지 않았습니다.
 
 ## 처음 시작하기
@@ -41,7 +42,7 @@ export ACCEPT_EULA=Y
 3. [첫 교육자료: 객체 생성과 물리 속성](01_object_physics/README.md)을 따라갑니다.
    비교 결과와 과제는 [실습 기록지](01_object_physics/worksheet.md)에 작성합니다.
 
-전체 4편에는 **실제 Isaac Sim 화면 27장과 빨간 테두리 안내**가 포함되어 있습니다.
+전체 5편에는 **실제 Isaac Sim 화면 33장과 빨간 테두리 안내**가 포함되어 있습니다.
 VS Code에서 Markdown을 열고 `Ctrl + Shift + V`로 미리보기를 켜면 그림과 표를 함께 볼 수 있습니다.
 
 ## 폴더와 Docker의 관계
@@ -60,6 +61,15 @@ VS Code에서 Markdown을 열고 `Ctrl + Shift + V`로 미리보기를 켜면 �
 실습 결과는 기존 `/data` bind mount를 사용해 컨테이너 종료 후에도 남습니다.
 `LEKIWI_DATA_DIR`를 변경했다면 호스트의 `data/` 대신 지정한 폴더에서 찾으세요.
 결과·로그는 Git에서 제외되며, 실습 원본과 교재는 Git 관리 대상입니다.
+5편의 에피소드 JSON은 `data/isaacsim_basic/recording.*/episode.*/`에 저장합니다.
+
+## 실습 창의 위치
+
+1·2편은 오른쪽의 기본 **Stage / Property** 창에서 실습합니다.
+3·4편의 `LeKiwi + SO101 Physical Drive`, 5편의 `Lesson 5 - Data Recording`은
+실행 시 **Stage와 같은 영역에 탭으로 자동 배치**되고 조작 안내가 먼저 표시됩니다.
+객체를 찾거나 속성을 수정할 때는 **Stage** 탭을 누르고, 조작하려면 해당 실습 탭으로 돌아갑니다.
+탭 제목을 드래그하면 필요에 따라 별도 창으로 분리할 수도 있습니다.
 
 ## 실습 장면 선택
 
@@ -75,6 +85,7 @@ VS Code에서 Markdown을 열고 `Ctrl + Shift + V`로 미리보기를 켜면 �
 | `./lekiwi basic --lesson friction` | 15° 경사로 두 개에서 마찰 비교 |
 | `./lekiwi basic --lesson bounce` | 반발력 0 / 0.8인 공과 받침 비교 |
 | `./lekiwi basic --lesson basket` | 바닥·네 벽으로 만든 열린 바구니에 큐브 낙하 |
+| `./lekiwi basic --lesson recording` | 한 관절의 기록·저장·재생 패널. Record로 시작 |
 | `./lekiwi basic --lesson joints` | 고정 받침 + 한 회전 관절: 목표·제한·구동 비교 |
 
 새 실행은 항상 새 작업 파일을 만듭니다. 이전 파일은 `File > Open`으로 직접 엽니다.
@@ -95,6 +106,7 @@ Isaac Sim 창을 닫은 상태에서 실행합니다.
 
 ```bash
 ./lekiwi test-basic
+./lekiwi test-recording  # 5편의 기록·저장·재생 검사
 ```
 
 Docker 내부의 실제 PhysX로 낙하, 질량 비교, 경사로 마찰, 반발력 차이,
@@ -109,7 +121,7 @@ Docker 내부의 실제 PhysX로 낙하, 질량 비교, 경사로 마찰, 반발
 ```text
 isaacsim_basic/
   README.md                       전체 목차
-  01_object_physics/               2~4편도 동일 구조
+  01_object_physics/               2~5편도 동일 구조
     README.md                     교재
     worksheet.md                  실습 기록지
     SOURCES.md                    출처·검증 범위

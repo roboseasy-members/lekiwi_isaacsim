@@ -34,7 +34,8 @@ LEKIWI_COURSE_LAYOUT=random ./lekiwi sim
 
 로봇이 바닥에 안정화되고 조작 패널이 나타날 때까지 기다립니다. 시작 시 물리 계산이 자동 실행됩니다.
 패널에 `holding six joints at the home pose`가 보이면 팔 기본 자세 유지 모드입니다.
-패널이 로봇을 가리면 제목 표시줄을 오른쪽 Stage 탭 근처로 드래그해 배치할 수 있습니다.
+`LeKiwi + SO101 Physical Drive` 창은 오른쪽 **Stage 옆 탭**에 자동 배치됩니다.
+`sim`과 `teleop`에서 같은 위치를 사용합니다. 객체 트리는 **Stage**, 조작 안내는 실습 탭을 눌러 확인합니다.
 
 ![팔 기본 자세 유지 모드와 키보드 조작 패널](images/01-controls.png)
 

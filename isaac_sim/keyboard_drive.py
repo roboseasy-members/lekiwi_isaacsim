@@ -599,6 +599,9 @@ def main():
             camera_mode_label = ui.Label("camera: FREE (T to toggle)")
             status_label = ui.Label("command: STOP", height=24)
 
+    # Stage가 준비되면 같은 영역의 탭으로 배치하고 조작 안내를 먼저 표시한다.
+    control_window.deferred_dock_in("Stage", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
+
     position = settled_position
     orientation = settled_orientation
     last_command = None

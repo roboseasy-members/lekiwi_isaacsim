@@ -2,8 +2,12 @@
 import argparse
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--lesson", choices=("blank", "drop", "mass", "friction", "bounce", "basket", "joints"), default="blank")
+parser.add_argument("--lesson", choices=("blank", "drop", "mass", "friction", "bounce", "basket", "joints", "recording"), default="blank")
 args = parser.parse_args()
+if args.lesson == "recording":
+    from recording import main
+    main()
+    raise SystemExit(0)
 
 from isaacsim import SimulationApp
 

@@ -40,7 +40,8 @@ LeRobot의 간접 의존성을 포함한 118개 패키지 해석 결과는
 4. 주행 차선·랜덤 물체·목표 바구니와 초기 배치 저장/재생 구현.
    [환경 실행](collection-course.md). 전방/손목 카메라 임시 장착과 시점 전환 구현.
    [카메라 설정](robot-cameras.md). 실제 TF 보정·영상 동기화·런타임 에피소드 리셋은 후속.
-5. LeRobotDataset 기록, 영상·명령 동기화, 종료 시 finalize, 재생 검증.
+5. 기초 교재의 한 관절 JSON 기록·재생 구현: [5편](../isaacsim_basic/05_data_recording/README.md).
+   통합 teleop의 LeRobotDataset 기록, 영상·명령 동기화, 종료 시 finalize는 후속.
 6. ACT 학습 및 시뮬레이션 평가, 이후 GR00T 미세조정과 평가.
 7. 환경 생성용 Script Editor 예제 제공. 통합 teleop의 비동기 시작/종료는 후속.
 
