@@ -1,11 +1,33 @@
 /build/
 /install/
 /log/
+# Python environments and generated checks.
 **/__pycache__/
 *.py[cod]
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+/.venv/
+/venv/
+.coverage
+.coverage.*
+/htmlcov/
+/coverage.xml
+# Runtime output and machine-specific environment; keep the setup template.
 /data/
+/isaac_sim/captures/
 /.env
+/.env.*
+!/.env.example
+# Editor/desktop scratch files.
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
 # Local CAD/ROS references; deployment assets live in isaac_sim/assets.
 /src/
 /isaac_sim_bundle/
+# Local ROS/RViz inspection only; never include in deployment commits.
+/.local_ros/
+/docs/legacy-rviz.md
