@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import math
+import argparse
 import struct
-import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -16,7 +16,6 @@ import numpy as np
 SCRIPT_DIR = Path(__file__).resolve().parent
 ASSET_DIR = SCRIPT_DIR / "assets" / "lekiwi_soarm"
 URDF_PATH = ASSET_DIR / "urdf" / "lekiwi_soarm.urdf"
-REFERENCE_DIR = SCRIPT_DIR.parent / "src" / "lekiwi_soarm_description"
 ASSEMBLY_PATH = SCRIPT_DIR.parent / "src" / "0. dumyAssem5.STL"
 ARM_ORDER = [
     "shoulder_pan",
@@ -219,6 +218,34 @@ def validate_urdf() -> ET.Element:
     for name in ("3d_printed", "sts3215"):
         _require(materials[name] == "0.55 0.25 0.85 1.0", f"{name} is not purple")
 
+    for mesh in root.findall(".//mesh"):
+        filename = mesh.get("filename", "")
+        _require(bool(filename) and ":" not in filename and not Path(filename).is_absolute(),
+                 f"mesh reference must be relative: {filename}")
+        mesh_path = (URDF_PATH.parent / filename).resolve()
+        _require(mesh_path.is_relative_to(ASSET_DIR.resolve()), f"mesh escapes asset bundle: {filename}")
+        _require(mesh_path.is_file(), f"missing mesh: {mesh_path}")
+
+    # Validate the complete tree without requiring ROS/check_urdf.
+    child_links = set()
+    adjacency = {name: [] for name in links}
+    for joint in joints.values():
+        parent = joint.find("parent").get("link")
+        child = joint.find("child").get("link")
+        _require(parent in links and child in links, f"unknown link in {joint.get('name')}")
+        _require(child not in child_links, f"multiple parents for {child}")
+        child_links.add(child)
+        adjacency[parent].append(child)
+    _require(set(links) - child_links == {"base_link"}, "expected a single base_link root")
+    visited = set()
+    pending = ["base_link"]
+    while pending:
+        name = pending.pop()
+        _require(name not in visited, f"cycle at {name}")
+        visited.add(name)
+        pending.extend(adjacency[name])
+    _require(visited == set(links), "disconnected links or cycle in URDF")
+
     for visual in root.findall(".//visual"):
         mesh = visual.find("geometry/mesh")
         if mesh is None or "/soarm/" not in mesh.get("filename"):
@@ -228,7 +255,6 @@ def validate_urdf() -> ET.Element:
         mesh_path = (URDF_PATH.parent / mesh.get("filename")).resolve()
         _require(mesh_path.is_file(), f"missing mesh: {mesh_path}")
 
-    subprocess.run(["check_urdf", str(URDF_PATH)], check=True, capture_output=True, text=True)
     print(
         f"LEKIWI_VALIDATE urdf=PASS passive_rollers={len(ROLLER_JOINTS)}"
     )
@@ -297,9 +323,14 @@ def validate_mount_geometry() -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--reference-assembly", action="store_true",
+                        help="Also compare to local development CAD under src/ (not distributed).")
+    args = parser.parse_args()
     root = validate_urdf()
     validate_base_forward(root)
-    validate_mount_geometry()
+    if args.reference_assembly:
+        validate_mount_geometry()
     print("LEKIWI_VALIDATE result=PASS")
 
 

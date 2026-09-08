@@ -1,0 +1,75 @@
+name: ${LEKIWI_PROJECT_NAME:-lekiwi}
+
+services:
+  sim:
+    image: ${LEKIWI_SIM_IMAGE:-lekiwi-sim:0.1.0}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.sim
+    platform: linux/amd64
+    user: "${LEKIWI_UID:-1000}:${LEKIWI_GID:-1000}"
+    # NVIDIA's /isaac-sim directory is 0750 and owned by 1234:1234.
+    group_add: ["1234"]
+    init: true
+    gpus: all
+    shm_size: 2gb
+    environment:
+      ACCEPT_EULA: ${ACCEPT_EULA:-N}
+      HOME: /data/home/sim
+      XDG_CACHE_HOME: /data/cache/sim
+      NVIDIA_DRIVER_CAPABILITIES: graphics,compute,utility,display
+      LEKIWI_CAPTURE_PATH: /data/captures/lekiwi_viewport.png
+      LEKIWI_TELEOP_STATE: ${LEKIWI_TELEOP_STATE:-}
+      LEKIWI_TELEOP_SESSION: ${LEKIWI_TELEOP_SESSION:-}
+      LEKIWI_COURSE_LAYOUT: ${LEKIWI_COURSE_LAYOUT:-}
+      LEKIWI_ARM_SIGNS: ${LEKIWI_ARM_SIGNS:-1,1,1,1,1,1}
+      LEKIWI_ARM_OFFSETS_DEG: ${LEKIWI_ARM_OFFSETS_DEG:-0,0,0,0,-90,0}
+      LEKIWI_ARM_MAX_SPEED: ${LEKIWI_ARM_MAX_SPEED:-3.0}
+    volumes:
+      - type: bind
+        source: ${LEKIWI_DATA_DIR:-./data}
+        target: /data
+        bind:
+          create_host_path: false
+      # Kit's portable mode uses installation-relative paths, not XDG_CACHE_HOME.
+      - type: bind
+        source: ${LEKIWI_DATA_DIR:-./data}/cache/kit
+        target: /isaac-sim/kit/cache
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${LEKIWI_DATA_DIR:-./data}/isaac-data
+        target: /isaac-sim/kit/data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${LEKIWI_DATA_DIR:-./data}/logs/sim
+        target: /isaac-sim/kit/logs
+        bind:
+          create_host_path: false
+    command: [keyboard]
+    stop_grace_period: 30s
+
+  lerobot:
+    image: ${LEKIWI_LEROBOT_IMAGE:-lekiwi-lerobot:0.1.0}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.lerobot
+    platform: linux/amd64
+    user: "${LEKIWI_UID:-1000}:${LEKIWI_GID:-1000}"
+    init: true
+    gpus: all
+    shm_size: 2gb
+    environment:
+      HOME: /data/home/lerobot
+      HF_HOME: /data/cache/huggingface
+      HF_LEROBOT_HOME: /data/datasets
+      HF_LEROBOT_CALIBRATION: /data/calibration
+      XDG_CACHE_HOME: /data/cache/lerobot
+    volumes:
+      - type: bind
+        source: ${LEKIWI_DATA_DIR:-./data}
+        target: /data
+        bind:
+          create_host_path: false
+    command: [check]

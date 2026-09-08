@@ -10,13 +10,15 @@ existing Isaac Sim asset.
 from __future__ import annotations
 
 import math
-import subprocess
+import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import xacro
+
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-ASSET_DIR = SCRIPT_DIR / "assets" / "lekiwi_soarm"
+ASSET_DIR = Path(os.environ.get("LEKIWI_ASSET_DIR", SCRIPT_DIR / "assets" / "lekiwi_soarm"))
 XACRO_PATH = ASSET_DIR / "source_xacro" / "lekiwi_soarm.urdf.xacro"
 URDF_PATH = ASSET_DIR / "urdf" / "lekiwi_soarm.urdf"
 
@@ -175,18 +177,13 @@ def _add_passive_rollers(root: ET.Element, wheel_name: str) -> None:
 
 def main() -> None:
     URDF_PATH.parent.mkdir(parents=True, exist_ok=True)
-    command = [
-        "xacro",
+    rendered = xacro.process_file(
         str(XACRO_PATH),
-        "base_mesh_dir:=../meshes/base",
-        "soarm_mesh_dir:=../meshes/soarm",
-    ]
-    rendered = subprocess.run(
-        command,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
+        mappings={
+            "base_mesh_dir": "../meshes/base",
+            "soarm_mesh_dir": "../meshes/soarm",
+        },
+    ).toxml()
 
     root = ET.fromstring(rendered)
     root.set("name", "LeKiwi")

@@ -1,0 +1,8 @@
+# Explicitly pin LeRobot and the matching PyTorch/vision/video ABI family.
+# Resolve this input to requirements-lerobot.lock before building.
+# Installed versions are recorded in /opt/lekiwi/installed-packages.txt.
+lerobot[training,feetech,groot]==0.6.1
+torch==2.10.0
+torchvision==0.25.0
+torchcodec==0.10.0
+pyzmq==27.1.0

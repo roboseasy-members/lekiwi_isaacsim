@@ -1,0 +1,18 @@
+# Only these deployment inputs enter the build context. Never copy local CAD,
+# ROS workspaces, credentials, recordings, caches, or the Git database.
+**
+!docker/
+!docker/**
+!isaac_sim/
+!isaac_sim/*.py
+!isaac_sim/assets/
+!isaac_sim/assets/**
+!tools/
+!tools/check_runtime.py
+!tools/so101_leader.py
+!README.md
+!docs/
+!docs/architecture.md
+!docs/validation-2026-09-07.md
+!docs/so101-teleop.md
+!docs/collection-course.md
