@@ -35,6 +35,7 @@ from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from teleop_bridge import ArmTeleop, DEFAULT_ARM_OFFSETS_DEG, arm_home, atomic_json, read_packet
 from arm_control import restore_arm_position_gains
 from drive_controls import BaseSpeed
+from robot_cameras import attach_cameras, load_camera_config
 
 USD_PATH = os.environ.get(
     "LEKIWI_USD",
@@ -448,6 +449,9 @@ def main():
     if not COURSE_LAYOUT:
         _create_ground_grid(stage)
     _create_lighting(stage)
+    robot_cameras = attach_cameras(stage, load_camera_config(os.environ.get("LEKIWI_CAMERA_CONFIG")))
+    for name, info in robot_cameras.items():
+        print(f"LEKIWI_CAMERA name={name} path={info['camera_path']} optical_frame={info['optical_frame']}", flush=True)
     world.reset()
 
     arm_indices = np.asarray(
@@ -501,6 +505,22 @@ def main():
               f"max_speed_rad_s={speed}", flush=True)
     capture_requested = False
     camera_tracking = False
+    camera_view = "overview"
+    from omni.kit.viewport.utility import get_active_viewport
+    main_viewport = get_active_viewport()
+
+    def _select_camera(name):
+        nonlocal camera_view, camera_tracking
+        if main_viewport is None:
+            carb.log_warn("No viewport available for camera selection")
+            return
+        main_viewport.camera_path = ("/OmniverseKit_Persp" if name == "overview"
+                                     else robot_cameras[name]["camera_path"])
+        camera_view = name
+        camera_tracking = False
+        camera_mode_label.text = f"camera: {name.upper()} (C to switch, T to track)"
+        print(f"LEKIWI_DRIVE camera_view={name}", flush=True)
+
     speed_keys = {carb.input.KeyboardInput.KEY_1: 1,
                   carb.input.KeyboardInput.KEY_2: 2,
                   carb.input.KeyboardInput.KEY_3: 3,
@@ -526,10 +546,17 @@ def main():
             return True
         if event.input == carb.input.KeyboardInput.T:
             if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+                if camera_view != "overview":
+                    _select_camera("overview")
                 camera_tracking = not camera_tracking
                 mode = "TRACKING" if camera_tracking else "FREE"
                 camera_mode_label.text = f"camera: {mode} (T to toggle)"
                 print(f"LEKIWI_DRIVE camera_mode={mode}", flush=True)
+            return True
+        if event.input == carb.input.KeyboardInput.C:
+            if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+                choices = ("overview", "front", "wrist")
+                _select_camera(choices[(choices.index(camera_view) + 1) % len(choices)])
             return True
         if event.input not in CONTROL_KEYS:
             return True
@@ -550,7 +577,7 @@ def main():
     )
 
     control_window = ui.Window(
-        "LeKiwi + SO101 Physical Drive", width=510, height=310
+        "LeKiwi + SO101 Physical Drive", width=510, height=335
     )
     with control_window.frame:
         with ui.VStack(spacing=5):
@@ -567,6 +594,7 @@ def main():
             ui.Label("Q / E : counter-clockwise / clockwise")
             speed_label = ui.Label(base_speed.label)
             ui.Label("SPACE : stop    P : save viewport    T : camera mode")
+            ui.Label("C : overview / front camera / wrist camera")
             ui.Label("Close the Isaac window to exit")
             camera_mode_label = ui.Label("camera: FREE (T to toggle)")
             status_label = ui.Label("command: STOP", height=24)
@@ -610,7 +638,7 @@ def main():
     )
     print(
         "LEKIWI_DRIVE controls=W/S forward/back, A/D left/right, "
-        "Q/E CCW/CW, 1/2/3 base speed, SPACE stop, P capture, T camera, window-close exit",
+        "Q/E CCW/CW, 1/2/3 base speed, SPACE stop, P capture, T tracking, C camera, window-close exit",
         flush=True,
     )
     print("LEKIWI_DRIVE camera_mode=FREE", flush=True)

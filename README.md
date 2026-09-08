@@ -9,9 +9,13 @@
 
 ## 현재 구현 범위
 
+객체 물리·관절·카메라·조작을 1~4편 순서로 배우려면 [Isaac Sim Basic 교육자료](isaacsim_basic/README.md)를 사용하세요.
+`./lekiwi setup sim` 후 `./lekiwi basic`으로 Docker 안의 별도 기초 실습을 시작합니다.
+
 - 키보드 베이스 주행, SO101 리더 calibration/재사용, 가상 팔의 리더 자세 추종.
-- 중앙에서 시작하는 LeKiwi, 바깥 원형 도로 + 안쪽 십자 도로, 위치가 랜덤인 네 블록과 고정 바구니.
+- 중앙에서 시작하는 LeKiwi, 바깥 원형 도로 + 안쪽 십자 도로, 위치·회전 방향이 랜덤인 네 블록과 고정 바구니.
 - 생성된 초기 배치 저장과 재현, 화면 캡처.
+- 전방 구멍·손목의 임시 카메라 장착과 시점 전환. 실제 TF 측정 후 위치·방향 보정 예정.
 - 개발 PC에서 사용자가 통합 teleop과 코스 화면을 확인했습니다. 다른 PC/리더에서는 별도 검증이 필요합니다.
 - **아직 없음:** 카메라 동기화, LeRobot 데이터셋 녹화, 실행 중 에피소드 리셋, 자동 성공 판정, 학습 정책 실행.
 
@@ -66,7 +70,7 @@ HTTPS 인증 요청에는 GitHub 비밀번호가 아닌 GitHub CLI/자격 증명
 이미 GitHub CLI로 로그인했다면 해당 인증을 사용할 수 있습니다.
 
 ~~~bash
-git clone --branch lekiwi_isaacsim_teleop https://github.com/SJun99/lekiwi_isaacsim.git
+git clone --branch feature/isaacsim_basic https://github.com/SJun99/lekiwi_isaacsim.git
 cd lekiwi_isaacsim
 ~~~
 
@@ -129,7 +133,7 @@ LeKiwi가 중앙에서 시작하고 네 블록과 네 바구니가 나타납니�
 | 왼쪽 (+Y) | 노랑 |
 | 오른쪽 (-Y) | 초록 |
 
-도로·길별 색·바구니는 고정이고 **각 길의 블록 1개씩, 총 4개의 위치만 매번 랜덤**입니다.
+도로·길별 색·바구니는 고정이고 **각 길의 블록 1개씩, 총 4개의 위치와 바닥 위 회전 방향이 매번 랜덤**입니다.
 작업 선택 창은 없습니다. 원하는 블록을 직접 집어 운반합니다.
 블록 한 변은 4 cm이며, 바구니는 윗부분이 열려 있습니다.
 원형 도로로도 다른 길에 접근할 수 있습니다.
@@ -203,6 +207,7 @@ ACTIVE 표시를 확인하고 리더 관절을 조금씩 움직여 방향을 확
 | 3 | 기본의 2배 |
 | Space | 베이스 정지, 팔 목표 유지, teleop 비활성화 |
 | T | 자유 시점 / 로봇 추적 시점 전환 |
+| C | 전체 / 전방 카메라 / 손목 카메라 시점 전환 |
 | P | 화면 캡처 저장 |
 
 집기 연습은 속도 1로 접근한 뒤 베이스를 멈추고 리더로 팔·집게를 조작하세요.
@@ -319,6 +324,7 @@ Hub 업로드와 W&B는 기본 비활성입니다.
 - [SO101 보정·좌표·안전 제약](docs/so101-teleop.md)
 - [Docker 구조와 후속 개발](docs/architecture.md)
 - [모델·물리 설명](isaac_sim/README.md)
+- [카메라 장착 위치와 추후 TF 반영](docs/robot-cameras.md)
 - [자산 출처](isaac_sim/assets/lekiwi_soarm/SOURCE.md)
 - [개발 PC 검증 이력](docs/validation-2026-09-07.md)
 

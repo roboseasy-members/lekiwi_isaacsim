@@ -187,9 +187,10 @@ def test_denied_docker_does_not_fall_back_to_sudo(fake_docker):
     assert not any("build" in call for call in calls(log))
 
 
-def test_duplicate_simulation_is_rejected_before_launch(fake_docker):
+@pytest.mark.parametrize("command", ["test-physics", "basic", "test-basic"])
+def test_duplicate_simulation_is_rejected_before_launch(fake_docker, command):
     env, log = fake_docker
-    result = run("bash", str(ROOT / "lekiwi"), "test-physics", env=dict(env, SIM_RUNNING="1"))
+    result = run("bash", str(ROOT / "lekiwi"), command, env=dict(env, SIM_RUNNING="1"))
     assert result.returncode != 0
     assert "already running" in result.stderr
     assert not any("run" in call or "build" in call for call in calls(log))
@@ -253,12 +254,13 @@ def test_leader_overlay_only_exposes_selected_serial_device(tmp_path):
     assert not config["services"]["sim"].get("devices")
 
 
-def test_physics_test_uses_bundled_image_and_scoped_container(fake_docker):
+@pytest.mark.parametrize("name,target", [("test-physics", "physics-test"), ("test-basic", "basic-test")])
+def test_physics_test_uses_bundled_image_and_scoped_container(fake_docker, name, target):
     env, log = fake_docker
-    result = run("bash", str(ROOT / "lekiwi"), "test-physics", env=env)
+    result = run("bash", str(ROOT / "lekiwi"), name, env=env)
     assert result.returncode == 0, result.stderr
     command = calls(log)[-1]
-    assert command[-2:] == ["sim", "physics-test"]
+    assert command[-2:] == ["sim", target]
     assert command[command.index("--name") + 1] == "lekiwi-sim"
     assert "--rm" in command
 

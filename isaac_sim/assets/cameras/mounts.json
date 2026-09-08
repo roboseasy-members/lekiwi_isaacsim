@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "units": "m",
+  "convention": "optical_x_right_y_down_z_forward",
+  "calibrated": false,
+  "cameras": {
+    "front": {
+      "parent_link": "base_link",
+      "translation": [0.110, 0.0017, -0.0063],
+      "quaternion_xyzw": [-0.5, 0.5, -0.5, 0.5],
+      "resolution": [640, 480],
+      "horizontal_fov_deg": 70.0,
+      "note": "Provisional lens center at the front body camera opening; looks along base +X."
+    },
+    "wrist": {
+      "parent_link": "wrist_link",
+      "translation": [-0.035, -0.045, 0.0181],
+      "quaternion_xyzw": [0.37992819659091526, 0.5963678105290181, -0.37992819659091526, 0.5963678105290182],
+      "resolution": [640, 480],
+      "horizontal_fov_deg": 70.0,
+      "note": "Provisional mount above wrist, before wrist_roll; points toward the grasp area."
+    }
+  }
+}
