@@ -85,3 +85,45 @@ def test_corrupt_saved_episode_is_rejected(tmp_path, kind):
     if kind == "row_count": rows.pop()
     file.write_text("".join(json.dumps(row)+"\n" for row in rows))
     with pytest.raises(ValueError): validate_episode(path)
+
+
+@pytest.mark.parametrize('kind', ['last_image', 'last_transition', 'count', 'empty'])
+def test_streaming_validation_checks_tail_and_count(tmp_path, kind):
+    _, path = saved(tmp_path)
+    file = path / 'frames.jsonl'
+    rows = [json.loads(line) for line in file.read_text().splitlines()]
+    if kind == 'last_image':
+        (path / rows[-1]['cameras']['wrist']['path']).write_bytes(b'bad')
+    elif kind == 'last_transition':
+        rows[-1]['observation.state'][0] = 99
+    elif kind == 'count':
+        rows.pop()
+    else:
+        rows = []
+    file.write_text(''.join(json.dumps(row) + '\n' for row in rows))
+    with pytest.raises(ValueError):
+        validate_episode(path, collect_rows=False)
+
+
+def test_validation_without_returned_rows_uses_bounded_memory(tmp_path):
+    import gc
+    import tracemalloc
+
+    writer = EpisodeWriter(tmp_path, metadata())
+    for i in range(300):
+        writer.append(sample(i), images())
+    path = writer.save()
+
+    def peak(collect):
+        gc.collect()
+        tracemalloc.start()
+        try:
+            meta, rows = validate_episode(path, collect_rows=collect)
+            assert meta['frames'] == 300
+            assert len(rows) == 300 if collect else rows is None
+            return tracemalloc.get_traced_memory()[1]
+        finally:
+            tracemalloc.stop()
+
+    streamed, retained = peak(False), peak(True)
+    assert streamed < retained * .4, (streamed, retained)

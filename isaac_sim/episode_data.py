@@ -84,7 +84,7 @@ class EpisodeWriter:
             relative = f"images/{name}/{self.count:06d}.png"
             path = self.path / relative
             path.parent.mkdir(parents=True, exist_ok=True)
-            Image.fromarray(images[name]).save(path)
+            Image.fromarray(images[name]).save(path, compress_level=1)
             row["cameras"][name].update(path=relative, sha256=hashlib.sha256(path.read_bytes()).hexdigest())
         self.stream.write(json.dumps(row, allow_nan=False) + "\n")
         self.count += 1
@@ -101,7 +101,7 @@ class EpisodeWriter:
                         duration_s=self.count / FPS, success=bool(success), complete=True,
                         state_names=STATE_NAMES, action_names=ACTION_NAMES,
                         units=["rad"] * 6 + ["m/s", "m/s", "rad/s"])
-        validate_episode(self.path, metadata)
+        validate_episode(self.path, metadata, collect_rows=False)
         (self.path / "manifest.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2))
         target = self.path.with_suffix("")
         if target.exists():
@@ -117,7 +117,8 @@ class EpisodeWriter:
         shutil.rmtree(self.path)
 
 
-def validate_episode(directory, metadata=None):
+def validate_episode(directory, metadata=None, *, collect_rows=True):
+    """전체 프레임을 검사하되 저장 완료 검사에서는 직전 프레임만 보관한다."""
     directory = Path(directory)
     if metadata is None:
         if directory.name.endswith(".partial"):
@@ -125,25 +126,31 @@ def validate_episode(directory, metadata=None):
         metadata = json.loads((directory / "manifest.json").read_text())
     if metadata.get("version") != 1 or metadata.get("fps") != FPS or metadata.get("complete") is not True:
         raise ValueError("Unsupported or incomplete manifest")
-    rows = [json.loads(line) for line in (directory / "frames.jsonl").read_text().splitlines()]
-    if not rows or len(rows) != metadata["frames"]:
-        raise ValueError("Frame count mismatch")
+    rows = [] if collect_rows else None
     previous = None
-    for row in rows:
-        check_transition(row, previous)
-        for name in CAMERAS:
-            expected = f"images/{name}/{row['frame_index']:06d}.png"
-            entry = row["cameras"][name]
-            if entry["path"] != expected:
-                raise ValueError("Unexpected image path")
-            path = directory / expected
-            if not path.resolve().is_relative_to(directory.resolve()):
-                raise ValueError("Image outside episode")
-            if hashlib.sha256(path.read_bytes()).hexdigest() != entry["sha256"]:
-                raise ValueError("Image checksum mismatch")
-            with Image.open(path) as im:
-                if im.mode != "RGB" or list(im.size) != metadata["camera_config"]["cameras"][name]["resolution"]:
-                    raise ValueError("Invalid image resolution")
-                im.load()
-        previous = row
+    count = 0
+    with (directory / "frames.jsonl").open() as stream:
+        for line in stream:
+            row = json.loads(line)
+            check_transition(row, previous)
+            for name in CAMERAS:
+                expected = f"images/{name}/{row['frame_index']:06d}.png"
+                entry = row["cameras"][name]
+                if entry["path"] != expected:
+                    raise ValueError("Unexpected image path")
+                path = directory / expected
+                if not path.resolve().is_relative_to(directory.resolve()):
+                    raise ValueError("Image outside episode")
+                if hashlib.sha256(path.read_bytes()).hexdigest() != entry["sha256"]:
+                    raise ValueError("Image checksum mismatch")
+                with Image.open(path) as im:
+                    if im.mode != "RGB" or list(im.size) != metadata["camera_config"]["cameras"][name]["resolution"]:
+                        raise ValueError("Invalid image resolution")
+                    im.load()
+            previous = row
+            count += 1
+            if rows is not None:
+                rows.append(row)
+    if not count or count != metadata["frames"]:
+        raise ValueError("Frame count mismatch")
     return metadata, rows

@@ -35,6 +35,7 @@ from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from teleop_bridge import ArmTeleop, DEFAULT_ARM_OFFSETS_DEG, arm_home, atomic_json, read_packet
 from arm_control import restore_arm_position_gains
 from drive_controls import BaseSpeed
+from drive_hotkeys import SpaceStopBinding
 from robot_cameras import attach_cameras, load_camera_config
 
 USD_PATH = os.environ.get(
@@ -604,6 +605,12 @@ def main():
     # Stage가 준비되면 같은 영역의 탭으로 배치하고 조작 안내를 먼저 표시한다.
     control_window.deferred_dock_in("Stage", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
 
+    # 사용자가 시점을 전환하기 전에 세 카메라의 렌더링을 준비한다.
+    for name in ("front", "wrist", "overview"):
+        _select_camera(name)
+        for _ in range(3):
+            world.step(render=True)
+
     recorder = None
     if RECORDING:
         from recording_panel import RecordingPanel
@@ -668,6 +675,9 @@ def main():
     print(f"LEKIWI_DRIVE {base_speed.label}", flush=True)
     print("LEKIWI_DRIVE result=READY", flush=True)
 
+    from omni.kit.hotkeys.core import KeyCombination, get_hotkey_registry
+    space_binding = SpaceStopBinding(get_hotkey_registry(), KeyCombination(carb.input.KeyboardInput.SPACE, 0))
+    print(f"LEKIWI_DRIVE space_stop_only={len(space_binding.removed)}", flush=True)
     try:
         while simulation_app.is_running():
             frame += 1
@@ -784,7 +794,7 @@ def main():
                 )
 
             if command == (0, 0, 0):
-                status_label.text = "command: STOP (PhysX active)"
+                status_label.text = f"command: STOP (simulation {'PLAYING' if world.is_playing() else 'PAUSED'})"
             else:
                 status_label.text = (
                     f"vx={vx:+.2f}  vy={vy:+.2f}  wz={wz:+.2f}  "
@@ -811,6 +821,7 @@ def main():
         except Exception as exc:
             carb.log_warn(f"Could not stop LeKiwi cleanly: {exc}")
         input_interface.unsubscribe_to_keyboard_events(keyboard, keyboard_subscription)
+        space_binding.close()
 
 
 failed = False

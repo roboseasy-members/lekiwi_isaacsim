@@ -1,5 +1,6 @@
 """한 관절의 실제 PhysX 상태·명령을 기록하고 재생하는 5편 실습. USB 미사용."""
 import argparse
+import asyncio
 import json
 import math
 from pathlib import Path
@@ -44,8 +45,10 @@ def main(test=False):
     try:
         import omni.usd
         import omni.ui as ui
+        import omni.kit.app
         from pxr import Usd, UsdGeom, UsdPhysics
         from isaacsim.core.api import World
+        from isaacsim.core.prims import SingleArticulation
         from isaacsim.core.api.loggers import DataLogger
         from isaacsim.core.utils.viewports import set_camera_view
         from scenes import create_stage
@@ -58,12 +61,14 @@ def main(test=False):
         world = World(physics_dt=1/FPS, rendering_dt=1/FPS,
                       stage_units_in_meters=1.0, physics_prim_path="/World/PhysicsScene")
         stage = omni.usd.get_context().get_stage()
+        hinge = world.scene.add(SingleArticulation(prim_path="/World/Hinge/FixedBase", name="teaching_hinge"))
         drive = UsdPhysics.DriveAPI(stage.GetPrimAtPath("/World/Hinge/Shoulder"), "angular")
         logger = DataLogger()
         saved = None
         mode, index = "READY", 0
         replay_frames, errors = [], []
         requests = []
+        preparation = None
 
         def angle():
             p = UsdGeom.Xformable(stage.GetPrimAtPath("/World/Hinge/Arm")).ComputeLocalToWorldTransform(
@@ -77,12 +82,39 @@ def main(test=False):
                 world.step(render=False)
             world.pause()
 
+        async def prepare_gui(next_mode):
+            nonlocal mode, index
+            try:
+                drive.GetTargetPositionAttr().Set(0)
+                # PhysX 장면을 다시 만들지 않고 초기화된 모형의 기본 상태를 복원한다.
+                hinge.post_reset()
+                world.play()
+                for _ in range(30):
+                    for _ in range(4):
+                        world.step(render=False)
+                    await omni.kit.app.get_app().next_update_async()
+                world.pause()
+                if next_mode == "RECORDING":
+                    logger.reset()
+                    logger.start()
+                index, mode = 0, next_mode
+                world.play()
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                mode = "ERROR"
+                print(f"BASIC_RECORDING prepare_error={exc}", flush=True)
+
         def frames():
             return [logger.get_data_frame(i).get_dict() for i in range(logger.get_num_of_data_frames())]
 
         def start_record():
-            nonlocal mode, index
+            nonlocal mode, index, preparation
             if mode not in {"READY", "SAVED", "REPLAYED", "DISCARDED"}:
+                return
+            if not test:
+                mode = "PREPARING"
+                preparation = asyncio.ensure_future(prepare_gui("RECORDING"))
                 return
             prepare()
             logger.reset()
@@ -109,12 +141,16 @@ def main(test=False):
             print(f"BASIC_RECORDING saved={saved} frames={report['frames']}", flush=True)
 
         def replay():
-            nonlocal mode, index, replay_frames, errors
+            nonlocal mode, index, replay_frames, errors, preparation
             if mode not in {"SAVED", "REPLAYED"} or saved is None:
                 return
             logger.load(str(saved))
             replay_frames = frames()
             check_frames(replay_frames)
+            if not test:
+                errors, mode = [], "PREPARING"
+                preparation = asyncio.ensure_future(prepare_gui("REPLAYING"))
+                return
             prepare()
             index, errors, mode = 0, [], "REPLAYING"
             world.play()
@@ -201,7 +237,7 @@ def main(test=False):
                 if request == "record": start_record()
                 elif request == "save": save()
                 elif request == "replay": replay()
-                elif request == "discard" and mode in {"RECORDING", "UNSAVED"}:
+                elif request == "discard" and mode in {"RECORDING", "UNSAVED", "ERROR"}:
                     world.pause()
                     logger.reset()
                     mode, index = "DISCARDED", 0
@@ -209,19 +245,23 @@ def main(test=False):
             if active and world.is_playing():
                 tick(True)
             else:
-                if not active:
+                if not active and mode != "PREPARING" and world.is_playing():
                     world.pause()
                 app.update()
             record_button.enabled = mode in {"READY", "SAVED", "REPLAYED", "DISCARDED"}
             save_button.enabled = mode == "UNSAVED"
             replay_button.enabled = mode in {"SAVED", "REPLAYED"}
-            discard_button.enabled = mode in {"RECORDING", "UNSAVED"}
+            discard_button.enabled = mode in {"RECORDING", "UNSAVED", "ERROR"}
             status.text = f"{mode} | frames: {index}/{FRAME_COUNT}"
             sample.text = f"actual: {angle():+.4f} rad | simulation: {index/FPS:.3f} s"
-            detail.text = (f"Replay max error: {max(errors):.6f} rad" if mode == "REPLAYED"
+            detail.text = ("Preparing scene. Please wait." if mode == "PREPARING"
+                           else "Preparation failed. Discard unsaved and try again." if mode == "ERROR"
+                           else f"Replay max error: {max(errors):.6f} rad" if mode == "REPLAYED"
                            else "UNSAVED: click Save episode to keep this recording." if mode == "UNSAVED"
                            else "Save before closing. Unsaved frames will be discarded.")
             output.text = str(saved or directory)
+        if preparation and not preparation.done():
+            preparation.cancel()
         world.pause()
     finally:
         app.close()

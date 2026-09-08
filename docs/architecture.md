@@ -42,7 +42,10 @@ LeRobot의 간접 의존성을 포함한 118개 패키지 해석 결과는
    [카메라 설정](robot-cameras.md). 두 카메라 동기 수집은 6편에 구현. 실제 TF 보정·런타임 에피소드 리셋은 후속.
 5. 기초 교재의 한 관절 JSON 기록·재생 구현: [5편](../isaacsim_basic/05_data_recording/README.md).
    LeKiwi의 두 RGB·관측·행동 원본 기록과 로컬 LeRobot 변환 구현: [6편](../isaacsim_basic/06_lekiwi_dataset/README.md).
-   두 render product를 delta_time=0으로 함께 캡처하고, 실제 상태에 적용한 명령과 다음 상태를 30 Hz로 연결한다.
+   타임라인을 계속 재생하며 두 RGB의 ReferenceTime을 물리 시각으로 변환하고,
+   잠시 보관한 같은 시각의 실제 상태·적용 명령·다음 상태에 30 Hz로 연결한다.
+   종료 요청 후 마지막 영상과 파일 쓰기까지 반영한 뒤 저장을 허용한다.
+   PNG·파일 검사는 최대 4프레임의 순서 작업 큐에서 처리하며 SAVING 완료 전에는 새 기록을 시작하지 않는다. 저장 완료 검사는 프레임을 한 줄씩 읽고 직전 관측만 보관해 전체 기록을 메모리에 누적하지 않는다.
    변환기는 finalize 후 다시 열어 영상과 상태를 검사하며 Hub에 업로드하지 않는다.
 6. ACT 학습 및 시뮬레이션 평가, 이후 GR00T 미세조정과 평가.
 7. 환경 생성용 Script Editor 예제 제공. 통합 teleop의 비동기 시작/종료는 후속.
