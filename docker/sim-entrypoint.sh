@@ -13,6 +13,9 @@ fi
 mkdir -p "${HOME}" "${XDG_CACHE_HOME:-${HOME}/.cache}" /data/captures
 
 case "$command_name" in
+    recording-test) exec "$checked" 'BASIC_RECORDING_TEST result=PASS' /isaac-sim/python.sh /opt/lekiwi/isaacsim_basic/recording.py --test "$@" ;;
+    basic) exec /isaac-sim/python.sh /opt/lekiwi/isaacsim_basic/run.py "$@" ;;
+    basic-test) exec "$checked" 'ISAACSIM_BASIC_TEST result=PASS' /isaac-sim/python.sh /opt/lekiwi/isaacsim_basic/smoke_test.py "$@" ;;
     keyboard) exec /isaac-sim/python.sh "$sim_dir/keyboard_drive.py" "$@" ;;
     course) exec /isaac-sim/python.sh "$sim_dir/course_demo.py" "$@" ;;
     course-test) exec "$checked" 'LEKIWI_COURSE_TEST result=PASS' /isaac-sim/python.sh "$sim_dir/course_smoke_test.py" "$@" ;;

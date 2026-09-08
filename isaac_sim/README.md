@@ -20,7 +20,6 @@ isaac_sim/
 ├── validate_usd.py           # composed USD validation
 ├── keyboard_drive.py         # interactive PhysX contact-drive test
 ├── physics_smoke_test.py     # headless contact-drive regression
-├── captures/                 # Isaac-native viewport captures
 └── run_keyboard_drive.sh     # Docker GUI launcher
 ```
 

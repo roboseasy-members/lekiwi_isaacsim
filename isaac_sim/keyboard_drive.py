@@ -35,6 +35,8 @@ from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from teleop_bridge import ArmTeleop, DEFAULT_ARM_OFFSETS_DEG, arm_home, atomic_json, read_packet
 from arm_control import restore_arm_position_gains
 from drive_controls import BaseSpeed
+from drive_hotkeys import SpaceStopBinding
+from robot_cameras import attach_cameras, load_camera_config
 
 USD_PATH = os.environ.get(
     "LEKIWI_USD",
@@ -44,6 +46,7 @@ CAPTURE_PATH = os.environ.get("LEKIWI_CAPTURE_PATH", "")
 TELEOP_STATE = os.environ.get("LEKIWI_TELEOP_STATE", "")
 TELEOP_SESSION = os.environ.get("LEKIWI_TELEOP_SESSION", "")
 COURSE_LAYOUT = os.environ.get("LEKIWI_COURSE_LAYOUT", "")
+RECORDING = os.environ.get("LEKIWI_RECORDING", "0") == "1"
 GROUND_Z = float(os.environ.get("LEKIWI_GROUND_Z", "-0.021"))
 SPAWN_Z = float(os.environ.get("LEKIWI_SPAWN_Z", "0.055"))
 LINEAR_SPEED = float(os.environ.get("LEKIWI_LINEAR_SPEED", "0.25"))
@@ -398,7 +401,7 @@ def main():
     print(f"LEKIWI_DRIVE opening_stage={USD_PATH}", flush=True)
     world = World(
         physics_dt=PHYSICS_DT,
-        rendering_dt=1.0 / 60.0,
+        rendering_dt=1.0 / (30.0 if RECORDING else 60.0),
         stage_units_in_meters=1.0,
     )
     robot = world.scene.add(
@@ -448,6 +451,10 @@ def main():
     if not COURSE_LAYOUT:
         _create_ground_grid(stage)
     _create_lighting(stage)
+    camera_config = load_camera_config(os.environ.get("LEKIWI_CAMERA_CONFIG"))
+    robot_cameras = attach_cameras(stage, camera_config)
+    for name, info in robot_cameras.items():
+        print(f"LEKIWI_CAMERA name={name} path={info['camera_path']} optical_frame={info['optical_frame']}", flush=True)
     world.reset()
 
     arm_indices = np.asarray(
@@ -501,6 +508,22 @@ def main():
               f"max_speed_rad_s={speed}", flush=True)
     capture_requested = False
     camera_tracking = False
+    camera_view = "overview"
+    from omni.kit.viewport.utility import get_active_viewport
+    main_viewport = get_active_viewport()
+
+    def _select_camera(name):
+        nonlocal camera_view, camera_tracking
+        if main_viewport is None:
+            carb.log_warn("No viewport available for camera selection")
+            return
+        main_viewport.camera_path = ("/OmniverseKit_Persp" if name == "overview"
+                                     else robot_cameras[name]["camera_path"])
+        camera_view = name
+        camera_tracking = False
+        camera_mode_label.text = f"camera: {name.upper()} (C to switch, T to track)"
+        print(f"LEKIWI_DRIVE camera_view={name}", flush=True)
+
     speed_keys = {carb.input.KeyboardInput.KEY_1: 1,
                   carb.input.KeyboardInput.KEY_2: 2,
                   carb.input.KeyboardInput.KEY_3: 3,
@@ -526,10 +549,17 @@ def main():
             return True
         if event.input == carb.input.KeyboardInput.T:
             if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+                if camera_view != "overview":
+                    _select_camera("overview")
                 camera_tracking = not camera_tracking
                 mode = "TRACKING" if camera_tracking else "FREE"
                 camera_mode_label.text = f"camera: {mode} (T to toggle)"
                 print(f"LEKIWI_DRIVE camera_mode={mode}", flush=True)
+            return True
+        if event.input == carb.input.KeyboardInput.C:
+            if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+                choices = ("overview", "front", "wrist")
+                _select_camera(choices[(choices.index(camera_view) + 1) % len(choices)])
             return True
         if event.input not in CONTROL_KEYS:
             return True
@@ -550,7 +580,7 @@ def main():
     )
 
     control_window = ui.Window(
-        "LeKiwi + SO101 Physical Drive", width=510, height=310
+        "LeKiwi + SO101 Physical Drive", width=510, height=335
     )
     with control_window.frame:
         with ui.VStack(spacing=5):
@@ -567,9 +597,37 @@ def main():
             ui.Label("Q / E : counter-clockwise / clockwise")
             speed_label = ui.Label(base_speed.label)
             ui.Label("SPACE : stop    P : save viewport    T : camera mode")
+            ui.Label("C : overview / front camera / wrist camera")
             ui.Label("Close the Isaac window to exit")
             camera_mode_label = ui.Label("camera: FREE (T to toggle)")
             status_label = ui.Label("command: STOP", height=24)
+
+    # Stage가 준비되면 같은 영역의 탭으로 배치하고 조작 안내를 먼저 표시한다.
+    control_window.deferred_dock_in("Stage", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
+
+    # 사용자가 시점을 전환하기 전에 세 카메라의 렌더링을 준비한다.
+    for name in ("front", "wrist", "overview"):
+        _select_camera(name)
+        for _ in range(3):
+            world.step(render=True)
+
+    recorder = None
+    if RECORDING:
+        from recording_panel import RecordingPanel
+        recorder = RecordingPanel(robot_cameras, camera_config,
+                                  "so101_leader_keyboard" if arm_control else "keyboard_home_hold",
+                                  layout if COURSE_LAYOUT else None)
+
+    def recording_state():
+        # 베이스 속도는 world 좌표에서 로봇의 수평 base 좌표로 변환한다.
+        pos, quat = _base_pose(root_body)
+        heading = _yaw(quat)
+        linear = robot.get_linear_velocity()
+        angular = robot.get_angular_velocity()
+        state = [float(v) for v in robot.get_joint_positions(joint_indices=arm_indices)]
+        state += [float(math.cos(heading) * linear[0] + math.sin(heading) * linear[1]),
+                  float(-math.sin(heading) * linear[0] + math.cos(heading) * linear[1]), float(angular[2])]
+        return state, [float(v) for v in (*pos, *quat)]
 
     position = settled_position
     orientation = settled_orientation
@@ -610,13 +668,16 @@ def main():
     )
     print(
         "LEKIWI_DRIVE controls=W/S forward/back, A/D left/right, "
-        "Q/E CCW/CW, 1/2/3 base speed, SPACE stop, P capture, T camera, window-close exit",
+        "Q/E CCW/CW, 1/2/3 base speed, SPACE stop, P capture, T tracking, C camera, window-close exit",
         flush=True,
     )
     print("LEKIWI_DRIVE camera_mode=FREE", flush=True)
     print(f"LEKIWI_DRIVE {base_speed.label}", flush=True)
     print("LEKIWI_DRIVE result=READY", flush=True)
 
+    from omni.kit.hotkeys.core import KeyCombination, get_hotkey_registry
+    space_binding = SpaceStopBinding(get_hotkey_registry(), KeyCombination(carb.input.KeyboardInput.SPACE, 0))
+    print(f"LEKIWI_DRIVE space_stop_only={len(space_binding.removed)}", flush=True)
     try:
         while simulation_app.is_running():
             frame += 1
@@ -682,7 +743,15 @@ def main():
                 ))
             else:
                 _hold_arm_home(articulation_controller, arm_indices)
+            if recorder:
+                state, pose = recording_state()
+                action = [float(v) for v in (targets if arm_control else ARM_HOME_POSITIONS)] + [vx, vy, wz]
+                recorder.before_step(world, state, action, pose)
             world.step(render=True)
+            if not simulation_app.is_running():
+                break
+            if recorder:
+                recorder.after_step(world, recording_state()[0])
 
             if arm_control:
                 if arm_control.status != last_arm_status:
@@ -725,7 +794,7 @@ def main():
                 )
 
             if command == (0, 0, 0):
-                status_label.text = "command: STOP (PhysX active)"
+                status_label.text = f"command: STOP (simulation {'PLAYING' if world.is_playing() else 'PAUSED'})"
             else:
                 status_label.text = (
                     f"vx={vx:+.2f}  vy={vy:+.2f}  wz={wz:+.2f}  "
@@ -734,6 +803,11 @@ def main():
                 )
     finally:
         pressed.clear()
+        if recorder:
+            try:
+                recorder.close()
+            except Exception as exc:
+                carb.log_warn(f"Could not close recording resources: {exc}")
         try:
             _apply_command(robot, 0.0, 0.0, 0.0)
             if arm_control:
@@ -747,6 +821,7 @@ def main():
         except Exception as exc:
             carb.log_warn(f"Could not stop LeKiwi cleanly: {exc}")
         input_interface.unsubscribe_to_keyboard_events(keyboard, keyboard_subscription)
+        space_binding.close()
 
 
 failed = False

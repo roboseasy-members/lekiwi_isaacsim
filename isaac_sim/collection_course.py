@@ -151,8 +151,15 @@ def build_course(stage, layout, root_path=ROOT):
         mesh.CreateDisplayColorAttr([Gf.Vec3f(*color)])
 
     if layout["version"] == 2:
-        from color_course import build_color_geometry
+        from color_course import build_color_geometry, road_boundary_strips
         build_color_geometry(box, ring, layout)
+        for name, points, faces in road_boundary_strips():
+            mesh = UsdGeom.Mesh.Define(stage, root_path + "/Road/Ring/" + name)
+            mesh.CreatePointsAttr([Gf.Vec3f(x, y, GROUND_Z + .00045) for x, y in points])
+            mesh.CreateFaceVertexCountsAttr([4] * len(faces))
+            mesh.CreateFaceVertexIndicesAttr([index for face in faces for index in face])
+            mesh.CreateSubdivisionSchemeAttr(UsdGeom.Tokens.none)
+            mesh.CreateDisplayColorAttr([Gf.Vec3f(.95, .95, .95)])
     else:
         _build_straight_road(box)
     baskets = layout.get("baskets", [{"id": "legacy", "position": [*BASKET_CENTER, GROUND_Z],

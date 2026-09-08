@@ -27,8 +27,8 @@ ACCEPT_EULA=Y ./lekiwi scene
 | 왼쪽 | +Y | 노랑 yellow |
 | 오른쪽 | -Y | 초록 green |
 
-**각 길의 색, 블록 수(1개씩 총 4개), 블록 회전, 바구니 위치는 고정**이다.
-seed가 바뀌면 해당 길 안에서 블록의 XY 위치만 달라진다. 카메라를 돌리더라도
+**각 길의 색, 블록 수(1개씩 총 4개), 바구니 위치는 고정**이다.
+seed가 바뀌면 해당 길 안에서 블록의 XY 위치와 Z축 회전(-180°~180°)이 달라진다. 카메라를 돌리더라도
 색상과 길의 대응 관계는 바뀌지 않는다.
 블록은 한 변 4 cm·질량 35 g의 동적 물체다. 바구니는 44 x 44 x 18 cm이며,
 바닥과 네 벽에 각각 충돌을 적용해 윗부분을 실제로 열어 놓았다.
@@ -38,14 +38,14 @@ seed가 바뀌면 해당 길 안에서 블록의 XY 위치만 달라진다. 카�
 `scene`은 USB를 열지 않고 팔을 기본 자세로 유지한다. 첫 화면은 코스 전체를 보여준다.
 
 ```bash
-# 매 실행 블록 위치만 랜덤하게: seed를 생략한다.
+# 매 실행 블록 위치와 회전을 랜덤하게: seed를 생략한다.
 ACCEPT_EULA=Y ./lekiwi scene
 # 작업 지정: 초록 블록을 빨강 바구니에 넣기
 ACCEPT_EULA=Y ./lekiwi scene --seed 42 --block green --basket red
 ```
 
 위치는 중앙 주행 공간·시작 로봇·다른 물체와 겹치지 않도록 제한한다.
-랜덤 seed와 **초기 위치·고정 회전·색상·바구니 ID·선택한 작업**은
+랜덤 seed와 **초기 위치·회전·색상·바구니 ID·선택한 작업**은
 매번 새 `data/scenes/course.XXXXXXXX/layout.json`에 저장한다.
 함께 저장되는 `course.usda`는 외부 참조 없는 환경 파일이며 Isaac에서 불러올 수 있다.
 이 USD는 환경만 포함하며 로봇은 기존 번들에서 따로 불러온다.
@@ -55,7 +55,7 @@ ACCEPT_EULA=Y ./lekiwi scene --seed 42 --block green --basket red
 
 `Collection Task` 선택 창은 표시하지 않는다. 모든 색 블록 4개가 함께 생성되며,
 사용자가 직접 주행하고 원하는 블록을 집는다. 아래 명령은 매 실행마다 네 블록의
-위치만 새로 생성한다. 길의 모양·길별 색·바구니 위치는 고정이다.
+위치와 바닥 위 회전 방향을 새로 생성한다. 길의 모양·길별 색·바구니 위치는 고정이다.
 
 ```bash
 ACCEPT_EULA=Y ./lekiwi teleop \
@@ -85,8 +85,9 @@ ACCEPT_EULA=Y ./lekiwi teleop \
 
 같은 저장 배치로 새 실행을 만들며 이전 파일을 덮어쓰지 않는다.
 통합 teleop에서는 기존 보정 재사용 질문과 `R` 활성화 절차가 유지된다.
-향후 데이터셋 수집도 이 `layout.json`을 에피소드 환경 설정으로 사용한다.
-아직 카메라 동기화·LeRobotDataset 기록·런타임 에피소드 리셋·바구니 성공 판정은 없다.
+6편 수집은 이 `layout.json`의 초기 배치를 에피소드 metadata에 보관한다.
+두 카메라 동기 기록과 LeRobot 변환은 [6편 교재](../isaacsim_basic/06_lekiwi_dataset/README.md)를 따른다.
+런타임 에피소드 리셋과 자동 바구니 성공 판정은 없으며 성공 여부는 사용자가 표시한다.
 
 ## Isaac Script Editor에 붙여넣기
 

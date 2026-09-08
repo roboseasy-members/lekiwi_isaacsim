@@ -1,4 +1,4 @@
-# LeKiwi Isaac Sim Teleop
+# LeKiwi Isaac Sim · Teleop과 기초 교육자료
 
 실제 **SO101 리더암 + 키보드**로 Isaac Sim 안의 **LeKiwi 모바일 베이스 + SO101 팔**을 조작합니다.
 원형·십자 도로에서 블록에 접근하고 집어서 바구니까지 운반하는 teleop 환경입니다.
@@ -9,15 +9,57 @@
 
 ## 현재 구현 범위
 
+객체 물리·관절·카메라·조작·기초 데이터 기록을 1~6편 순서로 배우려면 [Isaac Sim Basic 교육자료](isaacsim_basic/README.md)를 사용하세요.
+`./lekiwi setup sim` 후 `./lekiwi basic`으로 Docker 안의 별도 기초 실습을 시작합니다.
+5편은 `./lekiwi basic --lesson recording`으로 시작하며, 한 관절의 상태·명령 JSON을 저장·재생합니다.
+각 편의 폴더에는 교재 MD, 실습 기록지, 실제 스크린샷과 빨간 표시, 노션 가져오기용 ZIP이 있습니다.
+
+| 편 | 교육자료 | 주요 실습 |
+|---|---|---|
+| 1 | [객체와 물리 성질](isaacsim_basic/01_object_physics/README.md) | 객체 생성, Collider, 질량·중력, 마찰·반발력 |
+| 2 | [로봇과 관절](isaacsim_basic/02_robot_joints/README.md) | 관절 축·한계와 Drive 설정 |
+| 3 | [전방·손목 카메라](isaacsim_basic/03_robot_cameras/README.md) | 시점 전환, 장착 좌표, 화각 |
+| 4 | [원격 조작](isaacsim_basic/04_teleoperation/README.md) | 키보드 주행과 SO101 리더 조작 |
+| 5 | [기초 데이터 기록](isaacsim_basic/05_data_recording/README.md) | 한 관절의 에피소드 기록·저장·재생 |
+| 6 | [LeKiwi 데이터셋 수집](isaacsim_basic/06_lekiwi_dataset/README.md) | 전방·손목 RGB와 상태·명령 기록, 로컬 LeRobot 변환 |
+
+**교육 시간은 설치 완료 PC 기준으로 2일, 하루 6~7시간 편성을 권합니다.**
+실물 없이 1~6편의 순수 교육은 약 6시간 15분~9시간 15분, 4·6편 리더 실습까지 하면 약 7시간 45분~11시간 45분으로 추정합니다.
+전체 12~14시간 편성에는 휴식·질문·결과 정리를 포함하며 점심·최초 설치·실측 TF 보정·모델 학습은 별도입니다.
+이는 실측 수업 시간이 아닌 계획용 추정입니다. [편별 시간과 2일 운영안](isaacsim_basic/README.md#교육-시간과-운영안)을 확인하세요.
+
+1·2편은 기본 Stage·Property 창을 사용합니다. 3·4편의 조작 창과 5·6편의 기록 창은
+실행 시 **Stage 옆 탭에 자동 배치**됩니다. 객체 목록은 Stage 탭, 조작 안내는 해당 실습 탭에서 확인합니다.
+
 - 키보드 베이스 주행, SO101 리더 calibration/재사용, 가상 팔의 리더 자세 추종.
-- 중앙에서 시작하는 LeKiwi, 바깥 원형 도로 + 안쪽 십자 도로, 위치가 랜덤인 네 블록과 고정 바구니.
+- 중앙에서 시작하는 LeKiwi, 바깥 원형 도로 + 안쪽 십자 도로, 위치·회전 방향이 랜덤인 네 블록과 고정 바구니.
 - 생성된 초기 배치 저장과 재현, 화면 캡처.
-- 개발 PC에서 사용자가 통합 teleop과 코스 화면을 확인했습니다. 다른 PC/리더에서는 별도 검증이 필요합니다.
-- **아직 없음:** 카메라 동기화, LeRobot 데이터셋 녹화, 실행 중 에피소드 리셋, 자동 성공 판정, 학습 정책 실행.
+- SOARM base 기준 측면 도면의 전방·손목 카메라 TF와 시점 전환. 3·4·6편이 같은 기본 설정을 사용합니다. 좌우·광학 방향 등의 최종 실물 확인은 남아 있습니다.
+- 개발 PC의 실물 리더암으로 6개 관절 추종과 1,291프레임(43.03초)의 두 RGB·관절 데이터 저장을 확인했습니다. 다른 PC/리더에서는 별도 검증이 필요합니다.
+- 두 카메라의 동기 RGB·실제 상태·적용 명령 기록, 저장 검사와 로컬 LeRobot 데이터셋 변환.
+- **아직 없음:** 카메라 보정의 최종 실물 검증, 실행 중 에피소드 리셋, 자동 성공 판정, 학습 정책 실행.
 
 ACT/GR00T 의존성과 학습 CLI는 준비되어 있지만, 이 로봇의 수집→학습→평가 전 과정은 아직 구현·검증하지 않았습니다.
-현재 브랜치는 **직접 조작하는 teleop 버전**입니다. 실행만으로 데이터셋이 기록되지는 않습니다.
+통합 teleop은 직접 조작하는 환경이며, 실행만으로 데이터셋이 기록되지는 않습니다.
+5편은 에피소드의 구조를 배우는 한 관절 JSON 실습입니다.
+6편은 `./lekiwi record`로 두 RGB·팔·베이스 상태와 명령을 기록하고 `./lekiwi export-dataset`으로 로컬 LeRobot 데이터셋을 만듭니다.
+리더 실습은 기존 `teleop` 명령에 `--record`를 추가합니다. 기록 전에 패널의 **Max seconds**를 초 단위로 설정하고 Record를 누릅니다.
+기본값은 30초이며, 120은 2분, 300은 5분, **0은 수동 종료**입니다. 시뮬레이션 시간 기준이고 수집 종료 후 Save episode로 저장합니다.
+기록 중에는 시뮬레이션을 계속 재생하며, 종료 후 마지막 영상과 파일 쓰기를 기다립니다. 저장 검사는 **SAVING → SAVED**로 완료 여부를 표시합니다.
+가상 입력의 5분·9,000프레임 수집과 실물 리더의 짧은 기록을 검증했습니다. 드문 약 0.38초의 화면 지연과 카메라 보정의 최종 실물 검증은 남아 있습니다. [검증 기록](isaacsim_basic/VALIDATION.md)을 참고하세요.
 실제 follower나 실제 LeKiwi 베이스를 움직이는 기능도 없습니다.
+
+## 브랜치 안내
+
+| 브랜치 | 역할 |
+|---|---|
+| `main` | 최종 안정 버전 |
+| `develop` | 기존 teleop을 포함하고 기능별 PR을 통합하는 개발 브랜치 |
+| `feature/isaacsim_basic` | 기존 teleop에 카메라·기초 교육자료 1~6편과 실습 창 자동 배치를 추가한 작업 브랜치 |
+
+기존 teleop 작업은 `develop`에 통합했습니다. 새 기능은 `feature/기능명`에서 작업하고 PR로 `develop`에 통합합니다.
+`feature/isaacsim_basic`에는 기존 teleop과 이후 추가한 교육자료가 함께 포함되어 있습니다.
+현재 교육자료를 사용하려면 아래처럼 `feature/isaacsim_basic`을 받으세요.
 
 ## 1. 처음 한 번: PC 준비
 
@@ -66,7 +108,7 @@ HTTPS 인증 요청에는 GitHub 비밀번호가 아닌 GitHub CLI/자격 증명
 이미 GitHub CLI로 로그인했다면 해당 인증을 사용할 수 있습니다.
 
 ~~~bash
-git clone --branch lekiwi_isaacsim_teleop https://github.com/SJun99/lekiwi_isaacsim.git
+git clone --branch feature/isaacsim_basic https://github.com/SJun99/lekiwi_isaacsim.git
 cd lekiwi_isaacsim
 ~~~
 
@@ -101,6 +143,9 @@ export는 현재 터미널에만 적용됩니다. 새 터미널에서는 다시 
 ./lekiwi check-ml
 ~~~
 
+기초 교육의 1~3편, 4편 키보드 실습, 5편만 진행한다면 `./lekiwi setup sim`으로 Isaac Sim 이미지만 빌드해도 됩니다.
+실제 리더를 사용하는 4편 실습과 6편 데이터셋 변환에는 LeRobot 이미지도 필요합니다.
+
 - doctor: Docker 접근, GPU와 번들 자산 확인.
 - setup all: Isaac Sim 이미지와 LeRobot/리더암 이미지 모두 빌드. 최초 다운로드·설치에는 시간이 걸립니다.
 - validate: 로봇 파일과 mesh 경로 검사.
@@ -129,7 +174,7 @@ LeKiwi가 중앙에서 시작하고 네 블록과 네 바구니가 나타납니�
 | 왼쪽 (+Y) | 노랑 |
 | 오른쪽 (-Y) | 초록 |
 
-도로·길별 색·바구니는 고정이고 **각 길의 블록 1개씩, 총 4개의 위치만 매번 랜덤**입니다.
+도로·길별 색·바구니는 고정이고 **각 길의 블록 1개씩, 총 4개의 위치와 바닥 위 회전 방향이 매번 랜덤**입니다.
 작업 선택 창은 없습니다. 원하는 블록을 직접 집어 운반합니다.
 블록 한 변은 4 cm이며, 바구니는 윗부분이 열려 있습니다.
 원형 도로로도 다른 길에 접근할 수 있습니다.
@@ -203,6 +248,7 @@ ACTIVE 표시를 확인하고 리더 관절을 조금씩 움직여 방향을 확
 | 3 | 기본의 2배 |
 | Space | 베이스 정지, 팔 목표 유지, teleop 비활성화 |
 | T | 자유 시점 / 로봇 추적 시점 전환 |
+| C | 전체 / 전방 카메라 / 손목 카메라 시점 전환 |
 | P | 화면 캡처 저장 |
 
 집기 연습은 속도 1로 접근한 뒤 베이스를 멈추고 리더로 팔·집게를 조작하세요.
@@ -280,7 +326,9 @@ data/
 ├── scenes/       # 초기 환경 배치
 ├── teleop/       # 실행별 상태와 sim.log
 ├── captures/     # 화면 캡처
-├── datasets/     # 향후 데이터셋 공간 (현재 녹화 기능 없음)
+├── isaacsim_basic/ # 기초 실습 장면과 5편 에피소드 JSON
+├── recordings/   # 6편 원본 RGB·JSONL·manifest
+├── datasets/     # 변환한 로컬 LeRobot 데이터셋
 ├── outputs/      # 학습 출력
 └── cache/, logs/, isaac-data/, home/  # 캐시·설정
 ~~~
@@ -293,7 +341,11 @@ data/
 ./lekiwi test-physics
 ./lekiwi test-arm
 ./lekiwi test-scene
+./lekiwi test-basic
+./lekiwi test-recording
 ~~~
+
+`test-basic`은 기초 물리·관절 장면을, `test-recording`은 한 관절의 180프레임 기록·저장·재생을 검사합니다.
 
 일반 사용자는 build-assets를 실행할 필요가 없습니다.
 원본 CAD/ROS 작업 폴더 src/와 isaac_sim_bundle/은 배포에 필요하지 않아 저장소에 포함하지 않습니다.
@@ -319,6 +371,7 @@ Hub 업로드와 W&B는 기본 비활성입니다.
 - [SO101 보정·좌표·안전 제약](docs/so101-teleop.md)
 - [Docker 구조와 후속 개발](docs/architecture.md)
 - [모델·물리 설명](isaac_sim/README.md)
+- [카메라 장착 위치와 추후 TF 반영](docs/robot-cameras.md)
 - [자산 출처](isaac_sim/assets/lekiwi_soarm/SOURCE.md)
 - [개발 PC 검증 이력](docs/validation-2026-09-07.md)
 
