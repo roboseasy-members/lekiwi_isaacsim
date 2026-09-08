@@ -9,7 +9,7 @@
 
 ## 현재 구현 범위
 
-객체 물리·관절·카메라·조작·기초 데이터 기록을 1~5편 순서로 배우려면 [Isaac Sim Basic 교육자료](isaacsim_basic/README.md)를 사용하세요.
+객체 물리·관절·카메라·조작·기초 데이터 기록을 1~6편 순서로 배우려면 [Isaac Sim Basic 교육자료](isaacsim_basic/README.md)를 사용하세요.
 `./lekiwi setup sim` 후 `./lekiwi basic`으로 Docker 안의 별도 기초 실습을 시작합니다.
 5편은 `./lekiwi basic --lesson recording`으로 시작하며, 한 관절의 상태·명령 JSON을 저장·재생합니다.
 각 편의 폴더에는 교재 MD, 실습 기록지, 실제 스크린샷과 빨간 표시, 노션 가져오기용 ZIP이 있습니다.
@@ -21,8 +21,14 @@
 | 3 | [전방·손목 카메라](isaacsim_basic/03_robot_cameras/README.md) | 시점 전환, 장착 좌표, 화각 |
 | 4 | [원격 조작](isaacsim_basic/04_teleoperation/README.md) | 키보드 주행과 SO101 리더 조작 |
 | 5 | [기초 데이터 기록](isaacsim_basic/05_data_recording/README.md) | 한 관절의 에피소드 기록·저장·재생 |
+| 6 | [LeKiwi 데이터셋 수집](isaacsim_basic/06_lekiwi_dataset/README.md) | 전방·손목 RGB와 상태·명령 기록, 로컬 LeRobot 변환 |
 
-1·2편은 기본 Stage·Property 창을 사용합니다. 3·4편의 조작 창과 5편의 기록 창은
+**교육 시간은 설치 완료 PC 기준으로 2일, 하루 6~7시간 편성을 권합니다.**
+실물 없이 1~6편의 순수 교육은 약 6시간 15분~9시간 15분, 4·6편 리더 실습까지 하면 약 7시간 45분~11시간 45분으로 추정합니다.
+전체 12~14시간 편성에는 휴식·질문·결과 정리를 포함하며 점심·최초 설치·실측 TF 보정·모델 학습은 별도입니다.
+이는 실측 수업 시간이 아닌 계획용 추정입니다. [편별 시간과 2일 운영안](isaacsim_basic/README.md#교육-시간과-운영안)을 확인하세요.
+
+1·2편은 기본 Stage·Property 창을 사용합니다. 3·4편의 조작 창과 5·6편의 기록 창은
 실행 시 **Stage 옆 탭에 자동 배치**됩니다. 객체 목록은 Stage 탭, 조작 안내는 해당 실습 탭에서 확인합니다.
 
 - 키보드 베이스 주행, SO101 리더 calibration/재사용, 가상 팔의 리더 자세 추종.
@@ -30,12 +36,15 @@
 - 생성된 초기 배치 저장과 재현, 화면 캡처.
 - 전방 구멍·손목의 임시 카메라 장착과 시점 전환. 실제 TF 측정 후 위치·방향 보정 예정.
 - 개발 PC에서 사용자가 통합 teleop과 코스 화면을 확인했습니다. 다른 PC/리더에서는 별도 검증이 필요합니다.
-- **아직 없음:** 카메라 동기화, LeRobot 데이터셋 녹화, 실행 중 에피소드 리셋, 자동 성공 판정, 학습 정책 실행.
+- 두 카메라의 동기 RGB·실제 상태·적용 명령 기록, 저장 검사와 로컬 LeRobot 데이터셋 변환.
+- **아직 없음:** 실측 카메라 TF 보정, 실행 중 에피소드 리셋, 자동 성공 판정, 학습 정책 실행.
 
 ACT/GR00T 의존성과 학습 CLI는 준비되어 있지만, 이 로봇의 수집→학습→평가 전 과정은 아직 구현·검증하지 않았습니다.
 통합 teleop은 직접 조작하는 환경이며, 실행만으로 데이터셋이 기록되지는 않습니다.
 5편은 에피소드의 구조를 배우는 한 관절 JSON 실습입니다.
-LeKiwi의 전방·손목 영상과 팔·베이스 명령을 함께 모으는 본격적인 데이터 수집은 후속 과정입니다.
+6편은 `./lekiwi record`로 두 RGB·팔·베이스 상태와 명령을 기록하고 `./lekiwi export-dataset`으로 로컬 LeRobot 데이터셋을 만듭니다.
+리더 실습은 기존 `teleop` 명령에 `--record`를 추가합니다. 기록 전에 패널의 **Max seconds**를 초 단위로 설정하고 Record를 누릅니다.
+기본값은 30초이며, 120은 2분, 300은 5분, **0은 수동 종료**입니다. 시뮬레이션 시간 기준이고 수집 종료 후 Save episode로 저장합니다.
 실제 follower나 실제 LeKiwi 베이스를 움직이는 기능도 없습니다.
 
 ## 브랜치 안내
@@ -44,7 +53,7 @@ LeKiwi의 전방·손목 영상과 팔·베이스 명령을 함께 모으는 본
 |---|---|
 | `main` | 최종 안정 버전 |
 | `develop` | 기존 teleop을 포함하고 기능별 PR을 통합하는 개발 브랜치 |
-| `feature/isaacsim_basic` | 기존 teleop에 카메라·기초 교육자료 1~5편과 실습 창 자동 배치를 추가한 작업 브랜치 |
+| `feature/isaacsim_basic` | 기존 teleop에 카메라·기초 교육자료 1~6편과 실습 창 자동 배치를 추가한 작업 브랜치 |
 
 기존 teleop 작업은 `develop`에 통합했습니다. 새 기능은 `feature/기능명`에서 작업하고 PR로 `develop`에 통합합니다.
 `feature/isaacsim_basic`에는 기존 teleop과 이후 추가한 교육자료가 함께 포함되어 있습니다.
@@ -133,7 +142,7 @@ export는 현재 터미널에만 적용됩니다. 새 터미널에서는 다시 
 ~~~
 
 기초 교육의 1~3편, 4편 키보드 실습, 5편만 진행한다면 `./lekiwi setup sim`으로 Isaac Sim 이미지만 빌드해도 됩니다.
-실제 리더를 사용하는 4편 실습에는 LeRobot 이미지도 필요합니다.
+실제 리더를 사용하는 4편 실습과 6편 데이터셋 변환에는 LeRobot 이미지도 필요합니다.
 
 - doctor: Docker 접근, GPU와 번들 자산 확인.
 - setup all: Isaac Sim 이미지와 LeRobot/리더암 이미지 모두 빌드. 최초 다운로드·설치에는 시간이 걸립니다.
@@ -316,7 +325,8 @@ data/
 ├── teleop/       # 실행별 상태와 sim.log
 ├── captures/     # 화면 캡처
 ├── isaacsim_basic/ # 기초 실습 장면과 5편 에피소드 JSON
-├── datasets/     # 향후 데이터셋 공간 (현재 녹화 기능 없음)
+├── recordings/   # 6편 원본 RGB·JSONL·manifest
+├── datasets/     # 변환한 로컬 LeRobot 데이터셋
 ├── outputs/      # 학습 출력
 └── cache/, logs/, isaac-data/, home/  # 캐시·설정
 ~~~

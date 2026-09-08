@@ -23,6 +23,8 @@ RUN python /opt/lekiwi/docker/repair-decord-metadata.py \
     && python -m pip freeze > /opt/lekiwi/installed-packages.txt
 COPY tools/check_runtime.py /opt/lekiwi/tools/check_runtime.py
 COPY tools/so101_leader.py /opt/lekiwi/tools/so101_leader.py
+COPY tools/export_dataset.py /opt/lekiwi/tools/export_dataset.py
+COPY isaac_sim/episode_data.py /opt/lekiwi/isaac_sim/episode_data.py
 COPY isaac_sim/teleop_bridge.py /opt/lekiwi/isaac_sim/teleop_bridge.py
 COPY docker/lerobot-entrypoint.sh /opt/lekiwi/docker/lerobot-entrypoint.sh
 COPY README.md /opt/lekiwi/README.md

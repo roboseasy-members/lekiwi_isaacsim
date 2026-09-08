@@ -35,7 +35,8 @@ USD 카메라는 -Z 정면·+Y 위를 사용하므로 Camera 자식에 X축 180�
 뷰포트에서 `C`를 누르면 전체 → 전방 → 손목 시점으로 순환한다.
 `T`는 전체 시점으로 돌아가 로봇 추적을 전환한다.
 기존 `P` 캡처는 선택한 뷰포트를 저장한다.
-두 카메라 동시 녹화·시간 동기화·데이터셋 기록은 아직 구현하지 않았다.
+두 카메라 동기 RGB·상태·명령 수집과 LeRobot 변환은
+[6편](../isaacsim_basic/06_lekiwi_dataset/README.md)의 `./lekiwi record`에서 제공한다.
 640×480의 4:3 광학 비율과 수평 화각 70°는 임시값이다.
 뷰포트 캡처 픽셀 크기는 현재 창 크기를 따른다.
 
@@ -58,7 +59,7 @@ translation (0.019988279335, 0.001703025019, 0.052884) m, 회전 0이다.
 TF 연결 때문에 ROS 의존성을 추가할 필요는 없다. ROS/RViz 확인용 파일은
 기존 `.local_ros/`에서 관리하며 Git·Docker에서 제외한다.
 
-## 이번 변경의 검증 범위
+## 최초 카메라 추가 당시 검증 이력
 
 - 호스트 자동 검사: `PYTHONPATH= PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -q tests`
   → 165 passed, 7 skipped. 생략 항목은 호스트의 USD/Xacro 의존성 부재다.
@@ -67,5 +68,6 @@ TF 연결 때문에 ROS 의존성을 추가할 필요는 없다. ROS/RViz 확인
   (Isaac 내장 셰이더 의존성 검사와 Xacro 재생성 검사는 이 실행에서 제외).
 - Python/Bash 문법, Compose 설정, `git diff --check` 통과.
 - 로컬 RViz에서 카메라 외형·TF 표시와 soarm_base_link 기준 정면 축 확인.
-- Docker sudo 인증이 필요하여 변경 이미지 빌드, Isaac 렌더링과 C 키 시점 전환,
-  실제 영상 가림·화각 검사는 아직 수행하지 못했다. 위 검사는 이를 대신하지 않는다.
+- 최초 추가 시점에는 이미지 빌드와 실제 렌더링 검사를 완료하지 못했다.
+- 이후 3편 제작에서 C 시점 전환·가림·화각을 실제 GUI로 확인했고, 6편 제작에서 두 RGB 기록·변환을 검증했다.
+  최신 결과는 [교육자료 검증 기록](../isaacsim_basic/VALIDATION.md)을 따른다. 실측 TF 보정은 남아 있다.

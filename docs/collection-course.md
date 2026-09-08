@@ -85,8 +85,9 @@ ACCEPT_EULA=Y ./lekiwi teleop \
 
 같은 저장 배치로 새 실행을 만들며 이전 파일을 덮어쓰지 않는다.
 통합 teleop에서는 기존 보정 재사용 질문과 `R` 활성화 절차가 유지된다.
-향후 데이터셋 수집도 이 `layout.json`을 에피소드 환경 설정으로 사용한다.
-아직 카메라 동기화·LeRobotDataset 기록·런타임 에피소드 리셋·바구니 성공 판정은 없다.
+6편 수집은 이 `layout.json`의 초기 배치를 에피소드 metadata에 보관한다.
+두 카메라 동기 기록과 LeRobot 변환은 [6편 교재](../isaacsim_basic/06_lekiwi_dataset/README.md)를 따른다.
+런타임 에피소드 리셋과 자동 바구니 성공 판정은 없으며 성공 여부는 사용자가 표시한다.
 
 ## Isaac Script Editor에 붙여넣기
 

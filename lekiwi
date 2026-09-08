@@ -15,13 +15,15 @@ usage() {
     echo '  setup [sim|lerobot|all]    Build images locally (default: all)'
     echo '  pull [sim|lerobot|all]     Pull published images configured in .env'
     echo '  sim                       Open the keyboard-drive demo (X11/XWayland)'
+    echo '  record                    Open LeKiwi RGB/action recording (no USB)'
+    echo '  export-dataset ARGS       Convert saved recordings to a local LeRobot dataset'
     echo '  basic [--lesson NAME]     Open the physics/joint classroom (no USB)'
     echo '  test-recording            Check classroom recording/replay (no USB)'
     echo '  test-basic                Check classroom physics inside Docker (no USB)'
     echo '  scene [--seed N|--layout FILE] [--start-count N --middle-count N]  Open collection course'
     echo '        [--block red|orange|yellow|green --basket COLOR] Select a task'
     echo '  calibrate --port DEV --id NAME  Calibrate/reuse SO101 leader (interactive)'
-    echo '  teleop --port DEV --id NAME     SO101 leader + keyboard base (interactive)'
+    echo '  teleop --port DEV --id NAME [--record]  SO101 leader + keyboard base (interactive)'
     echo '         [--scene random|/data/scenes/course.XXXXXXXX/layout.json] Random blocks or replay'
     echo '  validate                  Check bundled URDF and meshes inside Docker'
     echo '  validate-usd              Check composed USD and physics configuration'
@@ -33,14 +35,14 @@ usage() {
     echo '  train act|groot [ARGS]     Forward training arguments to lerobot-train'
     echo '  status                    Show this project’s containers'
     echo '  stop                      Stop only this project’s simulation container'
-    echo 'SO101 hardware validation is required; recording and evaluation are not connected yet.'
+    echo 'Recording: record / teleop --record. Local export: export-dataset. Hardware validation and policy evaluation remain separate.'
 }
 
 command_name="${1:-help}"
 if (($#)); then shift; fi
 case "$command_name" in
     help|-h|--help) usage; exit 0 ;;
-    doctor|config|setup|pull|sim|basic|test-basic|test-recording|scene|calibrate|teleop|validate|validate-usd|test-physics|test-arm|test-scene|build-assets|check-ml|train|status|stop) ;;
+    doctor|config|setup|pull|sim|record|export-dataset|basic|test-basic|test-recording|scene|calibrate|teleop|validate|validate-usd|test-physics|test-arm|test-scene|build-assets|check-ml|train|status|stop) ;;
     *) usage >&2; fail "Unknown command: $command_name" ;;
 esac
 
@@ -50,7 +52,7 @@ if [[ "${LEKIWI_DOCKER_SUDO:-0}" == 1 ]]; then
     # Preserve only the values used by Compose, including the login user's IDs.
     # Do not run this entire launcher as root or inherit an arbitrary root HOME.
     sudo -v || fail 'Could not obtain Docker sudo access.'
-    docker_cmd=(sudo --preserve-env=LEKIWI_UID,LEKIWI_GID,LEKIWI_DATA_DIR,LEKIWI_SIM_IMAGE,LEKIWI_LEROBOT_IMAGE,ACCEPT_EULA,DISPLAY,LEKIWI_XAUTH_FILE,LEKIWI_LEADER_PORT,LEKIWI_LEADER_GID,LEKIWI_TELEOP_STATE,LEKIWI_TELEOP_SESSION,LEKIWI_ARM_SIGNS,LEKIWI_ARM_OFFSETS_DEG,LEKIWI_ARM_MAX_SPEED,LEKIWI_COURSE_LAYOUT,LEKIWI_CAMERA_CONFIG docker)
+    docker_cmd=(sudo --preserve-env=LEKIWI_UID,LEKIWI_GID,LEKIWI_DATA_DIR,LEKIWI_SIM_IMAGE,LEKIWI_LEROBOT_IMAGE,ACCEPT_EULA,DISPLAY,LEKIWI_XAUTH_FILE,LEKIWI_LEADER_PORT,LEKIWI_LEADER_GID,LEKIWI_TELEOP_STATE,LEKIWI_TELEOP_SESSION,LEKIWI_ARM_SIGNS,LEKIWI_ARM_OFFSETS_DEG,LEKIWI_ARM_MAX_SPEED,LEKIWI_COURSE_LAYOUT,LEKIWI_CAMERA_CONFIG,LEKIWI_RECORDING docker)
 fi
 compose=("${docker_cmd[@]}" compose --project-directory "$project_dir"
     --project-name "$project_name" -f "$project_dir/compose.yaml")
@@ -120,6 +122,16 @@ if [[ "$command_name" == check-ml ]]; then
     ensure_image lerobot
     exec "${compose[@]}" run --rm --no-deps -T lerobot check --gpu "$@"
 fi
+if [[ "$command_name" == export-dataset ]]; then
+    ensure_image lerobot
+    exec "${compose[@]}" run --rm --no-deps -T -e HF_HUB_OFFLINE=1 lerobot \
+        python /opt/lekiwi/tools/export_dataset.py "$@"
+fi
+if [[ "$command_name" == record ]]; then
+    (($# == 0)) || fail 'record takes no arguments; select a task in the recording panel.'
+    export LEKIWI_RECORDING=1
+    export LEKIWI_COURSE_LAYOUT="${LEKIWI_COURSE_LAYOUT:-random}"
+fi
 if [[ "$command_name" == train ]]; then
     policy="${1:-}"
     [[ "$policy" == act || "$policy" == groot ]] || fail 'Choose train act or train groot.'
@@ -133,6 +145,9 @@ if [[ "$command_name" == calibrate || "$command_name" == teleop ]]; then
     leader_port='' leader_id=''
     while (($#)); do
         case "$1" in
+            --record)
+                [[ "$command_name" == teleop ]] || fail '--record is only for teleop'
+                export LEKIWI_RECORDING=1; shift ;;
             --port) (($# >= 2)) || fail '--port needs a device'; leader_port="$2"; shift 2 ;;
             --id) (($# >= 2)) || fail '--id needs a stable name'; leader_id="$2"; shift 2 ;;
             --scene)
@@ -176,7 +191,7 @@ running="$("${docker_cmd[@]}" ps -q \
 [[ -z "$running" ]] || fail 'A simulation is already running. Close it or use ./lekiwi stop first.'
 
 case "$command_name" in
-    sim|teleop) sim_command=keyboard ;;
+    sim|record|teleop) sim_command=keyboard ;;
     basic) sim_command=basic ;;
     test-basic) sim_command=basic-test ;;
     test-recording) sim_command=recording-test ;;
@@ -222,7 +237,7 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
-if [[ "$command_name" == sim || "$command_name" == teleop || "$command_name" == scene || "$command_name" == basic ]]; then
+if [[ "$command_name" == sim || "$command_name" == record || "$command_name" == teleop || "$command_name" == scene || "$command_name" == basic ]]; then
     command -v xauth >/dev/null || fail 'Install xauth on the host for GUI authentication.'
     [[ "${DISPLAY:-}" =~ ^:([0-9]+)(\.[0-9]+)?$ ]] \
         || fail 'Set DISPLAY to a local X11/XWayland display, such as :0 or :1.'

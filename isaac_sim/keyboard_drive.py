@@ -45,6 +45,7 @@ CAPTURE_PATH = os.environ.get("LEKIWI_CAPTURE_PATH", "")
 TELEOP_STATE = os.environ.get("LEKIWI_TELEOP_STATE", "")
 TELEOP_SESSION = os.environ.get("LEKIWI_TELEOP_SESSION", "")
 COURSE_LAYOUT = os.environ.get("LEKIWI_COURSE_LAYOUT", "")
+RECORDING = os.environ.get("LEKIWI_RECORDING", "0") == "1"
 GROUND_Z = float(os.environ.get("LEKIWI_GROUND_Z", "-0.021"))
 SPAWN_Z = float(os.environ.get("LEKIWI_SPAWN_Z", "0.055"))
 LINEAR_SPEED = float(os.environ.get("LEKIWI_LINEAR_SPEED", "0.25"))
@@ -399,7 +400,7 @@ def main():
     print(f"LEKIWI_DRIVE opening_stage={USD_PATH}", flush=True)
     world = World(
         physics_dt=PHYSICS_DT,
-        rendering_dt=1.0 / 60.0,
+        rendering_dt=1.0 / (30.0 if RECORDING else 60.0),
         stage_units_in_meters=1.0,
     )
     robot = world.scene.add(
@@ -449,7 +450,8 @@ def main():
     if not COURSE_LAYOUT:
         _create_ground_grid(stage)
     _create_lighting(stage)
-    robot_cameras = attach_cameras(stage, load_camera_config(os.environ.get("LEKIWI_CAMERA_CONFIG")))
+    camera_config = load_camera_config(os.environ.get("LEKIWI_CAMERA_CONFIG"))
+    robot_cameras = attach_cameras(stage, camera_config)
     for name, info in robot_cameras.items():
         print(f"LEKIWI_CAMERA name={name} path={info['camera_path']} optical_frame={info['optical_frame']}", flush=True)
     world.reset()
@@ -602,6 +604,24 @@ def main():
     # Stage가 준비되면 같은 영역의 탭으로 배치하고 조작 안내를 먼저 표시한다.
     control_window.deferred_dock_in("Stage", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
 
+    recorder = None
+    if RECORDING:
+        from recording_panel import RecordingPanel
+        recorder = RecordingPanel(robot_cameras, camera_config,
+                                  "so101_leader_keyboard" if arm_control else "keyboard_home_hold",
+                                  layout if COURSE_LAYOUT else None)
+
+    def recording_state():
+        # 베이스 속도는 world 좌표에서 로봇의 수평 base 좌표로 변환한다.
+        pos, quat = _base_pose(root_body)
+        heading = _yaw(quat)
+        linear = robot.get_linear_velocity()
+        angular = robot.get_angular_velocity()
+        state = [float(v) for v in robot.get_joint_positions(joint_indices=arm_indices)]
+        state += [float(math.cos(heading) * linear[0] + math.sin(heading) * linear[1]),
+                  float(-math.sin(heading) * linear[0] + math.cos(heading) * linear[1]), float(angular[2])]
+        return state, [float(v) for v in (*pos, *quat)]
+
     position = settled_position
     orientation = settled_orientation
     last_command = None
@@ -713,7 +733,15 @@ def main():
                 ))
             else:
                 _hold_arm_home(articulation_controller, arm_indices)
+            if recorder:
+                state, pose = recording_state()
+                action = [float(v) for v in (targets if arm_control else ARM_HOME_POSITIONS)] + [vx, vy, wz]
+                recorder.before_step(world, state, action, pose)
             world.step(render=True)
+            if not simulation_app.is_running():
+                break
+            if recorder:
+                recorder.after_step(world, recording_state()[0])
 
             if arm_control:
                 if arm_control.status != last_arm_status:
@@ -765,6 +793,11 @@ def main():
                 )
     finally:
         pressed.clear()
+        if recorder:
+            try:
+                recorder.close()
+            except Exception as exc:
+                carb.log_warn(f"Could not close recording resources: {exc}")
         try:
             _apply_command(robot, 0.0, 0.0, 0.0)
             if arm_control:

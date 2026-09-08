@@ -21,6 +21,7 @@ isaac_sim/**
 tools/**
 !tools/check_runtime.py
 !tools/so101_leader.py
+!tools/export_dataset.py
 !README.md
 !docs/
 docs/**

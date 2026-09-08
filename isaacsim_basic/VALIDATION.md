@@ -1,6 +1,6 @@
-# 1~5편 검증 기록
+# 1~6편 검증 기록
 
-1~4편 검증일: 2026-09-07. 5편 검증은 문서 하단의 2026-09-08 기록을 참고하세요. 대상: 이 저장소의 Isaac Sim 5.1.0 Docker 이미지와 Ubuntu 데스크톱.
+1~4편 검증일: 2026-09-07. 5·6편과 전체 재점검은 문서 하단의 2026-09-08 기록을 참고하세요. 대상: 이 저장소의 Isaac Sim 5.1.0 Docker 이미지와 Ubuntu 데스크톱.
 
 ## 교재와 패키지
 
@@ -54,7 +54,7 @@ Python/Bash 구문 검사와 `git diff --check`도 통과했습니다.
 ## 5편 · 2026-09-08
 
 5편은 한 관절 모형으로 에피소드·관측·행동·시간 대응을 배우는 기초 실습입니다.
-LeKiwi + SOARM의 영상 포함 LeRobot 녹화와 학습은 후속 범위입니다.
+이 5편 검증 당시 LeKiwi + SOARM의 영상 포함 녹화는 후속 범위였으며, 이후 6편에서 수집·변환을 구현했습니다. 학습은 별도입니다.
 
 - 실제 GUI에서 READY → RECORDING → UNSAVED → SAVED → REPLAYING → REPLAYED를 확인했습니다.
 - 60 Hz 시뮬레이션 시간으로 180프레임·3초를 기록하고 JSON을 저장한 뒤 다시 읽어 재생했습니다.
@@ -96,3 +96,44 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/lekiwi-camera-usd PYTEST_DISABLE_PLUGI
 API 근거: [NVIDIA Window 도킹 안내](https://docs.omniverse.nvidia.com/dev-guide/latest/programmer_ref/ui/widgets/window.html),
 [omni.ui.Window API](https://docs.omniverse.nvidia.com/kit/docs/omni.ui/latest/omni.ui/omni.ui.Window.html).
 실제 설치된 Isaac Sim 5.1의 `omni.ui` 타입 정의에서도 메서드와 DockPolicy 값을 확인했습니다.
+
+
+## 6편 · LeKiwi 영상·명령 수집 · 2026-09-08
+
+- `./lekiwi record`는 실물 연결 없이 기존 가상 로봇·코스에 6편 기록 창을 추가합니다.
+- 전방·손목 RGB 640×480을 같은 물리 상태에서 동기 캡처합니다. delta_time=0 캡처 동안 물리 스텝·시각 불변과 두 render reference 일치를 검사합니다.
+- 물리 계산은 기존 120 Hz를 유지하고, 기록 모드의 관측·행동 간격은 30 Hz입니다. 일반 sim/teleop의 60 Hz 렌더 루프는 유지합니다.
+- 실제 GUI에서 READY → RECORDING → UNSAVED → SAVED, 새 기록 → DISCARDED를 확인했습니다. 저장본은 유지됐습니다.
+- 전진·정지 기록 11프레임과 연습 기록 8프레임을 저장했습니다. 성공 기록의 베이스 +X 이동은 약 0.036 m이며 마지막 베이스 명령은 0입니다.
+- 총 19프레임의 관측·행동·후속 상태, 38개 원본 PNG의 시간·크기·SHA256 검사를 통과했습니다.
+- LeRobot 0.6.1 이미지에서 두 에피소드를 변환한 뒤 finalize와 재열기를 완료했습니다. 각 에피소드의 처음·중간·마지막 관측·행동 및 두 영상 디코딩을 검사했습니다.
+- `--success-only` 변환은 성공으로 표시한 11프레임만 선택했습니다.
+- 전체 자동 검사 215 passed, 1 skipped. 빈 값·수치·시간 간격·RGB 불일치·반복 render reference·파일 변조·기존 저장본 보호와 새 CLI 라우팅을 검사했습니다. 건너뛴 항목은 xacro 미설치에 따른 URDF 재생성 검사입니다.
+- 교재는 실제 GUI 5장과 실제 변환 터미널 1장을 사용합니다. 원본 PNG·빨간 표시·노션 ZIP으로 제공합니다.
+- 전체 교재 상대 링크 81개, 실제 원본과 SVG 이미지 39장, 6개 ZIP의 내부 링크·무결성 검사를 통과했습니다.
+- 물리 재생·학습·정책 실행은 이 장의 검증 범위가 아닙니다. 원본 시연은 수집 경로를 검증하는 짧은 예제이며 집기 학습 데이터로 평가하지 않았습니다.
+- 실물 리더 USB는 열지 않았습니다. `teleop --record`는 같은 기록 모듈을 사용하지만 실물 리더 수집 검증은 별도입니다.
+- 카메라 장착은 calibrated=false입니다. 손목 가림은 실제 TF 보정 전에 해결되지 않았으며 manifest와 교재에 명시했습니다.
+
+```bash
+./lekiwi record
+./lekiwi export-dataset --input /data/recordings/lekiwi.XXXXXXXX \
+  --output /data/datasets/my_new_dataset --repo-id local/my_dataset
+```
+
+### 6편 수집 시간 설정 추가
+
+- Max seconds 입력으로 에피소드별 최대 시간을 지정합니다. 기본 30초이며 0은 수동 종료입니다. 기록 중에는 값을 고정하고 원본 manifest에 보관합니다.
+- 실제 GUI에서 120초 설정 → 13프레임 수동 종료·저장, 1초 설정 → 정확히 30프레임 자동 종료, 0 설정 → 11프레임 수동 종료·버리기를 확인했습니다. 이전 저장본은 유지됐습니다.
+- 관련 검사 60 passed, 1 skipped. 시간 경계와 30초 초과, 무제한 및 입력 잠금 검사를 추가했습니다.
+- 실제 GUI 원본 5장과 빨간 표시, 교재·기록지·노션 ZIP을 갱신했습니다. 변환 터미널 캡처는 앞선 별도 검증 실행 결과를 유지했습니다.
+
+## 1~6편 전체 재점검 · 2026-09-08
+
+- 완료 목표·실습 명령·단위·저장 위치·기록지와 구현을 대조했습니다. 3·5편 및 카메라·코스 안내에 남은 녹화 미구현 문구를 6편 수집·변환 안내로 갱신했습니다.
+- 1편 90~150분부터 6편까지 시간을 합산했습니다. 실물 없는 기본 과정 375~555분, 4·6편 리더 선택 실습 포함 465~705분입니다. 설치 완료 PC의 계획용 추정이며 실제 수업 측정값이 아닙니다.
+- 루트·교육 목차 README에 2일 12~14시간 운영안, 설치·휴식·리더 공유·긴 기록의 실제 대기 시간을 구분했습니다.
+- 전체 자동 검사 225 passed, 1 skipped. 도움말 수정 후 배포 관련 검사 33 passed, 1 skipped도 통과했습니다. 생략 항목은 호스트 xacro 미설치에 따른 URDF 재생성 검사입니다.
+- 교육자료 상대 링크 84개, 루트·연결 문서 상대 링크 25개, 실제 캡처 원본·SVG 39장과 6개 ZIP의 내부 링크·무결성 검사를 통과했습니다. 변경한 1·3·4·5·6편 ZIP을 재생성했습니다.
+- NVIDIA 5.1 요구사항, LeRobot v3의 finalize 안내, Notion ZIP·HTML 가져오기 공식 안내를 다시 확인했습니다. 기존 SOURCES 링크와 설치 사양을 대조하고 ZIP 메뉴의 현재 이름을 반영했습니다.
+- 이번 재점검은 문서·코드 대조와 자동 검사입니다. 앞선 GUI·PhysX·데이터 변환 실측 기록을 보존하며 전체 GUI 수업을 다시 진행했다고 간주하지 않습니다. 실물 리더 수업, 실측 TF 보정, Notion 계정 가져오기와 모델 학습은 별도 검증입니다.
