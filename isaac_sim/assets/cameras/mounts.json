@@ -3,22 +3,29 @@
   "units": "m",
   "convention": "optical_x_right_y_down_z_forward",
   "calibrated": false,
+  "measurement": {
+    "reference_frame": "soarm_base_link",
+    "joint_positions_deg": {"shoulder_pan": 0, "shoulder_lift": -90, "elbow_flex": 90, "wrist_flex": 0, "wrist_roll": -90, "gripper": 0},
+    "front_translation_m": [0.08691, 0.0, -0.05928],
+    "wrist_translation_m": [0.20540, 0.0, 0.20858],
+    "note": "사용자 제공 측면 도면의 X·Z 치수. Y=0, front 정면 +X, wrist 정면 전방 아래 45° 및 화면 위쪽은 잠정 해석이다. 관절각은 RViz에서 재현한 자세이며 실제 측정값은 아니다."
+  },
   "cameras": {
     "front": {
       "parent_link": "base_link",
-      "translation": [0.110, 0.0017, -0.0063],
+      "translation": [0.106898279335, 0.001703025019, -0.006396],
       "quaternion_xyzw": [-0.5, 0.5, -0.5, 0.5],
       "resolution": [640, 480],
       "horizontal_fov_deg": 70.0,
-      "note": "Provisional lens center at the front body camera opening; looks along base +X."
+      "note": "SOARM base 기준 도면의 렌즈 중심을 base_link 기준으로 변환. 정면은 +X로 유지."
     },
     "wrist": {
       "parent_link": "wrist_link",
-      "translation": [-0.035, -0.045, 0.0181],
-      "quaternion_xyzw": [0.37992819659091526, 0.5963678105290181, -0.37992819659091526, 0.5963678105290182],
+      "translation": [-0.05877999535160787, -0.11383588589719157, 0.018277254718764294],
+      "quaternion_xyzw": [0.2705985578116937, 0.6532837021929411, -0.27059514269264695, 0.653280256636049],
       "resolution": [640, 480],
       "horizontal_fov_deg": 70.0,
-      "note": "Provisional mount above wrist, before wrist_roll; points toward the grasp area."
+      "note": "도면 재현 자세에서 SOARM base 기준 렌즈 중심과 전방 아래 45° 방향을 wrist_link 기준으로 변환. 기존 wrist_roll 이전 장착 링크를 유지하며 실제 고정 링크는 추가 확인 필요."
     }
   }
 }

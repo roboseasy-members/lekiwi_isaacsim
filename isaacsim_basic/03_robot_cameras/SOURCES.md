@@ -6,16 +6,25 @@
 - [OpenUSD: UsdGeomCamera](https://openusd.org/release/api/class_usd_geom_camera.html): 카메라 축, Aperture/Focal Length 및 Clipping 단위.
 - 프로젝트 `isaac_sim/robot_cameras.py`, `assets/cameras/mounts.json`, `keyboard_drive.py`: 장착값, C/T/P 기능, 저장 경로.
 
-임시 장착 위치는 프로젝트 모델 형상 기준이며 NVIDIA 문서가 제공한 실측값이 아닙니다.
+현재 기본 장착 위치의 X·Z는 사용자가 제공한 SOARM base 기준 측면 도면에서 가져왔습니다. NVIDIA 문서가 제공한 실측값이 아닙니다. Y·방향·재현 자세의 가정은 설정 JSON과 교재에 기록했습니다.
 TF 식은 좌표 변환의 합성 관계이며, 실제 보정값은 교육생이 측정해야 합니다.
 
-## 실제 화면 확인
+## 실제 화면 재촬영 · 2026-09-08
 
-- Docker GUI에서 OVERVIEW → FRONT → WRIST 전환과 상태 표시를 확인했습니다.
-- 현재 기본 자세에서 front는 코스 전방을 표시하고 wrist는 팔 부품에 크게 가려집니다.
-  손목 영상은 가림 진단 예시입니다. 보정 완료나 작업 가능 시야로 보고하지 않습니다.
-- Camera와 부모 optical frame을 선택하여 Aperture·Clipping·Translate 속성 및 Create Camera 메뉴를 확인했습니다.
-- Focal Length 2배 변경 시 같은 바구니가 크게 보이는 실제 영상을 확인했습니다.
-- 원본은 `images/screenshots/`, 강조 사각형·설명은 `images/annotations.json`입니다.
-  UI 픽셀을 재구성하지 않고 SVG 테두리와 아래 설명을 추가해 PNG로 렌더링했습니다.
-- 두 카메라 동시 촬영·640×480 고정 렌더링·동기화·실측 TF·다양한 팔 자세의 영상 가림은 이 과정에서 검증하지 않았습니다.
+- 도면 TF를 포함한 Docker 이미지에서 3편의 `LEKIWI_COURSE_LAYOUT=random ./lekiwi sim`을 실행했습니다.
+- OVERVIEW → FRONT → WRIST 전환과 `command: STOP`을 확인했습니다.
+  front는 전방 도로·바구니·큐브를, wrist는 집게 양쪽과 그 사이 바닥을 표시합니다.
+- 시뮬레이션을 일시정지한 뒤 Camera와 부모 optical frame을 선택해 Aperture·Clipping·Translate 속성과 Create Camera 메뉴를 촬영했습니다.
+- front의 Translate 표시가 새 JSON과 일치하는 것을 확인했습니다. Property 숫자는 일부 소수점을 반올림합니다.
+- Focal Length를 14.96342 → 29.92684로 바꾸어 같은 위치의 바구니가 크게 보이는 것을 확인하고 14.96342로 복구했습니다.
+  장면 편집은 저장하지 않고 종료했으며 다음 실행은 기본 JSON의 원래 광학 설정을 사용합니다.
+- 실제 UI 화면 7장의 원본은 `images/screenshots/`, 강조 사각형·설명은 `images/annotations.json`입니다.
+  커서는 설명 대상 밖으로 이동했습니다. 원본 픽셀을 바꾸지 않고 SVG 테두리와 아래 설명을 추가했습니다.
+- 이번 재촬영은 기본 자세의 시점·속성 확인입니다. 다양한 팔 자세의 가림, 실물 장착 정밀도와 집기 품질은 별도 확인 대상입니다.
+
+## 도면 TF 반영 후 확인
+
+2026-09-08 기본 카메라 JSON에 SOARM base 기준 도면 치수를 반영하고 Docker 이미지를 다시 빌드했습니다.
+실제 `record` GUI에서 두 RGB와 30프레임 저장을 확인했으며, 저장된 카메라 설정이 기본 JSON과 일치했습니다.
+현재 3편 화면은 위 재촬영본으로 교체했습니다. 이번 검증은 최종 실물 보정이나 집기 품질 검증을 의미하지 않습니다.
+자세한 범위는 [전체 검증 기록](../VALIDATION.md)을 참고하세요.

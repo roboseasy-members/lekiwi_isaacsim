@@ -3,6 +3,7 @@ import json
 import math
 from pathlib import Path
 import sys
+import xml.etree.ElementTree as ET
 
 import pytest
 
@@ -66,7 +67,7 @@ def test_usd_camera_axis_conversion_and_attachment_motion(usd):
     # USD forward -Z and up +Y must match optical forward +Z and up -Y.
     assert tuple(front_before.TransformDir(Gf.Vec3d(0, 0, -1))) == pytest.approx((1, 0, 0), abs=1e-6)
     assert tuple(front_before.TransformDir(Gf.Vec3d(0, 1, 0))) == pytest.approx((0, 0, 1), abs=1e-6)
-    assert tuple(front_before.ExtractTranslation()) == pytest.approx((.110, .0017, -.0063))
+    assert tuple(front_before.ExtractTranslation()) == pytest.approx((.106898279335, .001703025019, -.006396))
     rotation.Set(40)
     assert transform("front") == front_before
     assert (transform("wrist").ExtractTranslation() - wrist_before.ExtractTranslation()).GetLength() > .02
@@ -95,7 +96,50 @@ def test_bundled_robot_camera_placement_preserves_physics(usd):
         assert c.GetHorizontalApertureAttr().Get() / c.GetVerticalApertureAttr().Get() == pytest.approx(4 / 3)
         fov = math.degrees(2 * math.atan(c.GetHorizontalApertureAttr().Get() / (2 * c.GetFocalLengthAttr().Get())))
         assert fov == pytest.approx(70.0, abs=1e-5)
-    wrist = UsdGeom.Xformable(stage.GetPrimAtPath(cameras["wrist"]["camera_path"])).ComputeLocalToWorldTransform(0)
-    forward = wrist.TransformDir(Gf.Vec3d(0, 0, -1))
-    assert tuple(forward) == pytest.approx((math.cos(math.radians(25)), 0, -math.sin(math.radians(25))), abs=2e-5)
-    assert tuple(wrist.ExtractTranslation()) == pytest.approx((.297122, .001526, .377254), abs=2e-5)
+
+
+def test_drawing_camera_centers_and_optical_axes_at_measurement_pose(usd):
+    """실제 URDF 관절 체인과 USD 카메라를 합성해 도면 치수·정면을 검증한다."""
+    Gf, Usd, UsdGeom, UsdPhysics = usd
+    model = ET.parse(ROOT / "isaac_sim/assets/lekiwi_soarm/urdf/lekiwi_soarm.urdf")
+    joints = {j.find("child").get("link"): j for j in model.findall("joint")}
+    angles = dict(shoulder_pan=0, shoulder_lift=-90, elbow_flex=90,
+                  wrist_flex=0, wrist_roll=-90, gripper=0)
+
+    def rotation(axis, degrees):
+        return Gf.Matrix4d(1).SetRotate(Gf.Rotation(Gf.Vec3d(*axis), degrees))
+
+    def link_transform(name):
+        if name == "base_link":
+            return Gf.Matrix4d(1)
+        joint = joints[name]
+        origin = joint.find("origin")
+        rpy = [float(v) for v in origin.get("rpy", "0 0 0").split()]
+        xyz = [float(v) for v in origin.get("xyz", "0 0 0").split()]
+        local = Gf.Matrix4d(1)
+        for axis, angle in zip(((1, 0, 0), (0, 1, 0), (0, 0, 1)), rpy):
+            local *= rotation(axis, math.degrees(angle))
+        local *= Gf.Matrix4d(1).SetTranslate(Gf.Vec3d(*xyz))
+        if joint.get("type") != "fixed":
+            axis = [float(v) for v in joint.find("axis").get("xyz").split()]
+            local = rotation(axis, angles.get(joint.get("name"), 0)) * local
+        return local * link_transform(joint.find("parent").get("link"))
+
+    stage = Usd.Stage.CreateInMemory()
+    for name in ("base_link", "wrist_link"):
+        link = UsdGeom.Xform.Define(stage, f"/LeKiwi/{name}")
+        link.AddTransformOp().Set(link_transform(name))
+        UsdPhysics.RigidBodyAPI.Apply(link.GetPrim())
+    cameras = attach_cameras(stage)
+    base_inverse = link_transform("soarm_base_link").GetInverse()
+    expected = {
+        "front": ((.08691, 0, -.05928), (1, 0, 0)),
+        "wrist": ((.20540, 0, .20858), (math.sqrt(.5), 0, -math.sqrt(.5))),
+    }
+    for name, (center, forward) in expected.items():
+        camera = UsdGeom.Xformable(stage.GetPrimAtPath(cameras[name]["camera_path"]))
+        transform = camera.ComputeLocalToWorldTransform(0) * base_inverse
+        assert tuple(transform.ExtractTranslation()) == pytest.approx(center, abs=1e-8)
+        # USD orient의 float 정밀도를 허용한다.
+        assert tuple(transform.TransformDir(Gf.Vec3d(0, 0, -1))) == pytest.approx(forward, abs=1e-7)
+        assert tuple(transform.TransformDir(Gf.Vec3d(1, 0, 0))) == pytest.approx((0, -1, 0), abs=1e-7)
