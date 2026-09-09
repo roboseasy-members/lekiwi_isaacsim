@@ -129,6 +129,23 @@ UID/GID and load code and assets from the image, not a host workspace mount.
 
 ## Physics policy
 
+### SO101 손가락 접촉
+
+`sim`·`scene`·`teleop`·`record`는 `gripper_contacts.py`를 통해 고정 손가락과 움직이는
+손가락의 충돌 형상을 `convexDecomposition`으로 설정합니다. 단일 Convex Hull이
+손가락 안쪽의 빈 공간을 메워 큐브를 밀어내던 현상을 줄이기 위한 실행 시 설정입니다.
+원본 USD의 충돌 분기 두 곳에만 적용하며 질량·마찰·모터 힘은 기존 실행 설정을 사용합니다.
+새 기록의 메타데이터에는 `gripper_collision_approximation`을 남깁니다.
+
+`./lekiwi test-gripper`는 실제 LeKiwi 자산 6개에 가상 입력을 적용해 큐브 각도
+0°·±20°·45° 및 좌우 3mm 위치 차이에서 닫기·어깨/손목 회전·유지·놓기를 검사합니다.
+검사 배치와 닫기 동안만 큐브 중력을 끄며, 이동·유지·놓기에서는 중력을 켭니다.
+따라서 접촉 유지의 회귀 검사이며 바닥 접근부터 바구니에 넣기까지의 성공률을 뜻하지 않습니다.
+
+형상과 접촉 모델의 근거: [Isaac Sim 5.1 물리 기본 문서](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/physics/simulation_fundamentals.html#convex-decomposition).
+
+### 기본 자산
+
 - The base and wheel mass/inertia baseline comes from the existing GitHub Isaac
   USD rather than being replaced by display-only ROS defaults.
 - SO101 link inertias and finite limits come from the completed SO101 Xacro.

@@ -24,3 +24,18 @@
 - Docker `test-arm`: 6개 관절, 절대각·지연·재활성화 검사 PASS. 개별 추종 최대 오차 약 0.0018 rad.
 - Docker `test-physics`: 전진 0.22832 m, 좌측 0.23298 m, 반시계 회전 0.78453 rad 및 최종 PASS.
 - 자동 입력 검사는 실제 리더의 보정·방향 검증을 대신하지 않습니다.
+
+
+## 2026-09-09 초기화·화면 배치 갱신
+
+- 1·2편은 편집값을 유지하는 Stop 기반 초기화, 5편은 저장 기록을 보존하는 모형 초기화를 추가했습니다.
+- 3·4·6편은 좌측 Perspective·우측 Front Camera와 색상 라인별 랜덤 큐브 리셋을 공통 사용합니다.
+- 변경된 시작·조작·기록 화면을 실제 Isaac Sim 5.1 Docker에서 새로 캡처했습니다. 기본 도형·카메라 속성 메뉴 등 변경 없는 상세 화면은 기존 검증 캡처를 유지합니다.
+- 원본 PNG는 수정하지 않고 SVG의 빨간 테두리와 별도 설명 영역으로 강조했습니다. 캡처에 마우스 커서는 포함되지 않으며 버튼·상태가 보이는지 확인했습니다.
+- 새 캡처의 고유 폴더 이름은 제작 중 임시 실습 결과 예시이며, 학생은 자신의 실행 로그에 나온 경로를 사용합니다.
+
+## 손가락 충돌 형상 개선 · 2026-09-09
+
+- 단일 Convex Hull이 손가락 안쪽 공간을 메우는 형상을 확인해 고정·이동 손가락 두 곳에 Convex Decomposition을 적용했습니다.
+- 가상 시험의 비교 조건·결과·한계는 [전체 검증 기록](../VALIDATION.md)에 남겼습니다. 재생성한 ZIP에 집기 안내와 `./lekiwi test-gripper` 명령을 포함합니다.
+- 공식 근거: [Isaac Sim 5.1 · Convex Decomposition](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/physics/simulation_fundamentals.html#convex-decomposition).

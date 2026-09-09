@@ -73,7 +73,7 @@ class RecordingPanel:
                     self.status = ui.Label("WARMING UP", height=24)
                     self.detail = ui.Label("Waiting for both cameras", height=40, word_wrap=True)
                     self.output = ui.Label(str(self.directory), height=52, word_wrap=True)
-                    ui.Label("Save keeps this pose. New Record starts here; no scene reset.", height=28, word_wrap=True)
+                    ui.Label("Save keeps this pose. Use Reset scene in the drive tab for new cube positions.", height=28, word_wrap=True)
                     ui.Label("Mounts: " + ("calibrated" if config["calibrated"] else "provisional - inspect wrist occlusion"), height=25)
         self.window.deferred_dock_in("Stage", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
         print(f"LEKIWI_RECORD directory={self.directory}", flush=True)

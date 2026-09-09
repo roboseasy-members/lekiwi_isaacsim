@@ -9,6 +9,16 @@ recording = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(recording)
 
 
+@pytest.mark.parametrize('mode', ['RECORDING', 'UNSAVED', 'PREPARING', 'REPLAYING', 'ERROR'])
+def test_reset_model_does_not_interrupt_unsaved_or_active_work(mode):
+    assert not recording.can_reset_model(mode)
+
+
+@pytest.mark.parametrize('mode', ['READY', 'SAVED', 'REPLAYED', 'DISCARDED'])
+def test_reset_model_between_episodes(mode):
+    assert recording.can_reset_model(mode)
+
+
 def sample():
     return [{"current_time": 2+i/60, "current_time_step": 120+i,
              "data": {"frame_index": i, "episode_time": i/60, "next_time": 2+(i+1)/60,

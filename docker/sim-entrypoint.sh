@@ -24,6 +24,7 @@ case "$command_name" in
     validate-usd) exec "$checked" 'LEKIWI_USD_VALIDATE result=PASS' /isaac-sim/python.sh "$sim_dir/validate_usd.py" "$@" ;;
     physics-test) exec "$checked" 'LEKIWI_PHYSICS_SMOKE result=PASS' /isaac-sim/python.sh "$sim_dir/physics_smoke_test.py" "$@" ;;
     arm-test) exec "$checked" 'SO101_ARM_TEST result=PASS' /isaac-sim/python.sh "$sim_dir/arm_smoke_test.py" "$@" ;;
+    gripper-test) exec "$checked" 'LEKIWI_GRIP_TEST result=PASS' /isaac-sim/python.sh "$sim_dir/gripper_smoke_test.py" "$@" ;;
     build-assets)
         # Build into a fresh output directory; never overwrite shipped assets.
         build_dir="$(mktemp -d /data/asset-build.XXXXXXXX)"

@@ -1,6 +1,5 @@
 """한 관절의 실제 PhysX 상태·명령을 기록하고 재생하는 5편 실습. USB 미사용."""
 import argparse
-import asyncio
 import json
 import math
 from pathlib import Path
@@ -8,6 +7,10 @@ import tempfile
 
 FPS = 60
 FRAME_COUNT = 180
+
+
+def can_reset_model(mode):
+    return mode in {"READY", "SAVED", "REPLAYED", "DISCARDED"}
 
 
 def check_frames(frames):
@@ -82,27 +85,34 @@ def main(test=False):
                 world.step(render=False)
             world.pause()
 
-        async def prepare_gui(next_mode):
-            nonlocal mode, index
+        def begin_preparation(next_mode):
+            nonlocal mode, preparation
+            mode = "PREPARING"
+            drive.GetTargetPositionAttr().Set(0)
+            hinge.post_reset()
+            world.play()
+            preparation = [next_mode, 120]
+
+        def prepare_gui_step():
+            nonlocal mode, index, preparation
             try:
-                drive.GetTargetPositionAttr().Set(0)
-                # PhysX 장면을 다시 만들지 않고 초기화된 모형의 기본 상태를 복원한다.
-                hinge.post_reset()
-                world.play()
-                for _ in range(30):
-                    for _ in range(4):
-                        world.step(render=False)
-                    await omni.kit.app.get_app().next_update_async()
+                # 앱의 주 반복문에서 실행해 asyncio 콜백 안의 중첩 앱 갱신을 피한다.
+                for _ in range(min(4, preparation[1])):
+                    world.step(render=False)
+                    preparation[1] -= 1
+                if preparation[1]:
+                    return
+                next_mode = preparation[0]
+                preparation = None
                 world.pause()
                 if next_mode == "RECORDING":
                     logger.reset()
                     logger.start()
                 index, mode = 0, next_mode
-                world.play()
-            except asyncio.CancelledError:
-                raise
+                if next_mode != "READY":
+                    world.play()
             except Exception as exc:
-                mode = "ERROR"
+                mode, preparation = "ERROR", None
                 print(f"BASIC_RECORDING prepare_error={exc}", flush=True)
 
         def frames():
@@ -113,8 +123,7 @@ def main(test=False):
             if mode not in {"READY", "SAVED", "REPLAYED", "DISCARDED"}:
                 return
             if not test:
-                mode = "PREPARING"
-                preparation = asyncio.ensure_future(prepare_gui("RECORDING"))
+                begin_preparation("RECORDING")
                 return
             prepare()
             logger.reset()
@@ -142,14 +151,14 @@ def main(test=False):
 
         def replay():
             nonlocal mode, index, replay_frames, errors, preparation
-            if mode not in {"SAVED", "REPLAYED"} or saved is None:
+            if mode not in {"READY", "SAVED", "REPLAYED"} or saved is None:
                 return
             logger.load(str(saved))
             replay_frames = frames()
             check_frames(replay_frames)
             if not test:
-                errors, mode = [], "PREPARING"
-                preparation = asyncio.ensure_future(prepare_gui("REPLAYING"))
+                errors = []
+                begin_preparation("REPLAYING")
                 return
             prepare()
             index, errors, mode = 0, [], "REPLAYING"
@@ -188,6 +197,9 @@ def main(test=False):
 
         prepare()
         set_camera_view(eye=(1.05, -1.6, .9), target=(0, 0, .3))
+        if not test:
+            from omni.kit.viewport.utility import get_active_viewport
+            get_active_viewport().camera_path = "/OmniverseKit_Persp"
         if test:
             start_record()
             while mode == "RECORDING":
@@ -212,7 +224,7 @@ def main(test=False):
             print("BASIC_RECORDING_TEST result=PASS", flush=True)
             return
 
-        window = ui.Window("Lesson 5 - Data Recording", width=540, height=470, style={"font_size": 16})
+        window = ui.Window("Lesson 5 - Data Recording", width=540, height=550, style={"font_size": 16})
         with window.frame:
             with ui.VStack(spacing=8):
                 ui.Label("Single-joint episode | simulation only", height=26)
@@ -223,6 +235,9 @@ def main(test=False):
                 with ui.HStack(height=36):
                     replay_button = ui.Button("3. Replay saved", clicked_fn=lambda: requests.append("replay"))
                     discard_button = ui.Button("Discard unsaved", clicked_fn=lambda: requests.append("discard"))
+                reset_button = ui.Button("Reset model (keep saved episodes)", height=32,
+                                         clicked_fn=lambda: requests.append("reset"))
+                ui.Label("Save or discard unsaved frames before Reset. Saved files are preserved.", height=44, word_wrap=True)
                 status = ui.Label("READY", height=26)
                 sample = ui.Label("60 Hz simulation time / rad", height=26)
                 detail = ui.Label("", height=42, word_wrap=True)
@@ -237,10 +252,14 @@ def main(test=False):
                 if request == "record": start_record()
                 elif request == "save": save()
                 elif request == "replay": replay()
+                elif request == "reset" and can_reset_model(mode):
+                    begin_preparation("READY")
                 elif request == "discard" and mode in {"RECORDING", "UNSAVED", "ERROR"}:
                     world.pause()
                     logger.reset()
                     mode, index = "DISCARDED", 0
+            if mode == "PREPARING":
+                prepare_gui_step()
             active = mode in {"RECORDING", "REPLAYING"}
             if active and world.is_playing():
                 tick(True)
@@ -250,7 +269,8 @@ def main(test=False):
                 app.update()
             record_button.enabled = mode in {"READY", "SAVED", "REPLAYED", "DISCARDED"}
             save_button.enabled = mode == "UNSAVED"
-            replay_button.enabled = mode in {"SAVED", "REPLAYED"}
+            replay_button.enabled = mode in {"READY", "SAVED", "REPLAYED"} and saved is not None
+            reset_button.enabled = can_reset_model(mode)
             discard_button.enabled = mode in {"RECORDING", "UNSAVED", "ERROR"}
             status.text = f"{mode} | frames: {index}/{FRAME_COUNT}"
             sample.text = f"actual: {angle():+.4f} rad | simulation: {index/FPS:.3f} s"
@@ -260,8 +280,6 @@ def main(test=False):
                            else "UNSAVED: click Save episode to keep this recording." if mode == "UNSAVED"
                            else "Save before closing. Unsaved frames will be discarded.")
             output.text = str(saved or directory)
-        if preparation and not preparation.done():
-            preparation.cancel()
         world.pause()
     finally:
         app.close()

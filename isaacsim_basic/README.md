@@ -9,12 +9,12 @@ Isaac Sim **5.1.0**, Ubuntu 데스크톱, Docker 기준 교육자료입니다.
 
 | 편 | 교재 | 내용 | 노션용 ZIP | 실제 화면 |
 |---|---|---|---|---:|
-| 1 | [객체 생성과 물리 속성](01_object_physics/README.md) | Collider, Rigid Body, 질량·중력·마찰·반발력, 열린 바구니 | [다운로드](01_object_physics/01_object_physics_notion.zip) | 11장 + 개념도 |
-| 2 | [로봇 구조와 관절](02_robot_joints/README.md) | 링크, 회전 중심·축·제한, Drive 목표·구동값, SO101 대응 | [다운로드](02_robot_joints/02_robot_joints_notion.zip) | 5장 |
+| 1 | [객체 생성과 물리 속성](01_object_physics/README.md) | Collider, Rigid Body, 질량·중력·마찰·반발력, 열린 바구니 | [다운로드](01_object_physics/01_object_physics_notion.zip) | 12장 + 개념도 |
+| 2 | [로봇 구조와 관절](02_robot_joints/README.md) | 링크, 회전 중심·축·제한, Drive 목표·구동값, SO101 대응 | [다운로드](02_robot_joints/02_robot_joints_notion.zip) | 6장 |
 | 3 | [전방·손목 카메라와 좌표](03_robot_cameras/README.md) | 시점·화각·클리핑, 렌즈 중심, TF 환산, 가림 진단 | [다운로드](03_robot_cameras/03_robot_cameras_notion.zip) | 7장 |
 | 4 | [키보드·리더암 조작](04_teleoperation/README.md) | 주행·정지·속도, 리더 준비·보정·활성화, 로그와 집기 과제 | [다운로드](04_teleoperation/04_teleoperation_notion.zip) | 4장 |
-| 5 | [데이터 수집과 저장·재생](05_data_recording/README.md) | 관측·행동·시간 대응, 에피소드 저장·재생·검사 | [다운로드](05_data_recording/05_data_recording_notion.zip) | 6장 |
-| 6 | [LeKiwi 영상·명령과 데이터셋](06_lekiwi_dataset/README.md) | 두 RGB·상태·행동 수집, 성공 표시, LeRobot 변환·검사 | [다운로드](06_lekiwi_dataset/06_lekiwi_dataset_notion.zip) | 5장 + 변환 터미널 1장 |
+| 5 | [데이터 수집과 저장·재생](05_data_recording/README.md) | 관측·행동·시간 대응, 에피소드 저장·재생·검사 | [다운로드](05_data_recording/05_data_recording_notion.zip) | 7장 |
+| 6 | [LeKiwi 영상·명령과 데이터셋](06_lekiwi_dataset/README.md) | 두 RGB·상태·행동 수집, 성공 표시, LeRobot 변환·검사 | [다운로드](06_lekiwi_dataset/06_lekiwi_dataset_notion.zip) | 6장 + 변환 터미널 1장 |
 
 5편은 한 관절 JSON으로 개념을 익히고, 6편은 LeKiwi의 두 RGB·관측·행동을 기록해 로컬 LeRobot 데이터셋으로 변환합니다. 학습·정책 실행은 후속 범위입니다.
 이후 과정은 **로컬 데이터셋 검수 → ACT 학습 → Isaac Sim 추론·평가**로 이어집니다. 외부 계정 연결과 데이터셋 업로드 단계는 포함하지 않습니다.
@@ -22,6 +22,20 @@ Isaac Sim **5.1.0**, Ubuntu 데스크톱, Docker 기준 교육자료입니다.
 4편 실물 리더 절차는 구현과 기존 안내를 바탕으로 작성했으며, 이번 교재 제작에서 실물 연결·보정을 새로 수행하지 않았습니다.
 
 6편의 키보드 기록은 실물 없이 가능하며, 데이터셋 변환에는 LeRobot 이미지가 필요합니다.
+
+
+## 1~6편의 기본 화면과 초기화
+
+| 편 | 기본 화면 | 반복 실습 방법 |
+|---|---|---|
+| 1·2 | Perspective 하나 | Stage 옆 실습 탭의 **Reset simulation (keep edits)**. Play 이전 상태로 돌아가며 객체·물리 속성·Drive 설정 유지 |
+| 3·4 | 좌측 Perspective / 우측 Front Camera | 조작 탭의 **Reset scene / randomize cubes**. 로봇 시작 자세 + 색상 라인별 새 큐브 위치·방향 |
+| 5 | Perspective 하나 + 기록 탭 | **Reset model (keep saved episodes)**. 모형 초기화, 저장 기록 보존, 미저장·진행 중에는 차단 |
+| 6 | 좌측 Perspective / 우측 Front Camera + FRONT·WRIST 기록 미리보기 | 저장·폐기 완료 후 조작 탭에서 랜덤 리셋. 다음 기록에 새 배치 정보 저장 |
+
+LeKiwi의 `C`·`T`는 좌측 화면을 변경합니다. 우측 전방 카메라는 유지됩니다.
+리셋은 실제 리더암을 움직이지 않습니다. teleop에서는 리셋 후 `R`로 다시 활성화합니다.
+최신 실행 파일을 받았다면 `./lekiwi setup sim`으로 이미지를 갱신한 뒤 실습하세요.
 
 ## 1~6편의 카메라 설정 적용 범위
 
