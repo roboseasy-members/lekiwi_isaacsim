@@ -194,7 +194,7 @@ def test_denied_docker_does_not_fall_back_to_sudo(fake_docker):
     assert not any("build" in call for call in calls(log))
 
 
-@pytest.mark.parametrize("command", ["test-physics", "basic", "test-basic", "test-recording", "record", "test-cameras"])
+@pytest.mark.parametrize("command", ["test-physics", "basic", "test-basic", "test-recording", "record", "test-cameras", "test-gripper"])
 def test_duplicate_simulation_is_rejected_before_launch(fake_docker, command):
     env, log = fake_docker
     result = run("bash", str(ROOT / "lekiwi"), command, env=dict(env, SIM_RUNNING="1"))
@@ -261,7 +261,7 @@ def test_leader_overlay_only_exposes_selected_serial_device(tmp_path):
     assert not config["services"]["sim"].get("devices")
 
 
-@pytest.mark.parametrize("name,target", [("test-physics", "physics-test"), ("test-basic", "basic-test"), ("test-recording", "recording-test"), ("test-cameras", "camera-test")])
+@pytest.mark.parametrize("name,target", [("test-physics", "physics-test"), ("test-basic", "basic-test"), ("test-recording", "recording-test"), ("test-cameras", "camera-test"), ("test-gripper", "gripper-test")])
 def test_physics_test_uses_bundled_image_and_scoped_container(fake_docker, name, target):
     env, log = fake_docker
     result = run("bash", str(ROOT / "lekiwi"), name, env=env)

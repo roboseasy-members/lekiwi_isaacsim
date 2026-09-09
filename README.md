@@ -123,9 +123,10 @@ export ACCEPT_EULA=Y
 | 6 | [LeKiwi 데이터셋 수집](isaacsim_basic/06_lekiwi_dataset/README.md) | 아래 7~8단계 · 두 영상·상태·행동 수집과 로컬 변환 |
 
 각 편은 MD·실습 기록지·실제 화면·노션용 ZIP을 포함합니다. [교재 전체 목차](isaacsim_basic/README.md)
-1·2편은 Stage/Property를 사용하며, 3~6편의 해당 실습 창은 Stage 옆 탭에 배치됩니다.
+1·2편은 Stage/Property에서 속성을 편집합니다. 1~6편의 초기화·조작·기록 안내 창은 Stage 옆 탭에 배치됩니다.
 교육 편성은 설치 완료 PC 기준 **2일, 총 12~14시간**의 계획용 추정입니다.
 최초 설치·충분한 집기 시연 확보·실측 카메라 보정·학습은 별도입니다.
+각 편의 초기화 버튼과 기본 화면은 [1~6편 화면·초기화 안내](isaacsim_basic/README.md)를 참고하세요.
 
 리더가 없으면 5~6단계 장비 실습을 건너뛰고 7단계의 키보드 기록을 진행할 수 있습니다.
 5편의 한 관절 JSON은 기록 개념을 배우는 예제이며, 본격적인 로봇 데이터는 6편에서 수집합니다.
@@ -185,6 +186,15 @@ Press ENTER to use provided calibration file associated with the id so101_leader
 ACTIVE 표시를 확인하고 리더 관절을 조금씩 움직여 방향을 확인하세요.
 통합 teleop에서는 R 활성화 전에는 베이스도 움직이지 않습니다.
 
+시작 화면은 좌측 **Perspective**, 우측 **Front Camera**가 뷰포트 영역을 반씩 사용합니다.
+`C`와 `T`는 좌측 시점을 변경하며 우측은 전방 카메라로 유지됩니다.
+
+코스 반복 실습은 Stage 옆 조작 안내 탭의 **Reset scene / randomize cubes** 버튼을 누릅니다.
+가상 로봇은 시작 자세로 돌아가고, 큐브는 각 색상의 라인 안에서 위치와 방향이 새로 정해집니다.
+바구니와 도로는 유지되며 새 배치는 `data/scenes/course.*/layout.json`에 저장됩니다.
+리셋 후에는 `R`을 다시 눌러 teleop을 활성화합니다. 실제 리더암 자세는 변경하지 않습니다.
+녹화 중이거나 미저장 에피소드가 있으면 **Stop recording → Save episode 또는 Discard unsaved**를 완료한 후 리셋합니다.
+
 | 키 | 동작 |
 |---|---|
 | R | 리더 자세 추종 활성화/재활성화 |
@@ -196,10 +206,13 @@ ACTIVE 표시를 확인하고 리더 관절을 조금씩 움직여 방향을 확
 | 3 | 기본의 2배 |
 | Space | 베이스 정지, 팔 목표 유지, teleop 비활성화 |
 | T | 자유 시점 / 로봇 추적 시점 전환 |
-| C | 전체 / 전방 카메라 / 손목 카메라 시점 전환 |
+| C | 좌측 화면: 전체 / 전방 카메라 / 손목 카메라 시점 전환 |
 | P | 화면 캡처 저장 |
 
 집기 연습은 속도 1로 접근한 뒤 베이스를 멈추고 리더로 팔·집게를 조작하세요.
+손가락 두 곳은 안쪽 면을 보존하는 **Convex Decomposition** 충돌 형상을 사용합니다.
+집게가 닫힌 뒤 큐브를 조금 들어 올려 유지되는지 확인하고 운반하세요.
+가상 팔의 유지·회전·놓기는 `./lekiwi test-gripper`로 별도 검사할 수 있습니다(실물 USB 미사용).
 Space로 정지했다면 팔을 조작하기 전에 R이 다시 필요합니다.
 블록이 집혔는지 화면에서 확인한 뒤 운반합니다. 자동 부착이나 자동 집기는 없습니다.
 
@@ -346,7 +359,9 @@ git pull --ff-only origin develop
 
 카메라 TF는 SOARM base 기준 측면 도면을 반영했습니다. 좌우 위치·광학 방향 등 최종 실물 확인은 남아 있습니다.
 기존 에피소드의 카메라 설정과 개인 보정 파일은 자동 변경하지 않습니다.
-개발 PC에서 리더 추종·연속 수집·데이터 변환·로컬 관리 화면을 확인했으며, 새 PC의 신규 드라이버 설치와
+개발 PC에서 리더 추종·연속 수집·데이터 변환·로컬 관리 화면을 확인했고,
+손가락 충돌 형상 개선 후 실물 리더로 가상 큐브를 집는 조작에서 사용자가 개선을 확인했습니다.
+새 PC의 신규 드라이버 설치와
 학습·모델 재로딩·추론은 별도 검증 대상입니다. [교육 실습 검증 기록](isaacsim_basic/VALIDATION.md)
 
 ## 배치 저장과 재현
@@ -411,6 +426,7 @@ data/
 ./lekiwi validate-usd
 ./lekiwi test-physics
 ./lekiwi test-arm
+./lekiwi test-gripper
 ./lekiwi test-scene
 ./lekiwi test-cameras
 ./lekiwi test-basic

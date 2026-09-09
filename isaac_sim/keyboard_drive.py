@@ -37,6 +37,8 @@ from arm_control import restore_arm_position_gains
 from drive_controls import BaseSpeed
 from drive_hotkeys import SpaceStopBinding
 from robot_cameras import attach_cameras, load_camera_config
+from scene_tools import SceneReset, SplitView, reset_allowed, randomize_layout
+from gripper_contacts import configure_gripper_collisions
 
 USD_PATH = os.environ.get(
     "LEKIWI_USD",
@@ -448,6 +450,8 @@ def main():
     articulation_root, root_body = _validate_stage(stage)
     _validate_drive_kinematics()
     _configure_arm_hold(stage)
+    finger_colliders = configure_gripper_collisions(stage)
+    print(f"LEKIWI_GRIP collision=convexDecomposition fingers={len(finger_colliders)}", flush=True)
     if not COURSE_LAYOUT:
         _create_ground_grid(stage)
     _create_lighting(stage)
@@ -507,10 +511,16 @@ def main():
         print(f"LEKIWI_DRIVE absolute_mapping signs={signs} offsets_deg={offsets} "
               f"max_speed_rad_s={speed}", flush=True)
     capture_requested = False
+    reset_requested = False
     camera_tracking = False
     camera_view = "overview"
+    split_view = None
     from omni.kit.viewport.utility import get_active_viewport
     main_viewport = get_active_viewport()
+
+    def _request_reset():
+        nonlocal reset_requested
+        reset_requested = True
 
     def _select_camera(name):
         nonlocal camera_view, camera_tracking
@@ -580,7 +590,7 @@ def main():
     )
 
     control_window = ui.Window(
-        "LeKiwi + SO101 Physical Drive", width=510, height=335
+        "LeKiwi + SO101 Physical Drive", width=510, height=385
     )
     with control_window.frame:
         with ui.VStack(spacing=5):
@@ -598,6 +608,8 @@ def main():
             speed_label = ui.Label(base_speed.label)
             ui.Label("SPACE : stop    P : save viewport    T : camera mode")
             ui.Label("C : overview / front camera / wrist camera")
+            ui.Button("Reset scene / randomize cubes", height=28, clicked_fn=_request_reset)
+            reset_label = ui.Label("Reset robot + new cube positions in each lane. Teleop: press R again.", height=32, word_wrap=True)
             ui.Label("Close the Isaac window to exit")
             camera_mode_label = ui.Label("camera: FREE (T to toggle)")
             status_label = ui.Label("command: STOP", height=24)
@@ -611,12 +623,26 @@ def main():
         for _ in range(3):
             world.step(render=True)
 
+    bodies = []
+    if COURSE_LAYOUT:
+        from isaacsim.core.prims import SingleRigidPrim
+        from collection_course import ROOT as COURSE_ROOT
+        for obj in layout["objects"]:
+            body = SingleRigidPrim(COURSE_ROOT + "/Objects/" + obj["id"],
+                                   name="reset_" + obj["id"], reset_xform_properties=False)
+            body.initialize()
+            bodies.append(body)
+    scene_reset = SceneReset(robot, bodies)
+    split_view = SplitView(robot_cameras["front"]["camera_path"])
+    main_viewport = split_view.main
+
     recorder = None
     if RECORDING:
         from recording_panel import RecordingPanel
         recorder = RecordingPanel(robot_cameras, camera_config,
                                   "so101_leader_keyboard" if arm_control else "keyboard_home_hold",
                                   layout if COURSE_LAYOUT else None)
+        recorder.metadata["gripper_collision_approximation"] = "convexDecomposition"
 
     def recording_state():
         # 베이스 속도는 world 좌표에서 로봇의 수평 base 좌표로 변환한다.
@@ -681,6 +707,36 @@ def main():
     try:
         while simulation_app.is_running():
             frame += 1
+            if split_view.task.done():
+                split_view.task.result()
+            if reset_requested:
+                reset_requested = False
+                if not reset_allowed(recorder):
+                    reset_label.text = "Stop recording, then Save or Discard before resetting. Wait for completion."
+                else:
+                    pressed.clear()
+                    arm_requested = False
+                    _apply_command(robot, 0.0, 0.0, 0.0)
+                    new_layout = randomize_layout(layout) if COURSE_LAYOUT else None
+                    if new_layout:
+                        directory = save_course(new_layout)
+                    scene_reset.restore(new_layout)
+                    if new_layout:
+                        layout = new_layout
+                        stage.GetPrimAtPath(COURSE_ROOT).SetCustomDataByKey("seed", str(layout["seed"]))
+                        if recorder:
+                            recorder.metadata["course_layout"] = layout
+                            recorder.resume_frames = 3
+                        print(f"LEKIWI_COURSE saved={directory} seed={layout['seed']} reset=True", flush=True)
+                    if arm_control:
+                        arm_control.armed = False
+                        arm_control.targets = scene_reset.joints[arm_indices].tolist()
+                        arm_control.goals = arm_control.targets[:]
+                        arm_control.last_update = None
+                    restore_arm_position_gains(articulation_controller, arm_indices,
+                                               ARM_HOLD_STIFFNESS, ARM_HOLD_DAMPING)
+                    reset_label.text = "Scene reset. Press R to enable teleop." if arm_control else "Scene reset. Ready."
+                    print("LEKIWI_DRIVE scene_reset=PASS teleop_disarmed=True", flush=True)
             if frame == auto_capture_frame:
                 capture_requested = True
 
@@ -822,6 +878,8 @@ def main():
             carb.log_warn(f"Could not stop LeKiwi cleanly: {exc}")
         input_interface.unsubscribe_to_keyboard_events(keyboard, keyboard_subscription)
         space_binding.close()
+        if split_view:
+            split_view.close()
 
 
 failed = False

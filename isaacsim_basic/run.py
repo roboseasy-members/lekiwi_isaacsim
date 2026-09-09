@@ -16,6 +16,7 @@ try:
     import omni.usd
     import omni.timeline
     import omni.kit.app
+    import omni.ui as ui
     from isaacsim.core.utils.extensions import enable_extension
     from isaacsim.core.utils.viewports import set_camera_view
     from scenes import new_exercise
@@ -30,6 +31,8 @@ try:
     set_camera_view(eye=(2.4, -3.0, 2.2), target=(0, 0, .35))
     if args.lesson == "joints":
         set_camera_view(eye=(1.05, -1.6, .9), target=(0, 0, .3))
+    from omni.kit.viewport.utility import get_active_viewport
+    get_active_viewport().camera_path = "/OmniverseKit_Persp"
     # Load the stage before installing physics editor listeners. Isaac 5.1
     # crashed in an Sdf callback when opening the first stage immediately
     # after enabling the bundle; loading it after the stage avoids that path.
@@ -43,7 +46,25 @@ try:
     print(f"ISAACSIM_BASIC ready lesson={args.lesson} stage={path}", flush=True)
     print("Press Play to experiment. Save your edits with File > Save. "
           "Course: /opt/lekiwi/isaacsim_basic/README.md", flush=True)
+    reset_requests = []
+    window = ui.Window("Lesson 2 - Joint Practice" if args.lesson == "joints" else "Lesson 1 - Physics Practice",
+                       width=480, height=220)
+    with window.frame:
+        with ui.VStack(spacing=8):
+            ui.Label("Single Perspective view | no robot-mounted camera", height=28)
+            ui.Button("Reset simulation (keep edits)", height=32,
+                      clicked_fn=lambda: reset_requests.append(True))
+            ui.Label("Stop and return to the pre-Play state. Then press Play to retry.", height=40, word_wrap=True)
+            ui.Label("Keeps your objects, mass, friction and joint settings. Save edits with File > Save.",
+                     height=48, word_wrap=True)
+            reset_status = ui.Label("STOPPED | Ready to edit", height=24)
+    window.deferred_dock_in("Stage", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
     while app.is_running():
+        if reset_requests:
+            reset_requests.clear()
+            omni.timeline.get_timeline_interface().stop()
+            reset_status.text = "RESET | Edits kept. Press Play to retry."
+            print("ISAACSIM_BASIC reset=PASS edits_preserved=True", flush=True)
         app.update()
 finally:
     app.close()

@@ -136,5 +136,29 @@
         "label": "Drive > Angular: Type, Max Force, 목표각·속도, Damping, Stiffness입니다."
       }
     ]
+  },
+  {
+    "name": "06-reset",
+    "title": "실제 화면 · 편집값을 유지하는 실습 초기화",
+    "marks": [
+      {
+        "box": [
+          1350,
+          92,
+          562,
+          32
+        ],
+        "label": "Reset simulation: Stop 후 시작 상태로 돌아가며 물리 속성은 유지합니다."
+      },
+      {
+        "box": [
+          1348,
+          231,
+          560,
+          30
+        ],
+        "label": "RESET 상태를 확인하고 Play로 같은 실험을 반복합니다."
+      }
+    ]
   }
 ]

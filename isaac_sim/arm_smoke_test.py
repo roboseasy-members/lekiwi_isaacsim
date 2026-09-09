@@ -17,6 +17,7 @@ from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from teleop_bridge import ArmTeleop, JOINTS, make_packet
 from arm_control import restore_arm_position_gains
+from gripper_contacts import configure_gripper_collisions
 
 
 def main():
@@ -29,6 +30,7 @@ def main():
         position=np.array([0., 0., .055]),
     ))
     world.scene.add(GroundPlane(prim_path="/World/Ground", z_position=-.021, size=10.0))
+    configure_gripper_collisions(omni.usd.get_context().get_stage())
     for prim in omni.usd.get_context().get_stage().Traverse():
         if prim.GetName() in JOINTS and prim.IsA(UsdPhysics.RevoluteJoint):
             drive = UsdPhysics.DriveAPI(prim, "angular")
