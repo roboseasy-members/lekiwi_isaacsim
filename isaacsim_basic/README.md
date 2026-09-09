@@ -17,6 +17,8 @@ Isaac Sim **5.1.0**, Ubuntu 데스크톱, Docker 기준 교육자료입니다.
 | 6 | [LeKiwi 영상·명령과 데이터셋](06_lekiwi_dataset/README.md) | 두 RGB·상태·행동 수집, 성공 표시, LeRobot 변환·검사 | [다운로드](06_lekiwi_dataset/06_lekiwi_dataset_notion.zip) | 5장 + 변환 터미널 1장 |
 
 5편은 한 관절 JSON으로 개념을 익히고, 6편은 LeKiwi의 두 RGB·관측·행동을 기록해 로컬 LeRobot 데이터셋으로 변환합니다. 학습·정책 실행은 후속 범위입니다.
+이후 과정은 **로컬 데이터셋 검수 → ACT 학습 → Isaac Sim 추론·평가**로 이어집니다. 외부 계정 연결과 데이터셋 업로드 단계는 포함하지 않습니다.
+[로컬 데이터셋 관리 화면](../docs/dataset-manager.md)에서 시연 선택·변환·검사를 진행할 수 있습니다.
 4편 실물 리더 절차는 구현과 기존 안내를 바탕으로 작성했으며, 이번 교재 제작에서 실물 연결·보정을 새로 수행하지 않았습니다.
 
 6편의 키보드 기록은 실물 없이 가능하며, 데이터셋 변환에는 LeRobot 이미지가 필요합니다.
@@ -73,7 +75,12 @@ PC별 이미지 빌드와 첫 실행을 마쳤고, 기본 터미널 조작이 �
 
 ## 처음 시작하기
 
-1. [저장소의 PC 준비·clone 안내](../README.md#1-처음-한-번-pc-준비)를 따라 NVIDIA 드라이버,
+학생 PC에서는 저장소를 받은 뒤 `./lekiwi install --check`와 `./lekiwi install`로 준비할 수 있습니다.
+공식 RAM·VRAM 최소 사양 미달도 안내 후 설치를 허용하며, 준비 후 실제 CUDA·카메라·60프레임 기록 검사를 수행합니다.
+드라이버 변경과 재부팅 절차는 [학생 PC 설치 안내](../docs/student-setup.md)를 참고하세요.
+
+
+1. [저장소의 순서별 설치 안내](../README.md#1-새-pc에서-develop-받기)를 따라 NVIDIA 드라이버,
    Docker Compose, NVIDIA Container Toolkit, X11/XWayland 및 xauth를 준비합니다.
 2. clone한 저장소의 최상위 폴더에서 아래 명령을 실행합니다.
    Docker에 sudo가 필요한 PC에서만 첫 번째 export를 사용합니다.
@@ -109,7 +116,7 @@ VS Code에서 Markdown을 열고 `Ctrl + Shift + V`로 미리보기를 켜면 �
 교재는 Dockerfile의 `COPY`로 이미지에 들어갑니다. 컨테이너 안에만 원본을 작성하지 않습니다.
 따라서 저장소를 받은 다른 PC에서도 같은 이미지 빌드 과정을 사용할 수 있습니다.
 **수정한 교재·코드를 반영하려면 `./lekiwi setup sim`을 다시 실행합니다.**
-이 교육자료는 `feature/isaacsim_basic` 브랜치에 포함되어 있습니다. 저장소의 clone 안내에서 해당 브랜치를 선택하세요.
+이 교육자료는 `develop`에 통합되어 있습니다. 저장소의 clone 안내에서 `develop`을 선택하세요.
 
 실습 결과는 기존 `/data` bind mount를 사용해 컨테이너 종료 후에도 남습니다.
 `LEKIWI_DATA_DIR`를 변경했다면 호스트의 `data/` 대신 지정한 폴더에서 찾으세요.

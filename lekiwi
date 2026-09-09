@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Host entry point. Requires Bash and Docker Compose, not Python/ROS/Conda.
+# 실습은 Docker로 실행하며 install만 Ubuntu 기본 Python을 사용한다.
 set -euo pipefail
 
 readonly project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,6 +10,7 @@ export LEKIWI_DATA_DIR="${LEKIWI_DATA_DIR:-${project_dir}/data}"
 fail() { echo "ERROR: $*" >&2; exit 1; }
 usage() {
     echo 'Usage: ./lekiwi COMMAND [ARGS]'
+    echo '  install [--check|--verify] 학생 PC 준비 / 읽기 전용 검사 / GPU 실습 검사'
     echo '  doctor                    Check Docker access, GPU and bundled assets'
     echo '  config                    Validate/render Docker Compose configuration'
     echo '  setup [sim|lerobot|all]    Build images locally (default: all)'
@@ -17,6 +18,8 @@ usage() {
     echo '  sim                       Open the keyboard-drive demo (X11/XWayland)'
     echo '  record                    Open LeKiwi RGB/action recording (no USB)'
     echo '  export-dataset ARGS       Convert saved recordings to a local LeRobot dataset'
+    echo '  dataset-ui                브라우저에서 로컬 시연 선택·변환·데이터셋 검사'
+    echo '  dataset COMMAND [ARGS]    list / export / inspect'
     echo '  basic [--lesson NAME]     Open the physics/joint classroom (no USB)'
     echo '  test-recording            Check classroom recording/replay (no USB)'
     echo '  test-basic                Check classroom physics inside Docker (no USB)'
@@ -30,6 +33,7 @@ usage() {
     echo '  test-physics              Run the headless contact-drive regression'
     echo '  test-arm                  Test six simulated joints with synthetic input (no USB)'
     echo '  test-scene                Check course collisions, objects and basket (no USB)'
+    echo '  test-cameras              코스의 두 RGB·짧은 기록 검사 (USB 미사용)'
     echo '  build-assets              Rebuild assets into a new data/asset-build.* folder'
     echo '  check-ml                  Check LeRobot imports and CUDA'
     echo '  train act|groot [ARGS]     Forward training arguments to lerobot-train'
@@ -42,9 +46,14 @@ command_name="${1:-help}"
 if (($#)); then shift; fi
 case "$command_name" in
     help|-h|--help) usage; exit 0 ;;
-    doctor|config|setup|pull|sim|record|export-dataset|basic|test-basic|test-recording|scene|calibrate|teleop|validate|validate-usd|test-physics|test-arm|test-scene|build-assets|check-ml|train|status|stop) ;;
+    install|doctor|config|setup|pull|sim|record|export-dataset|dataset-ui|dataset|basic|test-basic|test-recording|scene|calibrate|teleop|validate|validate-usd|test-physics|test-arm|test-scene|test-cameras|build-assets|check-ml|train|status|stop) ;;
     *) usage >&2; fail "Unknown command: $command_name" ;;
 esac
+
+if [[ "$command_name" == install ]]; then
+    [[ -x /usr/bin/python3 ]] || fail '학생 설치 도구에는 Ubuntu의 python3 패키지가 필요합니다.'
+    exec /usr/bin/python3 -B -u "$project_dir/tools/host_setup/main.py" "$@"
+fi
 
 command -v docker >/dev/null || fail 'Install Docker Engine and the Compose plugin first.'
 docker_cmd=(docker)
@@ -127,6 +136,39 @@ if [[ "$command_name" == export-dataset ]]; then
     exec "${compose[@]}" run --rm --no-deps -T -e HF_HUB_OFFLINE=1 lerobot \
         python /opt/lekiwi/tools/export_dataset.py "$@"
 fi
+if [[ "$command_name" == dataset-ui || "$command_name" == dataset ]]; then
+    if [[ "$command_name" == dataset-ui ]]; then
+        (($# == 0)) || fail 'dataset-ui takes no arguments.'
+        manager_args=(serve)
+        manager_run=(-T --publish 127.0.0.1:8765:8765)
+    else
+        case "${1:-}" in list|export|inspect|-h|--help) ;; *) fail 'Use dataset list|export|inspect.' ;; esac
+        manager_args=("$@")
+        manager_run=(-T)
+    fi
+    ensure_image lerobot
+    if [[ "$command_name" == dataset-ui ]]; then
+        # compose run -T may detach on Ctrl+C; explicitly stop only this launch.
+        manager_run_id="${BASHPID}-${RANDOM}-${RANDOM}"
+        manager_container="${project_name}-dataset-ui-${manager_run_id}"
+        stop_manager() {
+            local owner
+            owner="$("${docker_cmd[@]}" inspect --format '{{index .Config.Labels "lekiwi.dataset-manager.run"}}' "$manager_container" 2>/dev/null)" || return 0
+            if [[ "$owner" == "$manager_run_id" ]]; then
+                "${docker_cmd[@]}" stop --time 10 "$manager_container" >/dev/null 2>&1 || true
+            fi
+        }
+        trap stop_manager EXIT
+        trap 'exit 130' INT
+        trap 'exit 143' TERM
+        "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE=1 \
+            --name "$manager_container" --label "lekiwi.dataset-manager.run=$manager_run_id" lerobot \
+            python /opt/lekiwi/tools/dataset_manager/cli.py serve
+        exit "$?"
+    fi
+    exec "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE=1 lerobot \
+        python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}"
+fi
 if [[ "$command_name" == record ]]; then
     (($# == 0)) || fail 'record takes no arguments; select a task in the recording panel.'
     export LEKIWI_RECORDING=1
@@ -201,6 +243,7 @@ case "$command_name" in
     test-physics) sim_command=physics-test ;;
     test-arm) sim_command=arm-test ;;
     test-scene) sim_command=course-test ;;
+    test-cameras) sim_command=camera-test ;;
     build-assets) sim_command=build-assets ;;
 esac
 

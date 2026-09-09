@@ -1,188 +1,135 @@
-# LeKiwi Isaac Sim · Teleop과 기초 교육자료
+# LeKiwi Isaac Sim · 설치부터 로컬 데이터 수집까지
 
-실제 **SO101 리더암 + 키보드**로 Isaac Sim 안의 **LeKiwi 모바일 베이스 + SO101 팔**을 조작합니다.
-원형·십자 도로에서 블록에 접근하고 집어서 바구니까지 운반하는 teleop 환경입니다.
+학생은 **`develop` 브랜치를 받은 뒤 이 문서의 번호 순서대로 진행**합니다.
+교육 흐름은 **환경 설정 → 기초 교육 → teleop → 로컬 데이터 수집·변환 → 로컬 학습 → 추론**입니다.
+데이터셋 계정 연결이나 업로드 단계는 없습니다.
 
-**URDF·USD·mesh가 저장소에 포함되어 있으므로 로봇 자산을 따로 다운로드하지 않습니다.**
-호스트에 Isaac Sim·Python·LeRobot·ROS·Conda를 설치하지 않고 Docker 이미지 안에서 실행합니다.
-단, NVIDIA 드라이버와 Docker 실행 기반은 PC에 먼저 설치해야 합니다.
+실제 SO101 리더암과 키보드로 **Isaac Sim 안의 LeKiwi 베이스와 SOARM**을 조작합니다.
+실제 follower나 실제 LeKiwi 본체를 움직이는 기능은 없습니다.
+로봇 URDF·USD·mesh와 교재는 저장소에 포함되며, Isaac Sim·LeRobot은 Docker 안에서 실행합니다.
 
-## 현재 구현 범위
-
-객체 물리·관절·카메라·조작·기초 데이터 기록을 1~6편 순서로 배우려면 [Isaac Sim Basic 교육자료](isaacsim_basic/README.md)를 사용하세요.
-`./lekiwi setup sim` 후 `./lekiwi basic`으로 Docker 안의 별도 기초 실습을 시작합니다.
-5편은 `./lekiwi basic --lesson recording`으로 시작하며, 한 관절의 상태·명령 JSON을 저장·재생합니다.
-각 편의 폴더에는 교재 MD, 실습 기록지, 실제 스크린샷과 빨간 표시, 노션 가져오기용 ZIP이 있습니다.
-
-| 편 | 교육자료 | 주요 실습 |
-|---|---|---|
-| 1 | [객체와 물리 성질](isaacsim_basic/01_object_physics/README.md) | 객체 생성, Collider, 질량·중력, 마찰·반발력 |
-| 2 | [로봇과 관절](isaacsim_basic/02_robot_joints/README.md) | 관절 축·한계와 Drive 설정 |
-| 3 | [전방·손목 카메라](isaacsim_basic/03_robot_cameras/README.md) | 시점 전환, 장착 좌표, 화각 |
-| 4 | [원격 조작](isaacsim_basic/04_teleoperation/README.md) | 키보드 주행과 SO101 리더 조작 |
-| 5 | [기초 데이터 기록](isaacsim_basic/05_data_recording/README.md) | 한 관절의 에피소드 기록·저장·재생 |
-| 6 | [LeKiwi 데이터셋 수집](isaacsim_basic/06_lekiwi_dataset/README.md) | 전방·손목 RGB와 상태·명령 기록, 로컬 LeRobot 변환 |
-
-**교육 시간은 설치 완료 PC 기준으로 2일, 하루 6~7시간 편성을 권합니다.**
-실물 없이 1~6편의 순수 교육은 약 6시간 15분~9시간 15분, 4·6편 리더 실습까지 하면 약 7시간 45분~11시간 45분으로 추정합니다.
-전체 12~14시간 편성에는 휴식·질문·결과 정리를 포함하며 점심·최초 설치·실측 TF 보정·모델 학습은 별도입니다.
-이는 실측 수업 시간이 아닌 계획용 추정입니다. [편별 시간과 2일 운영안](isaacsim_basic/README.md#교육-시간과-운영안)을 확인하세요.
-
-1·2편은 기본 Stage·Property 창을 사용합니다. 3·4편의 조작 창과 5·6편의 기록 창은
-실행 시 **Stage 옆 탭에 자동 배치**됩니다. 객체 목록은 Stage 탭, 조작 안내는 해당 실습 탭에서 확인합니다.
-
-- 키보드 베이스 주행, SO101 리더 calibration/재사용, 가상 팔의 리더 자세 추종.
-- 중앙에서 시작하는 LeKiwi, 바깥 원형 도로 + 안쪽 십자 도로, 위치·회전 방향이 랜덤인 네 블록과 고정 바구니.
-- 생성된 초기 배치 저장과 재현, 화면 캡처.
-- SOARM base 기준 측면 도면의 전방·손목 카메라 TF와 시점 전환. 3·4·6편이 같은 기본 설정을 사용합니다. 좌우·광학 방향 등의 최종 실물 확인은 남아 있습니다.
-- 개발 PC의 실물 리더암으로 6개 관절 추종과 1,291프레임(43.03초)의 두 RGB·관절 데이터 저장을 확인했습니다. 다른 PC/리더에서는 별도 검증이 필요합니다.
-- 두 카메라의 동기 RGB·실제 상태·적용 명령 기록, 저장 검사와 로컬 LeRobot 데이터셋 변환.
-- **아직 없음:** 카메라 보정의 최종 실물 검증, 실행 중 에피소드 리셋, 자동 성공 판정, 학습 정책 실행.
-
-ACT/GR00T 의존성과 학습 CLI는 준비되어 있지만, 이 로봇의 수집→학습→평가 전 과정은 아직 구현·검증하지 않았습니다.
-통합 teleop은 직접 조작하는 환경이며, 실행만으로 데이터셋이 기록되지는 않습니다.
-5편은 에피소드의 구조를 배우는 한 관절 JSON 실습입니다.
-6편은 `./lekiwi record`로 두 RGB·팔·베이스 상태와 명령을 기록하고 `./lekiwi export-dataset`으로 로컬 LeRobot 데이터셋을 만듭니다.
-리더 실습은 기존 `teleop` 명령에 `--record`를 추가합니다. 기록 전에 패널의 **Max seconds**를 초 단위로 설정하고 Record를 누릅니다.
-기본값은 30초이며, 120은 2분, 300은 5분, **0은 수동 종료**입니다. 시뮬레이션 시간 기준이고 수집 종료 후 Save episode로 저장합니다.
-기록 중에는 시뮬레이션을 계속 재생하며, 종료 후 마지막 영상과 파일 쓰기를 기다립니다. 저장 검사는 **SAVING → SAVED**로 완료 여부를 표시합니다.
-가상 입력의 5분·9,000프레임 수집과 실물 리더의 짧은 기록을 검증했습니다. 드문 약 0.38초의 화면 지연과 카메라 보정의 최종 실물 검증은 남아 있습니다. [검증 기록](isaacsim_basic/VALIDATION.md)을 참고하세요.
-실제 follower나 실제 LeKiwi 베이스를 움직이는 기능도 없습니다.
-
-## 브랜치 안내
-
-| 브랜치 | 역할 |
+| 단계 | 이번 저장소에서 진행할 범위 |
 |---|---|
-| `main` | 최종 안정 버전 |
-| `develop` | 기존 teleop을 포함하고 기능별 PR을 통합하는 개발 브랜치 |
-| `feature/isaacsim_basic` | 기존 teleop에 카메라·기초 교육자료 1~6편과 실습 창 자동 배치를 추가한 작업 브랜치 |
+| 1~3 · PC 준비 | 설치 도구와 개발 PC 실행 검사 준비. 새 PC의 드라이버 신규 설치·재부팅은 현장 검증 필요 |
+| 4~8 · 교육·teleop·데이터 | 교재 1~6편, 리더 추종, 두 카메라 기록, 로컬 변환·검사 구현 |
+| 9 · ACT 학습 | CLI 연결과 실행 예시 제공. 우리 데이터로 학습 완료·모델 재로딩 검증은 아직 남음 |
+| 추론 | 학습한 모델의 Isaac Sim 제어 연결은 아직 없음. 후속 개발 단계 |
 
-기존 teleop 작업은 `develop`에 통합했습니다. 새 기능은 `feature/기능명`에서 작업하고 PR로 `develop`에 통합합니다.
-`feature/isaacsim_basic`에는 기존 teleop과 이후 추가한 교육자료가 함께 포함되어 있습니다.
-현재 교육자료를 사용하려면 아래처럼 `feature/isaacsim_basic`을 받으세요.
+지원 설치 환경은 **Ubuntu 22.04/24.04 x86_64, 로컬 데스크톱, NVIDIA GPU**입니다.
+Windows·WSL·macOS·ARM은 자동 설치 대상이 아닙니다.
+RAM·VRAM이 공식 최소보다 적어도 경고 후 설치를 시도하지만 모든 GPU에서 실행을 보장하지 않습니다.
+상세 조건은 [학생 PC 설치 안내](docs/student-setup.md)를 확인하세요.
 
-## 1. 처음 한 번: PC 준비
+<a id="2-저장소-받기"></a>
 
-이 안내는 **Ubuntu 22.04/24.04, Linux x86_64, 로컬 데스크톱** 기준입니다.
-Windows/WSL/macOS, 원격 SSH 화면, ARM PC는 이 프로젝트에서 검증하지 않았습니다.
+## 1. 새 PC에서 develop 받기
 
-1. NVIDIA GPU와 호환 드라이버를 설치하고 아래 명령으로 확인합니다.
-   [Isaac Sim 5.1 공식 요구사항](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/requirements.html)을 먼저 확인하세요.
-   공식 최소 사양에는 RAM 32 GB·VRAM 16 GB가 명시되어 있습니다.
-   개발 PC의 RTX 5060 Laptop 8 GB에서도 현재 코스를 실행했지만 공식 최소 VRAM보다 작고,
-   화면 멈춤 이력도 있어 모든 PC에서 안정적인 실행을 보장하지 않습니다.
+Ubuntu 데스크톱의 터미널을 엽니다. Git이 없다면 먼저 설치합니다.
 
-~~~bash
-nvidia-smi
-~~~
-
-2. [Docker Ubuntu 설치 안내](https://docs.docker.com/engine/install/ubuntu/)에 따라
-   Docker Engine, Buildx, Compose 플러그인을 설치합니다. Compose는 2.30 이상을 사용합니다.
-   Docker가 이미 설치되어 있으면 기존 컨테이너나 데이터를 삭제하지 말고 버전을 확인하세요.
-3. [NVIDIA Container Toolkit 설치 안내](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)에 따라
-   Toolkit을 설치하고 해당 문서의 Docker 런타임 설정까지 진행합니다.
-   **Docker 재시작은 다른 컨테이너에도 영향을 줍니다. 기존 작업이 있을 때는 먼저 안전하게 종료하세요.**
-4. Ubuntu 터미널에서 보조 도구를 설치합니다.
-
-~~~bash
+```bash
 sudo apt update
-sudo apt install -y git xauth util-linux
-~~~
+sudo apt install git
+```
 
-설치 후 다음 명령이 정상 출력되는지 확인합니다.
+저장소를 받을 위치에서 실행합니다. 비공개 저장소라면 GitHub 접근 권한과 인증을 먼저 준비합니다.
 
-~~~bash
-docker compose version
-sudo docker info
-echo "$DISPLAY"
-~~~
-
-DISPLAY는 로컬 데스크톱에서 보통 :0 또는 :1입니다. 비어 있으면 Ubuntu 데스크톱의 터미널에서 진행하세요.
-GUI에는 X11 또는 XWayland와 xauth가 필요합니다. 호스트 CUDA Toolkit 설치는 필요하지 않습니다.
-최초 이미지 빌드에는 인터넷과 이미지·캐시를 저장할 충분한 여유 디스크 공간이 필요합니다.
-
-## 2. 저장소 받기
-
-비공개 저장소인 경우 소유자가 접근 권한을 부여해야 하며 GitHub 인증도 필요합니다.
-HTTPS 인증 요청에는 GitHub 비밀번호가 아닌 GitHub CLI/자격 증명 관리자의 인증을 사용하세요.
-이미 GitHub CLI로 로그인했다면 해당 인증을 사용할 수 있습니다.
-
-~~~bash
-git clone --branch feature/isaacsim_basic https://github.com/SJun99/lekiwi_isaacsim.git
+```bash
+git clone --branch develop https://github.com/SJun99/lekiwi_isaacsim.git
 cd lekiwi_isaacsim
-~~~
+git branch --show-current
+```
 
-이후 명령은 **이 폴더의 같은 터미널**에서 실행합니다.
+**완료 기준:** 마지막 출력이 `develop`입니다. 이후 명령은 이 저장소 폴더에서 실행합니다.
+clone만으로 드라이버나 프로그램이 자동 설치되지는 않습니다. 다음 단계의 설치 도구를 실행하세요.
 
-아래는 Docker에 sudo가 필요한 PC를 기준으로 합니다.
-sudo 없이 docker info가 성공하는 PC에서는 다음 export를 생략해도 됩니다.
-스크립트 전체를 sudo로 실행하면 생성 파일의 소유자가 달라질 수 있으므로 sudo ./lekiwi 형태로 실행하지 마세요.
+<a id="1-처음-한-번-pc-준비"></a>
 
-~~~bash
-export LEKIWI_DOCKER_SUDO=1
-~~~
+## 2. GPU·드라이버·Docker 준비
 
-[NVIDIA 라이선스](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)와
-[Isaac Sim 컨테이너 안내](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/install_container.html)를 읽고
-동의한 경우에만 다음 값을 설정합니다.
+먼저 PC를 변경하지 않는 검사를 실행합니다.
 
-~~~bash
+```bash
+./lekiwi install --check
+```
+
+`check=PASS`는 설치 절차를 시도할 수 있다는 뜻입니다. 실행 성공은 3단계에서 확인합니다.
+오류가 나오면 [설치 안내의 지원 범위와 해결 절차](docs/student-setup.md)를 확인하고 다음 단계로 넘어가지 않습니다.
+
+[NVIDIA 라이선스](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)를 읽고 동의한 경우 아래를 실행합니다.
+
+```bash
 export ACCEPT_EULA=Y
-~~~
+./lekiwi install
+```
 
-export는 현재 터미널에만 적용됩니다. 새 터미널에서는 다시 설정하세요.
-라이선스 동의와 이미지·팔 설정은 .env.example을 .env로 복사해 편집할 수도 있습니다.
-.env와 data/는 Git에 올라가지 않습니다.
+설치 도구는 다음 순서로 진행하며 필요한 변경 전에 터미널에서 확인을 받습니다.
 
-## 3. Docker 이미지 만들기
+1. 사용 가능한 NVIDIA 드라이버가 있으면 유지합니다. 없거나 오래되었으면 GPU가 지원하는 580 계열 후보를 확인합니다.
+2. 드라이버 설치로 재부팅이 필요하면 중단하고 안내합니다. 직접 작업을 저장하고 재부팅합니다. Secure Boot의 MOK 등록이 필요하면 화면 안내를 완료합니다.
+3. Docker Engine·Compose·NVIDIA Container Toolkit을 준비합니다.
+4. Isaac Sim·LeRobot 이미지를 빌드하고 CUDA·두 카메라·짧은 기록을 검사합니다.
 
-~~~bash
+재부팅한 경우 저장소 폴더로 돌아와 `export ACCEPT_EULA=Y`와 `./lekiwi install`을 다시 실행합니다.
+호스트 CUDA Toolkit·Conda·ROS를 따로 설치할 필요는 없습니다. 드라이버와 Docker 실행 기반은 PC에, 실습 의존성은 이미지에 설치합니다.
+전체 명령을 `sudo ./lekiwi install`로 실행하지 마세요. 필요한 설치 작업만 도구가 sudo를 요청합니다.
+
+**완료 기준:** `LEKIWI_INSTALL verification=PASS`가 출력됩니다. 설치 후보가 없거나 재부팅 후에도 실패하면 로그를 확인하고 강사에게 점검을 요청하세요.
+
+## 3. 실행 권한과 첫 GUI 확인
+
+설치 도구 안에서 선택한 Docker 권한은 현재 터미널에 자동 적용되지 않습니다.
+다음 명령이 성공하는지 확인합니다.
+
+```bash
+docker info
+```
+
+권한 오류가 나오고 `sudo docker info`는 성공한다면, 아래 설정을 추가합니다.
+
+```bash
+export LEKIWI_DOCKER_SUDO=1
+```
+
+라이선스 동의 설정을 포함한 `export`는 새 터미널이나 재부팅 뒤 다시 적용해야 합니다.
+이후 `./lekiwi` 전체를 sudo로 실행하지 않습니다.
+
+```bash
+export ACCEPT_EULA=Y
 ./lekiwi doctor
-./lekiwi setup all
-./lekiwi validate
-./lekiwi check-ml
-~~~
-
-기초 교육의 1~3편, 4편 키보드 실습, 5편만 진행한다면 `./lekiwi setup sim`으로 Isaac Sim 이미지만 빌드해도 됩니다.
-실제 리더를 사용하는 4편 실습과 6편 데이터셋 변환에는 LeRobot 이미지도 필요합니다.
-
-- doctor: Docker 접근, GPU와 번들 자산 확인.
-- setup all: Isaac Sim 이미지와 LeRobot/리더암 이미지 모두 빌드. 최초 다운로드·설치에는 시간이 걸립니다.
-- validate: 로봇 파일과 mesh 경로 검사.
-- check-ml: LeRobot 의존성과 CUDA 계산 검사. 리더 USB에는 연결하지 않습니다.
-
-**현재 프로젝트 이미지는 공개 레지스트리에 배포하지 않았습니다.**
-Git clone 후 setup all로 PC에서 이미지를 만드는 방식입니다.
-이미지 이름은 lekiwi-sim:0.1.0과 lekiwi-lerobot:0.1.0입니다.
-GitHub 코드 업데이트 후에는 setup all을 다시 실행해야 변경 코드가 이미지에 반영됩니다.
-매 teleop 실행마다 빌드할 필요는 없습니다.
-
-## 4. 리더 없이 환경부터 확인하기
-
-~~~bash
 ./lekiwi scene
-~~~
+```
 
-LeKiwi가 중앙에서 시작하고 네 블록과 네 바구니가 나타납니다.
-첫 시작은 렌더링 캐시 준비로 느릴 수 있으니 같은 명령을 중복 실행하지 마세요.
-이 명령에서는 키보드로 베이스만 조작하며 팔은 기본 자세로 유지합니다.
+**완료 기준:** 중앙의 LeKiwi, 원형·십자 도로, 네 블록과 네 바구니가 나타납니다.
+블록 위치·회전은 무작위이며 키보드로 베이스를 조작할 수 있습니다. 이 실행에서 팔은 기본 자세를 유지합니다.
+첫 실행은 캐시 준비로 느릴 수 있습니다. 같은 명령을 중복 실행하지 마세요.
 
-| 처음 전체 화면 방향 | 길·블록·바구니 색 |
-|---|---|
-| 위 (+X) | 빨강 |
-| 아래 (-X) | 주황 |
-| 왼쪽 (+Y) | 노랑 |
-| 오른쪽 (-Y) | 초록 |
+확인 후 **Isaac Sim 창을 닫고 `./lekiwi status`로 종료를 확인**합니다.
+설치 이후 GPU 검사를 다시 할 때만 `./lekiwi install --verify`를 사용합니다.
+설치가 성공했다면 지금 `setup all`을 다시 실행할 필요는 없습니다.
 
-도로·길별 색·바구니는 고정이고 **각 길의 블록 1개씩, 총 4개의 위치와 바닥 위 회전 방향이 매번 랜덤**입니다.
-작업 선택 창은 없습니다. 원하는 블록을 직접 집어 운반합니다.
-블록 한 변은 4 cm이며, 바구니는 윗부분이 열려 있습니다.
-원형 도로로도 다른 길에 접근할 수 있습니다.
+## 4. 기초 교육 1~6편 진행
 
-확인이 끝나면 **Isaac 창을 닫고 종료될 때까지 기다린 뒤** 다음 단계로 갑니다.
-시뮬레이터는 한 번에 하나만 실행할 수 있습니다.
+아래 교재를 순서대로 읽고 각 편의 캡처·실습 기록지를 작성합니다.
+장면을 바꿀 때는 기존 Isaac Sim을 정상 종료한 뒤 다음 명령을 실행합니다.
 
-## 5. SO101 리더 연결과 calibration
+| 편 | 교재 | 시작 명령·이 문서의 연결 단계 |
+|---|---|---|
+| 1 | [객체와 물리 성질](isaacsim_basic/01_object_physics/README.md) | `./lekiwi basic` · Collider, 질량·중력, 마찰·반발력 |
+| 2 | [로봇과 관절](isaacsim_basic/02_robot_joints/README.md) | `./lekiwi basic --lesson joints` · 회전축·제한·Drive |
+| 3 | [전방·손목 카메라](isaacsim_basic/03_robot_cameras/README.md) | `./lekiwi sim` · 시점·가림·좌표 |
+| 4 | [원격 조작](isaacsim_basic/04_teleoperation/README.md) | 키보드는 `./lekiwi scene`, 리더는 아래 5~6단계 |
+| 5 | [기초 데이터 기록](isaacsim_basic/05_data_recording/README.md) | `./lekiwi basic --lesson recording` · 한 관절 JSON 기록·재생 |
+| 6 | [LeKiwi 데이터셋 수집](isaacsim_basic/06_lekiwi_dataset/README.md) | 아래 7~8단계 · 두 영상·상태·행동 수집과 로컬 변환 |
+
+각 편은 MD·실습 기록지·실제 화면·노션용 ZIP을 포함합니다. [교재 전체 목차](isaacsim_basic/README.md)
+1·2편은 Stage/Property를 사용하며, 3~6편의 해당 실습 창은 Stage 옆 탭에 배치됩니다.
+교육 편성은 설치 완료 PC 기준 **2일, 총 12~14시간**의 계획용 추정입니다.
+최초 설치·충분한 집기 시연 확보·실측 카메라 보정·학습은 별도입니다.
+
+리더가 없으면 5~6단계 장비 실습을 건너뛰고 7단계의 키보드 기록을 진행할 수 있습니다.
+5편의 한 관절 JSON은 기록 개념을 배우는 예제이며, 본격적인 로봇 데이터는 6편에서 수집합니다.
+
+## 5. SO101 리더 연결과 보정
 
 실제 SO101 **리더**에 하드웨어 안내에 맞는 전원과 데이터 USB를 연결합니다.
 리더를 안정적으로 지지하고 전원을 즉시 차단할 수 있게 준비하세요.
@@ -230,7 +177,7 @@ Press ENTER to use provided calibration file associated with the id so101_leader
 보정은 리더마다 다르므로 다른 사람의 파일을 그대로 쓰지 마세요.
 저장 위치는 data/calibration/so101_leader/so101_leader.json입니다.
 
-## 6. 활성화하고 조작하기
+## 6. Teleop 활성화와 조작
 
 리더 준비 메시지와 시뮬레이터 화면이 모두 나온 뒤,
 **로봇이 보이는 뷰포트를 클릭하고 R**을 누릅니다.
@@ -260,7 +207,105 @@ Space로 정지했다면 팔을 조작하기 전에 R이 다시 필요합니다.
 LIMIT는 관절 한계, STOP은 입력 누락/만료 등에 의한 비활성 상태입니다.
 원인을 확인한 뒤에만 R로 다시 활성화하세요.
 
-## 7. 종료와 다음 실행
+## 7. 로컬 데이터셋 취득
+
+앞선 시뮬레이터가 종료된 상태에서 입력 방식 하나를 선택합니다.
+
+**장비 없이 기록 경로를 먼저 확인할 때:**
+
+```bash
+./lekiwi record
+```
+
+이 모드는 키보드 베이스 조작을 기록하며 팔은 기본 자세를 유지합니다.
+직진·정지 기록이 집기 학습 시연을 대신하지는 않습니다.
+
+**리더로 팔과 베이스를 함께 시연할 때:** 5~6단계에서 확인한 USB 경로와 같은 리더 ID를 사용합니다.
+
+```bash
+./lekiwi teleop \
+  --port /dev/serial/by-id/usb-본인_SO101_장치 \
+  --id so101_leader \
+  --scene random \
+  --record
+```
+
+리더 안내를 완료하고 Viewport에서 R로 가상 팔 추종을 활성화합니다.
+이어서 `Lesson 6 - LeKiwi Recording` 탭에서 진행합니다.
+
+1. Task를 선택합니다. 첫 저장 검사는 직진·정지, 팔 시연은 블록 운반 과제를 사용합니다.
+2. Max seconds를 설정합니다. 첫 검사는 1~3초로 시작하고, 실제 수집에서는 원하는 초를 입력합니다. **0은 수동 종료**이며 시뮬레이션 시간 기준입니다.
+3. Record를 누르고 시연합니다. 기록 중에는 타임라인의 Pause/Stop을 누르지 않습니다.
+4. 이동키를 놓고 Stop recording을 누르거나 시간 제한이 끝나기를 기다립니다. 리더 조작 중에는 Space로 가상 베이스 정지·팔 목표 유지를 요청할 수 있습니다.
+5. FINISHING이 끝나 UNSAVED가 되면 결과를 검토합니다. 성공한 경우에만 성공 표시를 선택하고 Save episode를 누릅니다.
+6. **SAVING → SAVED**를 확인합니다. 잘못된 미저장 기록은 Discard unsaved로 버립니다.
+
+**완료 기준:** 패널에 표시된 `data/recordings/lekiwi.*/episode.*`에 두 영상과 프레임 기록이 저장됩니다.
+`.partial` 폴더는 미완료 기록입니다. 자세한 항목과 오류 처리는 [6편](isaacsim_basic/06_lekiwi_dataset/README.md)을 확인하세요.
+새 Record는 현재 자세에서 시작하며 로봇·큐브가 자동 초기화되지 않습니다. 같은 시작 배치는 아래 [배치 저장과 재현](#배치-저장과-재현)을 사용합니다.
+
+기록 저장을 확인한 뒤 시뮬레이터를 정상 종료하고 8단계로 진행합니다.
+
+## 8. 시연 선택·변환·학습 전 검사
+
+```bash
+./lekiwi dataset-ui
+```
+
+터미널에 표시된 `http://127.0.0.1:8765/#...` **전체 주소**를 같은 PC의 브라우저에서 엽니다.
+이 화면은 Isaac Sim을 꺼도 사용할 수 있습니다. 계정이나 토큰을 입력할 필요는 없습니다.
+
+1. 완료된 시연을 선택하고 첫 전방·손목 영상, 프레임 수, 성공 표시를 확인합니다.
+2. 새 로컬 이름을 입력합니다. 아래 학습 예시를 그대로 따라가려면 **`basket_01`**을 사용합니다.
+3. ‘선택한 시연 변환·검사’를 누릅니다. 여러 세션을 묶을 수 있지만 카메라 설정은 같아야 합니다.
+4. 로컬 데이터셋 목록에서 `basket_01`을 선택하고 ‘상태·영상 검사’를 누릅니다.
+5. 검사 완료와 프레임 수·저장 경로를 확인합니다.
+
+**완료 기준:** `data/datasets/basket_01/recording_report.json`의 `complete`가 `true`이고 화면의 검사도 통과합니다.
+원본은 그대로 보존됩니다. 같은 이름의 출력은 덮어쓰지 않으므로 재시도할 때는 새 이름을 사용하고 이후 학습 경로도 맞춰 바꿉니다.
+
+같은 작업의 CLI는 아래와 같습니다. 화면으로 변환을 마쳤다면 이 변환 명령을 중복 실행할 필요는 없습니다.
+
+```bash
+./lekiwi dataset list
+# SESSION/EPISODE는 위 목록의 실제 ID로 바꿉니다.
+./lekiwi dataset export --episode lekiwi.SESSION/episode.EPISODE --name basket_01
+./lekiwi dataset inspect --name basket_01
+```
+
+완료 후 관리 도구 터미널에서 Ctrl+C로 종료합니다. [로컬 데이터셋 관리 상세](docs/dataset-manager.md)
+
+## 9. 로컬 ACT 학습 — 강사와 함께 검증할 단계
+
+**여기부터는 우리 데이터로 학습 완료·모델 재로딩을 아직 검증하지 않은 단계입니다.**
+1~8단계가 끝나면 새 PC의 설치·teleop·수집·변환 검증은 완료한 것입니다.
+아래는 학습 실행을 확인하기 위한 예시이며, 집기 성공을 보장하는 완성 학습 설정이 아닙니다.
+Isaac Sim과 데이터셋 관리 화면을 종료해 GPU 메모리를 확보한 뒤 강사와 함께 진행합니다.
+
+```bash
+./lekiwi check-ml
+./lekiwi dataset inspect --name basket_01
+./lekiwi train act \
+  --dataset.repo_id=local/basket_01 \
+  --dataset.root=/data/datasets/basket_01 \
+  --output_dir=/data/outputs/act_basket_01_check \
+  --batch_size=4 --steps=100
+```
+
+`local/basket_01`은 8단계 도구가 만드는 내부 식별자이며 온라인 저장소를 뜻하지 않습니다.
+다른 이름으로 변환했다면 이름과 경로를 함께 바꾸세요. 기존 데이터는 `recording_report.json`의 `repo_id`를 사용합니다.
+학습 출력 폴더가 이미 있으면 지우거나 덮어쓰지 말고 새 출력 이름으로 실행합니다.
+선택한 모델의 사전학습 가중치는 최초 다운로드가 필요할 수 있습니다. 데이터셋은 로컬에서 읽습니다.
+
+**검증할 항목:** 데이터와 두 영상 읽기, 유한한 학습 손실, 설정한 학습 횟수 완료,
+`data/outputs/act_basket_01_check/checkpoints` 아래 모델 저장 여부입니다.
+GPU 메모리가 부족하면 학습 프로세스의 오류를 확인하고 배치 크기를 줄여 새 출력 폴더로 다시 검사합니다.
+짧은 실행 성공 이후에 학습용 시연의 품질·수량을 검토하고 본 학습과 모델 재로딩을 검증합니다.
+
+학습 상태·재개를 관리하는 화면과 **학습 모델로 Isaac Sim을 조작하는 추론 기능은 아직 없습니다.**
+GR00T는 의존성과 CLI만 준비되어 있으며 이 순서도의 첫 학습 대상으로 사용하지 않습니다.
+
+## 10. 종료와 다음 실행
 
 Space로 정지한 뒤 **Isaac 창을 닫거나 실행 터미널에서 Ctrl+C**를 누릅니다.
 이번 실행의 시뮬레이터·리더 컨테이너가 정리됩니다.
@@ -278,6 +323,30 @@ GUI만 종료해야 할 때 ./lekiwi stop을 사용할 수 있습니다.
 sudo를 사용하는 긴 세션에서는 인증 만료로 기존 터미널의 종료 처리가 비밀번호를 기다릴 수 있습니다.
 **기존 실행 터미널을 확인하고, status에서 리더까지 종료됐는지 확인한 뒤** 다시 실행하세요.
 새 세션을 중복 실행하거나 광범위한 프로세스 종료 명령을 사용하지 마세요.
+
+## 업데이트와 브랜치
+
+학생은 `develop`을 사용합니다. `main`은 현재 초기 teleop 버전이며 최신 교육·설치 기능의 기준이 아닙니다.
+`feature/isaacsim_basic`은 작업 브랜치이고 PR로 `develop`에 통합합니다.
+
+나중에 업데이트할 때는 장비·시뮬레이터를 정상 종료하고 저장소에서 실행합니다.
+
+```bash
+git status --short
+git pull --ff-only origin develop
+./lekiwi setup all
+```
+
+로컬 수정이 있다면 먼저 보존하고 충돌을 확인하세요. 강제 초기화로 해결하지 않습니다.
+코드·교재는 이미지에 복사되므로 업데이트 후 재빌드해야 반영됩니다. 매 실행마다 빌드하지는 않습니다.
+현재 프로젝트 이미지는 공개 레지스트리에 배포하지 않았으며 각 PC에서 빌드합니다.
+
+## 참고 자료와 검증 범위
+
+카메라 TF는 SOARM base 기준 측면 도면을 반영했습니다. 좌우 위치·광학 방향 등 최종 실물 확인은 남아 있습니다.
+기존 에피소드의 카메라 설정과 개인 보정 파일은 자동 변경하지 않습니다.
+개발 PC에서 리더 추종·연속 수집·데이터 변환·로컬 관리 화면을 확인했으며, 새 PC의 신규 드라이버 설치와
+학습·모델 재로딩·추론은 별도 검증 대상입니다. [교육 실습 검증 기록](isaacsim_basic/VALIDATION.md)
 
 ## 배치 저장과 재현
 
@@ -329,6 +398,7 @@ data/
 ├── isaacsim_basic/ # 기초 실습 장면과 5편 에피소드 JSON
 ├── recordings/   # 6편 원본 RGB·JSONL·manifest
 ├── datasets/     # 변환한 로컬 LeRobot 데이터셋
+├── setup/        # 학생 PC 설치 상태·GPU 검사 결과
 ├── outputs/      # 학습 출력
 └── cache/, logs/, isaac-data/, home/  # 캐시·설정
 ~~~
@@ -341,6 +411,7 @@ data/
 ./lekiwi test-physics
 ./lekiwi test-arm
 ./lekiwi test-scene
+./lekiwi test-cameras
 ./lekiwi test-basic
 ./lekiwi test-recording
 ~~~
@@ -350,22 +421,28 @@ data/
 일반 사용자는 build-assets를 실행할 필요가 없습니다.
 원본 CAD/ROS 작업 폴더 src/와 isaac_sim_bundle/은 배포에 필요하지 않아 저장소에 포함하지 않습니다.
 
-## 학습과 개발 자료
+## 폴더 구조
 
-이미 별도로 준비한 로컬 LeRobot 데이터셋이 있는 경우에만 다음처럼 학습 CLI를 사용할 수 있습니다.
-이 로봇의 수집·학습·추론 성공을 보장하는 프리셋은 아직 없습니다.
-
-~~~bash
-./lekiwi train act \
-  --dataset.repo_id=local/demo01 \
-  --dataset.root=/data/datasets/demo01 \
-  --output_dir=/data/outputs/act_demo01 \
-  --batch_size=4 --steps=1000
+~~~text
+lekiwi                 # 학생과 개발자가 사용하는 실행 명령
+compose.yaml           # Docker 서비스와 공통 데이터 연결
+docker/                # 이미지 빌드·컨테이너 진입점
+isaac_sim/             # 로봇 실행·카메라·코스·GPU 검사
+  assets/              # 배포용 URDF·USD·mesh·기본 카메라 TF
+isaacsim_basic/         # 1~6편 교재·이미지·ZIP·교육 전용 코드
+tools/
+  host_setup/          # 호스트 설치·환경 검사
+  dataset_manager/     # 로컬 시연 선택·변환·검사 화면과 CLI
+  *.py                 # LeRobot 검사·리더 입력·데이터 변환
+tests/                 # 하드웨어 없이 실행하는 공통 자동 테스트
+docs/                  # 설치·구조·기능 설명
+data/                  # 개인 보정·기록·데이터셋·설치 진단 (Git 제외)
 ~~~
 
-train groot도 CLI에 연결되지만 가중치·로봇 동작 표현·GPU 메모리 요구사항을 별도로 확인해야 합니다.
-사전학습 가중치는 번들 로봇 자산과 다르며 별도 다운로드가 필요할 수 있습니다.
-Hub 업로드와 W&B는 기본 비활성입니다.
+로컬 CAD/ROS 참조 폴더 `src/`, `isaac_sim_bundle/`, `.local_ros/`는 Git과 Docker 빌드에서 제외되어 학생의 clone에는 포함되지 않습니다.
+기존 원본·개인 데이터는 폴더 정리 과정에서 이동하거나 삭제하지 않습니다. [도구별 역할](tools/README.md)을 참고하세요.
+
+## 상세 문서
 
 - [코스 상세와 Script Editor 예제](docs/collection-course.md)
 - [SO101 보정·좌표·안전 제약](docs/so101-teleop.md)

@@ -18,7 +18,7 @@ Conda와 ROS 설치 없이, Git clone과 Docker 실행으로 LeKiwi + SO101을
   서비스를 추가하며, 지정한 USB 하나만 전달하고 네트워크는 끈다. 최신 관절값은
   공유 세션 파일로 전달하며 포트를 노출하지 않는다. 자세한 동작과 검증 제한은
   [SO101 teleop](so101-teleop.md)을 참고한다.
-- `./lekiwi`는 Docker만 호출한다. 호스트 Python, ROS, Conda를 호출하지 않는다.
+- `./lekiwi`의 실습 명령은 Docker를 호출한다. `install`만 Docker 설치 전 Ubuntu 기본 Python으로 `tools/host_setup/`을 실행한다. ROS와 Conda는 필요하지 않다.
 - 이미지 빌드 이후의 패키지 설치는 수행하지 않는다. 사전학습 가중치는
   별도 데이터이며 선택한 학습 방식에서 최초 다운로드·캐시가 필요할 수 있다.
 
@@ -66,6 +66,14 @@ Script Editor에서는 이미 실행 중인 SimulationApp을 재생성하지 않
   명령이 끊기면 베이스 정지 및 팔 목표 유지. 에피소드 리셋 시 이전 명령 제거.
 
 ## 영구 데이터
+
+`./lekiwi dataset-ui`는 LeRobot 컨테이너의 데이터셋 관리 HTTP 서버를
+호스트 `127.0.0.1:8765`에만 연결한다. Isaac Sim이나 Docker 소켓에 의존하지 않는다.
+브라우저와 `./lekiwi dataset`은 `tools/dataset_manager/core.py`의 동일 작업을 사용한다.
+시연 선택·변환·상태와 영상 검사는 오프라인으로 실행한다.
+교육 데이터는 `/data/datasets`에 저장하고 로컬 학습 입력으로 사용한다.
+계정 연결이나 데이터셋 업로드·다운로드 단계는 없다.
+실행·검증 범위와 한계는 [데이터셋 관리](dataset-manager.md)를 참고한다.
 
 `data/`를 `/data`에 연결하고 호스트 UID/GID로 실행한다. 데이터셋, 출력 모델,
 리더 보정값, 다운로드·렌더링 캐시가 컨테이너 삭제 후에도 유지된다.
