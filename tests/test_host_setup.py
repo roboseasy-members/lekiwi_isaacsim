@@ -38,10 +38,24 @@ def test_unsupported_host_is_blocked(changes):
     assert checks.assess(machine(**changes))['errors']
 
 
-def test_newer_existing_driver_kept_but_not_certified():
-    g = dict(name='RTX 5090', vram_mib=32000, driver='595.1.0')
+@pytest.mark.parametrize('driver', ['535.100.0', '580.65.05', '590.48.01', '595.71.05', '610.1.0', 'unknown'])
+def test_driver_outside_supported_range_requires_replacement(driver):
+    g = dict(name='RTX 3070 Laptop GPU', vram_mib=8192, driver=driver)
     r = checks.assess(machine(gpus=[g]))
-    assert r['driver_ready'] and any('검증 계열' in w for w in r['warnings'])
+    assert not r['driver_ready'] and not r['errors']
+    assert any('580 계열' in w for w in r['warnings'])
+
+
+@pytest.mark.parametrize('driver', ['580.65.06', '580.173.02'])
+def test_supported_580_driver_is_ready(driver):
+    g = dict(name='RTX 3070 Laptop GPU', vram_mib=8192, driver=driver)
+    assert checks.assess(machine(gpus=[g]))['driver_ready']
+
+
+def test_every_gpu_must_use_supported_driver():
+    gpus = [dict(name='RTX 3070', vram_mib=8192, driver=driver)
+            for driver in ('580.173.02', '595.71.05')]
+    assert not checks.assess(machine(pci=['gpu0', 'gpu1'], gpus=gpus))['driver_ready']
 
 
 @pytest.mark.parametrize('gpus', [[], [dict(name='RTX 3060', vram_mib=12000, driver='535.100.0')]])
@@ -218,9 +232,11 @@ def test_fresh_host_prepares_official_packages_without_deleting_existing_data(mo
     assert len(questions) == 2
 
 
-def test_driver_install_uses_selected_branch_and_stops_for_reboot(monkeypatch):
+@pytest.mark.parametrize('driver', [None, '535.100.0', '580.65.05', '595.71.05'])
+def test_driver_install_uses_selected_branch_and_stops_for_reboot(monkeypatch, driver):
     commands, states = [], []
-    info = machine(gpus=[], secure_boot='SecureBoot enabled')
+    gpus = [dict(name='RTX 3070 Laptop GPU', vram_mib=8192, driver=driver)] if driver else []
+    info = machine(gpus=gpus, secure_boot='SecureBoot enabled')
     monkeypatch.setattr(setup.Path, 'exists', lambda self: False)
     monkeypatch.setattr(setup, 'confirm', lambda text: None)
     monkeypatch.setattr(setup, 'run', lambda args, **kw: commands.append(args))
@@ -230,6 +246,68 @@ def test_driver_install_uses_selected_branch_and_stops_for_reboot(monkeypatch):
     monkeypatch.setattr(setup, 'save_state', states.append)
     with pytest.raises(RuntimeError, match='직접 재부팅'):
         setup.install_driver(info)
-    assert commands[-1] == ['ubuntu-drivers', 'install', 'nvidia:580-open']
+    packages = ['nvidia-driver-580-open=580.173.02-0ubuntu1', 'linux-headers-'+info['kernel']]
+    assert commands[-2:] == [['apt-get', '--simulate', 'install', *packages], ['apt-get', 'install', *packages]]
     assert states == [{'driver_boot': 'current-boot', 'driver_package': 'nvidia-driver-580-open'}]
     assert not any('reboot' in c for c in commands)
+
+
+@pytest.mark.parametrize('mode,state,driver,expected', [
+    ('--verify', {}, '595.71.05', '580 계열'),
+    (None, {'driver_boot': 'current-boot'}, '595.71.05', '재부팅이 필요'),
+    (None, {'driver_boot': 'previous-boot'}, '595.71.05', '자동 재설치'),
+    ('--verify', {'driver_boot': 'previous-boot'}, '580.173.02', None),
+])
+def test_loaded_driver_gates_resume_and_verification(monkeypatch, mode, state, driver, expected):
+    import json
+    info = machine(docker=False, gpus=[dict(name='RTX 3070 Laptop GPU', vram_mib=8192, driver=driver)])
+    monkeypatch.setattr(setup, 'inspect', lambda root: info)
+    monkeypatch.setattr(setup.os, 'geteuid', lambda: 1000)
+    monkeypatch.setattr(setup, 'read', lambda path: json.dumps(state) if str(path).endswith('.json') else 'current-boot')
+    monkeypatch.delenv('DOCKER_HOST', raising=False)
+    monkeypatch.delenv('DOCKER_CONTEXT', raising=False)
+    monkeypatch.setattr(sys, 'argv', ['setup'] + ([mode] if mode else []))
+    def forbidden(*args, **kwargs):
+        pytest.fail('드라이버 확인 전에 설치 또는 GPU 검사를 실행함')
+    for name in ('run', 'save_state', 'install_driver', 'install_host'):
+        monkeypatch.setattr(setup, name, forbidden)
+    called = []
+    monkeypatch.setattr(setup, 'docker_command', forbidden if expected else lambda: ['docker'])
+    monkeypatch.setattr(setup, 'verify', forbidden if expected else called.append)
+    if expected:
+        with pytest.raises(RuntimeError, match=expected):
+            setup.main()
+    else:
+        setup.main()
+        assert called == [['docker']]
+
+
+@pytest.mark.parametrize('description', ['', 'Depends: nvidia-dkms-595-open'])
+def test_595_replacement_never_installs_unsupported_or_transitional_candidate(monkeypatch, description):
+    info = machine(gpus=[dict(name='RTX 3070 Laptop GPU', vram_mib=8192, driver='595.71.05')])
+    commands = []
+    monkeypatch.setattr(setup.Path, 'exists', lambda self: False)
+    monkeypatch.setattr(setup, 'confirm', lambda text: None)
+    monkeypatch.setattr(setup, 'run', lambda args, **kw: commands.append(args))
+    monkeypatch.setattr(setup, 'candidate', lambda name: '580.173.02-0ubuntu1' if description else '')
+    monkeypatch.setattr(setup, 'query', lambda args: DEVICE if args[0] == 'ubuntu-drivers' else description)
+    monkeypatch.setattr(setup, 'save_state', lambda state: pytest.fail('지원 후보가 없는데 설치 상태를 기록함'))
+    with pytest.raises(RuntimeError, match='후보가 없습니다|다른 계열'):
+        setup.install_driver(info)
+    assert not any(c[0] == 'ubuntu-drivers' for c in commands)
+
+
+def test_failed_driver_simulation_never_records_or_installs(monkeypatch):
+    info = machine(gpus=[], secure_boot='SecureBoot enabled')
+    monkeypatch.setattr(setup.Path, 'exists', lambda self: False)
+    monkeypatch.setattr(setup, 'confirm', lambda text: None)
+    monkeypatch.setattr(setup, 'candidate', lambda name: '580.173.02-0ubuntu1')
+    monkeypatch.setattr(setup, 'query', lambda args: DEVICE if args[0] == 'ubuntu-drivers' else 'Depends: nvidia-dkms-580-open')
+    def run(args, **kwargs):
+        if '--simulate' in args:
+            raise setup.subprocess.CalledProcessError(100, args)
+        assert not any(arg.startswith('nvidia-driver-') for arg in args)
+    monkeypatch.setattr(setup, 'run', run)
+    monkeypatch.setattr(setup, 'save_state', lambda state: pytest.fail('모의 설치 실패 후 설치 시도를 기록함'))
+    with pytest.raises(setup.subprocess.CalledProcessError):
+        setup.install_driver(info)
