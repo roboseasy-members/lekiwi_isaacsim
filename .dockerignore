@@ -20,12 +20,17 @@ isaac_sim/**
 !tools/
 tools/**
 !tools/check_runtime.py
+!tools/README.md
 !tools/so101_leader.py
 !tools/export_dataset.py
+!tools/dataset_manager/
+!tools/dataset_manager/**
 !README.md
 !docs/
 docs/**
 !docs/architecture.md
+!docs/student-setup.md
+!docs/dataset-manager.md
 !docs/validation-2026-09-07.md
 !docs/so101-teleop.md
 !docs/collection-course.md

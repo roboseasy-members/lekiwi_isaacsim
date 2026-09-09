@@ -6,6 +6,7 @@ COPY docker/requirements-sim.txt /opt/lekiwi/docker/requirements-sim.txt
 RUN /isaac-sim/python.sh -m pip install --no-cache-dir -r /opt/lekiwi/docker/requirements-sim.txt
 COPY isaac_sim /opt/lekiwi/isaac_sim
 COPY isaacsim_basic /opt/lekiwi/isaacsim_basic
+COPY tools/README.md /opt/lekiwi/tools/README.md
 COPY docker/sim-entrypoint.sh /opt/lekiwi/docker/sim-entrypoint.sh
 COPY docker/run-checked.sh /opt/lekiwi/docker/run-checked.sh
 COPY README.md /opt/lekiwi/README.md

@@ -160,8 +160,15 @@ if args[0] == "info" and os.environ.get("DENY_DOCKER"):
 if args[0] == "ps" and os.environ.get("SIM_RUNNING"):
     print("existing-container")
 if args[0] == "inspect":
-    print(os.environ.get("CONTAINER_OWNER", "lekiwi") + "|" +
-          os.environ.get("CONTAINER_CHECKOUT", os.environ["TEST_PROJECT_DIR"]) + "|sim")
+    if os.environ.get("MANAGER_OWNED"):
+        entries = [json.loads(line) for line in open(os.environ["DOCKER_CALL_LOG"])]
+        launched = next(call for call in entries if "--label" in call)
+        print(launched[launched.index("--label") + 1].split("=", 1)[1])
+    else:
+        print(os.environ.get("CONTAINER_OWNER", "lekiwi") + "|" +
+              os.environ.get("CONTAINER_CHECKOUT", os.environ["TEST_PROJECT_DIR"]) + "|sim")
+if "run" in args and os.environ.get("MANAGER_EXIT"):
+    sys.exit(int(os.environ["MANAGER_EXIT"]))
 if "config" in args and "--images" in args:
     print("lekiwi-" + args[-1] + ":0.1.0")
 ''')
@@ -187,7 +194,7 @@ def test_denied_docker_does_not_fall_back_to_sudo(fake_docker):
     assert not any("build" in call for call in calls(log))
 
 
-@pytest.mark.parametrize("command", ["test-physics", "basic", "test-basic", "test-recording", "record"])
+@pytest.mark.parametrize("command", ["test-physics", "basic", "test-basic", "test-recording", "record", "test-cameras"])
 def test_duplicate_simulation_is_rejected_before_launch(fake_docker, command):
     env, log = fake_docker
     result = run("bash", str(ROOT / "lekiwi"), command, env=dict(env, SIM_RUNNING="1"))
@@ -254,7 +261,7 @@ def test_leader_overlay_only_exposes_selected_serial_device(tmp_path):
     assert not config["services"]["sim"].get("devices")
 
 
-@pytest.mark.parametrize("name,target", [("test-physics", "physics-test"), ("test-basic", "basic-test"), ("test-recording", "recording-test")])
+@pytest.mark.parametrize("name,target", [("test-physics", "physics-test"), ("test-basic", "basic-test"), ("test-recording", "recording-test"), ("test-cameras", "camera-test")])
 def test_physics_test_uses_bundled_image_and_scoped_container(fake_docker, name, target):
     env, log = fake_docker
     result = run("bash", str(ROOT / "lekiwi"), name, env=env)
@@ -311,3 +318,41 @@ def test_checked_runner_detects_masked_isaac_failure(tmp_path, message, exit_cod
                  sys.executable, "-c", f"print({message!r}); raise SystemExit({exit_code})",
                  env=dict(os.environ, LEKIWI_LOG_DIR=str(tmp_path)))
     assert result.returncode == expected, result.stderr
+
+
+def test_dataset_ui_is_local_only_and_does_not_require_sim_stopped(fake_docker):
+    env, log = fake_docker
+    result = run('bash', str(ROOT / 'lekiwi'), 'dataset-ui', env=dict(env, SIM_RUNNING='1'))
+    assert result.returncode == 0, result.stderr
+    command = next(call for call in calls(log) if 'run' in call)
+    assert command[command.index('--publish') + 1] == '127.0.0.1:8765:8765'
+    assert command[-1] == 'serve'
+    assert not any('docker.sock' in arg for arg in command)
+
+
+@pytest.mark.parametrize('exit_code', ['0', '130'])
+def test_dataset_ui_cleans_only_its_labeled_container_on_exit(fake_docker, exit_code):
+    env, log = fake_docker
+    result = run('bash', str(ROOT/'lekiwi'), 'dataset-ui',
+                 env=dict(env, MANAGER_OWNED='1', MANAGER_EXIT=exit_code))
+    assert result.returncode == int(exit_code)
+    command = next(call for call in calls(log) if 'run' in call)
+    name = command[command.index('--name') + 1]
+    assert name.startswith('lekiwi-dataset-ui-')
+    assert calls(log)[-1] == ['stop', '--time', '10', name]
+
+
+@pytest.mark.parametrize('args', [('hf', 'login'), ('dataset', 'upload'), ('dataset', 'download'), ('dataset', 'plan-upload')])
+def test_removed_hub_commands_cannot_run(fake_docker, args):
+    env, log = fake_docker
+    result = run('bash', str(ROOT/'lekiwi'), *args, env=env)
+    assert result.returncode != 0
+    assert not log.exists() or not any('run' in call for call in calls(log))
+
+
+def test_local_dataset_inspection_forwards_arguments_offline(fake_docker):
+    env, log = fake_docker
+    result = run('bash', str(ROOT/'lekiwi'), 'dataset', 'inspect', '--name', 'example', env=env)
+    assert result.returncode == 0, result.stderr
+    assert calls(log)[-1][-3:] == ['inspect','--name','example']
+    assert 'HF_HUB_OFFLINE=1' in calls(log)[-1]

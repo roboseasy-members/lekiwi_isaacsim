@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeKiwi · 로컬 데이터셋</title>
+<link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body><main>
+<header><p class="eyebrow">LEKIWI CLASSROOM</p><h1>시연에서 데이터셋까지</h1>
+<p>이 PC에 저장한 시연을 확인하고, 로컬 학습에 사용할 데이터셋을 준비하세요.</p></header>
+<div id="notice" role="status" aria-live="polite">연결 중…</div>
+<section>
+<div class="row"><h2>1. 완료된 시연 선택</h2><button id="refresh" class="secondary">목록 새로고침</button></div>
+<div id="episodes"></div>
+<div class="preview">
+<figure><img id="front" alt="선택한 시연의 첫 전방 영상" hidden><figcaption>전방 · 첫 프레임</figcaption></figure>
+<figure><img id="wrist" alt="선택한 시연의 첫 손목 영상" hidden><figcaption>손목 · 첫 프레임</figcaption></figure>
+</div>
+<p class="hint">미리보기는 첫 프레임입니다. 작업 성공 여부는 전체 시연을 검토해 기록한 표시를 따릅니다.</p>
+</section>
+<section><h2>2. 로컬 데이터셋으로 변환</h2>
+<label>새 데이터셋 이름<input id="exportName" placeholder="basket_01"></label>
+<label class="check"><input id="successOnly" type="checkbox">성공으로 표시한 시연만 포함</label>
+<button id="export">선택한 시연 변환·검사</button>
+<p class="hint">원본 시연은 보존하고 새 데이터셋 폴더에 저장합니다.</p>
+</section>
+<section><h2>3. 학습 전 데이터 확인</h2>
+<label>로컬 데이터셋<select id="datasets"></select></label>
+<button id="inspect">상태·영상 검사</button>
+<p class="hint">프레임 수와 관절·카메라 규격, 처음·중간·마지막의 상태와 영상을 확인합니다.</p>
+<p>다음 과정에서는 이 로컬 데이터로 ACT를 학습하고, 저장한 모델로 Isaac Sim 추론을 진행합니다. 학습·추론 화면은 아직 준비 중입니다.</p>
+</section>
+<section><h2>작업 결과</h2><pre id="result">아직 실행한 작업이 없습니다.</pre>
+<p class="hint">완료 전에는 관리 도구 터미널을 종료하지 마세요.</p></section>
+</main></body></html>
