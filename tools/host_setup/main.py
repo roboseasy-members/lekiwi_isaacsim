@@ -43,7 +43,7 @@ def reboot_gate(state, boot, ready):
     if state.get('driver_boot') == boot:
         raise RuntimeError('드라이버 설치 후 재부팅이 필요합니다. 재부팅하고 ./lekiwi install을 다시 실행하세요.')
     if state.get('driver_boot') and not ready:
-        raise RuntimeError('재부팅 후에도 드라이버가 준비되지 않았습니다. Secure Boot의 MOK 등록과 nvidia-smi 오류를 확인하세요. 자동 재설치는 하지 않습니다.')
+        raise RuntimeError('재부팅 후에도 580 계열(580.65.06 이상) 드라이버가 준비되지 않았습니다. nvidia-smi의 실제 버전과 Secure Boot의 MOK 등록을 확인하세요. 자동 재설치는 하지 않습니다.')
 
 
 def candidate(package):
@@ -59,7 +59,7 @@ def docker_query(docker, args):
 
 def install_driver(info):
     if assess(info)['driver_ready']:
-        print('호환 버전의 로드된 드라이버 유지. 실제 렌더링 검사는 별도 수행합니다.')
+        print('580 계열(580.65.06 이상)의 로드된 드라이버 유지. 실제 렌더링 검사는 별도 수행합니다.')
         return
     if Path('/sys/module/nvidia').exists() and (not info['gpus'] or len(info['gpus']) != len(info['pci'])):
         raise RuntimeError('NVIDIA 모듈이 로드됐지만 모든 GPU를 읽지 못했습니다. nvidia-smi 오류를 먼저 해결하세요. 자동 재설치는 하지 않습니다.')
@@ -75,15 +75,23 @@ def install_driver(info):
         raise RuntimeError('모든 NVIDIA GPU를 지원하는 580 계열 후보가 없습니다. 강사와 드라이버/Isaac Sim 버전 조합을 검토하세요.')
     # Ubuntu의 전환 패키지가 다른 계열을 설치하는 경우에는 자동 진행하지 않는다.
     import re
-    description = query(['apt-cache', 'show', selected+'='+candidate(selected)])
+    target = selected+'='+candidate(selected)
+    description = query(['apt-cache', 'show', target])
+    if not description:
+        raise RuntimeError('드라이버 후보의 패키지 정보를 읽지 못했습니다. 자동 설치를 중단합니다.')
     other = set(re.findall(r'nvidia-(?:driver|dkms|kernel-source)-(\d+)', description)) - {'580'}
     if other:
         raise RuntimeError('드라이버 후보가 다른 계열로 전환되는 패키지입니다. 자동 설치를 중단합니다.')
-    confirm(f'{selected}를 설치합니다. 기존 NVIDIA 패키지가 교체될 수 있고 재부팅이 필요합니다.\n'
+    # 현재 커널의 DKMS 빌드 준비와 의존성 해결이 가능한지 변경 전에 확인한다.
+    packages = [target, 'linux-headers-'+info['kernel']]
+    run(['apt-get', '--simulate', 'install', *packages])
+    current = ', '.join(sorted({g['driver'] for g in info['gpus']})) or '확인되지 않음'
+    confirm(f'현재 드라이버: {current} → {selected} 설치. 595 등 다른 계열도 580으로 교체하며 재부팅이 필요합니다.\n'
+            '작업을 저장하고 Isaac Sim·학습 등 GPU 작업을 종료한 뒤 진행하세요.\n'
             f"Secure Boot: {info['secure_boot']}. 등록 화면이 나오면 학생이 직접 완료해야 합니다.")
     # 실패 후 반복 설치를 막기 위해 시도 전 부팅 ID를 기록한다.
     save_state({'driver_boot': read('/proc/sys/kernel/random/boot_id'), 'driver_package': selected})
-    run(['ubuntu-drivers', 'install', 'nvidia:'+selected.removeprefix('nvidia-driver-')], admin=True)
+    run(['apt-get', 'install', *packages], admin=True)
     raise RuntimeError('드라이버 설치 완료. 작업을 저장하고 직접 재부팅한 뒤 ./lekiwi install을 다시 실행하세요.')
 
 
@@ -237,7 +245,7 @@ def main():
     reboot_gate(json.loads(read(state_path()) or '{}'), read('/proc/sys/kernel/random/boot_id'), result['driver_ready'])
     if args.verify:
         if not result['driver_ready']:
-            raise RuntimeError('드라이버가 준비되지 않았습니다. ./lekiwi install을 먼저 실행하세요.')
+            raise RuntimeError('580 계열(580.65.06 이상) 드라이버가 필요합니다. ./lekiwi install을 먼저 실행하세요.')
         verify(docker_command())
         return
     if Path('/var/run/reboot-required').exists():

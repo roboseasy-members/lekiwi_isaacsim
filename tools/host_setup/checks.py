@@ -32,6 +32,11 @@ def version(value):
     return tuple(int(v or 0) for v in m.groups()) if m else (0, 0, 0)
 
 
+def supported_driver(value):
+    current = version(value)
+    return current[0] == int(AUTO_DRIVER_BRANCH) and current >= MIN_DRIVER
+
+
 def parse_gpus(output):
     result = []
     for row in csv.reader(output.splitlines(), skipinitialspace=True):
@@ -67,7 +72,7 @@ def select_driver(output, candidates):
     supported = driver_packages(output)
     for package in (f'nvidia-driver-{AUTO_DRIVER_BRANCH}-open', f'nvidia-driver-{AUTO_DRIVER_BRANCH}'):
         candidate = candidates.get(package, '')
-        if package in supported and version(candidate) >= MIN_DRIVER and version(candidate)[0] == int(AUTO_DRIVER_BRANCH):
+        if package in supported and supported_driver(candidate):
             return package
     return None
 
@@ -117,9 +122,9 @@ def assess(info):
             warnings.append(f"{g['name']}: 공식 VRAM 16GB 미달; 설치를 허용합니다.")
         if rt_support(g['name']) == 'unknown':
             warnings.append(f"{g['name']}: RT 지원 여부를 이름으로 판정하지 못했습니다. 렌더링 검사로 확인합니다.")
-        if version(g['driver'])[0] != int(AUTO_DRIVER_BRANCH) and version(g['driver']) >= MIN_DRIVER:
-            warnings.append(f"드라이버 {g['driver']}는 이 프로젝트의 검증 계열 580과 다릅니다. 유지 후 실제 검사를 수행합니다.")
+        if not supported_driver(g['driver']):
+            warnings.append(f"드라이버 {g['driver']}는 설치 정책 범위 밖입니다. 580 계열(580.65.06 이상) 지원 후보를 확인하고 동의 후 교체합니다.")
     if not info['display']:
         warnings.append('DISPLAY가 없습니다. 자동 검사는 가능하지만 GUI 실습은 로컬 데스크톱에서 확인하세요.')
-    ready = bool(info['gpus']) and len(info['gpus']) == len(info['pci']) and all(version(g['driver']) >= MIN_DRIVER for g in info['gpus'])
+    ready = bool(info['gpus']) and len(info['gpus']) == len(info['pci']) and all(supported_driver(g['driver']) for g in info['gpus'])
     return dict(errors=errors, warnings=warnings, driver_ready=ready)
