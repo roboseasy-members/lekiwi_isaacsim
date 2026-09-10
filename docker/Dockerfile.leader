@@ -1,0 +1,13 @@
+# 노트북의 USB 리더 전용. NVIDIA/CUDA 런타임이나 GPU 접근이 필요 없습니다.
+FROM python:3.12.11-slim-bookworm
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+WORKDIR /opt/lekiwi
+RUN python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
+        torch==2.10.0 torchvision==0.25.0
+RUN python -m pip install --no-cache-dir 'lerobot[feetech]==0.6.1' feetech-servo-sdk==1.0.0
+COPY tools/so101_leader.py /opt/lekiwi/tools/so101_leader.py
+COPY isaac_sim/teleop_bridge.py isaac_sim/remote_teleop.py /opt/lekiwi/isaac_sim/
+RUN python -c 'from lerobot.teleoperators.so_leader import SO101Leader, SO101LeaderConfig; import torch; assert torch.version.cuda is None' \
+    && python -m pip check
+USER 1000:1000
+ENTRYPOINT ["python", "/opt/lekiwi/tools/so101_leader.py"]

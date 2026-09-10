@@ -1,0 +1,40 @@
+# 저장한 학생 코드를 다음 실행에 반영합니다. 이미지 재빌드가 필요 없습니다.
+services:
+  sim:
+    volumes:
+      - type: bind
+        source: ./isaacsim_basic/01_object_physics/experiments
+        target: /opt/lekiwi/isaacsim_basic/01_object_physics/experiments
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./isaacsim_basic/02_robot_joints/experiments
+        target: /opt/lekiwi/isaacsim_basic/02_robot_joints/experiments
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./isaacsim_basic/03_robot_cameras/experiments
+        target: /opt/lekiwi/isaacsim_basic/03_robot_cameras/experiments
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./isaacsim_basic/04_teleoperation/experiments
+        target: /opt/lekiwi/isaacsim_basic/04_teleoperation/experiments
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./isaacsim_basic/05_data_recording/experiments
+        target: /opt/lekiwi/isaacsim_basic/05_data_recording/experiments
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./isaacsim_basic/06_lekiwi_dataset/experiments
+        target: /opt/lekiwi/isaacsim_basic/06_lekiwi_dataset/experiments
+        read_only: true
+        bind:
+          create_host_path: false

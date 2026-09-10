@@ -113,13 +113,20 @@ def main():
     parser.add_argument("--calibrate-only", action="store_true")
     parser.add_argument("--state", type=Path)
     parser.add_argument("--session")
+    parser.add_argument("--remote-host", help="원격 Isaac Sim 서버 IPv4; 로컬 파일 대신 LAN으로 전송")
     args = parser.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.id):
         parser.error("id must contain only letters, digits, underscore or hyphen")
-    if not args.calibrate_only and (not args.state or not args.session):
+    if args.remote_host and (args.state or args.session or args.calibrate_only):
+        parser.error("--remote-host는 --state/--session/--calibrate-only와 함께 사용할 수 없습니다")
+    if not args.calibrate_only and not args.remote_host and (not args.state or not args.session):
         parser.error("streaming requires --state and --session")
     if not sys.stdin.isatty():
         raise RuntimeError("Interactive terminal required; calibration choices cannot be skipped")
+    sender = None
+    if args.remote_host:
+        from remote_teleop import Sender, connection_key
+        sender = Sender(args.remote_host, connection_key())
     args.calibration_dir.mkdir(parents=True, exist_ok=True)
     path = args.calibration_dir / f"{args.id}.json"
     # Lock for the whole connection, including prompts. No concurrent writer.
@@ -147,11 +154,18 @@ def main():
                 print("리더 위치 전송 시작. Isaac 화면에서 자세/방향을 확인하고 R로 활성화하세요. Ctrl+C 종료.", flush=True)
                 while True:
                     started = time.monotonic()
-                    action = leader.get_action()
-                    atomic_json(args.state, make_packet(action, args.session, sequence))
+                    if sender:
+                        accepted = sender.sample(leader.get_action)
+                        if sequence % 30 == 0:
+                            print(f"LEKIWI_REMOTE accepted={accepted}", flush=True)
+                    else:
+                        action = leader.get_action()
+                        atomic_json(args.state, make_packet(action, args.session, sequence))
                     sequence += 1
                     time.sleep(max(0.0, 1 / 30 - (time.monotonic() - started)))
             finally:
+                if sender:
+                    sender.close()
                 try:
                     if args.state:
                         atomic_json(args.state, make_packet({}, args.session, sequence, connected=False))

@@ -1,12 +1,18 @@
 # LeKiwi Isaac Sim · 설치부터 로컬 데이터 수집까지
 
 학생은 **`develop` 브랜치를 받은 뒤 이 문서의 번호 순서대로 진행**합니다.
+현재 `feature/remote_classroom`에는 1~6장 코드 실습 개편과 원격 실습 기능이 추가돼 있습니다. 이 변경은 아직 `develop`에 병합되지 않았습니다.
 교육 흐름은 **환경 설정 → 기초 교육 → teleop → 로컬 데이터 수집·변환 → 로컬 학습 → 추론**입니다.
 데이터셋 계정 연결이나 업로드 단계는 없습니다.
 
 실제 SO101 리더암과 키보드로 **Isaac Sim 안의 LeKiwi 베이스와 SOARM**을 조작합니다.
 실제 follower나 실제 LeKiwi 본체를 움직이는 기능은 없습니다.
 로봇 URDF·USD·mesh와 교재는 저장소에 포함되며, Isaac Sim·LeRobot은 Docker 안에서 실행합니다.
+
+연구실 데스크탑과 강의실 Ubuntu 노트북을 같은 Wi-Fi에서 사용하는 구성은
+[원격 실습 안내](docs/remote-classroom.md)를 따릅니다. 데스크탑이 시뮬레이션을 실행하고
+노트북이 화면 수신·USB 리더암 입력을 담당합니다. 이 기능은 `feature/remote_classroom`에서 검증 중이며,
+아래의 한 PC 설치·실습 절차와 노트북 설치 절차를 구분합니다.
 
 | 단계 | 이번 저장소에서 진행할 범위 |
 |---|---|
@@ -110,26 +116,30 @@ export ACCEPT_EULA=Y
 
 ## 4. 기초 교육 1~6편 진행
 
-아래 교재를 순서대로 읽고 각 편의 캡처·실습 기록지를 작성합니다.
-장면을 바꿀 때는 기존 Isaac Sim을 정상 종료한 뒤 다음 명령을 실행합니다.
+[교재 전체 목차](isaacsim_basic/README.md)를 순서대로 따라갑니다.
+각 장의 `experiments/*.py`에서 실제 객체·물리·관절·카메라 API를 읽고, 기본 코드와 주석 처리된 다음 단계를 교체합니다.
+객체 생성·환경·물리 속성 줄에는 한국어 설명과 단위를 적었습니다. 전용 Lesson 탭 없이 기본 Stage·Property·Viewport를 사용합니다.
 
-| 편 | 교재 | 시작 명령·이 문서의 연결 단계 |
-|---|---|---|
-| 1 | [객체와 물리 성질](isaacsim_basic/01_object_physics/README.md) | `./lekiwi basic` · Collider, 질량·중력, 마찰·반발력 |
-| 2 | [로봇과 관절](isaacsim_basic/02_robot_joints/README.md) | `./lekiwi basic --lesson joints` · 회전축·제한·Drive |
-| 3 | [전방·손목 카메라](isaacsim_basic/03_robot_cameras/README.md) | `./lekiwi sim` · 시점·가림·좌표 |
-| 4 | [원격 조작](isaacsim_basic/04_teleoperation/README.md) | 키보드는 `./lekiwi scene`, 리더는 아래 5~6단계 |
-| 5 | [기초 데이터 기록](isaacsim_basic/05_data_recording/README.md) | `./lekiwi basic --lesson recording` · 한 관절 JSON 기록·재생 |
-| 6 | [LeKiwi 데이터셋 수집](isaacsim_basic/06_lekiwi_dataset/README.md) | 아래 7~8단계 · 두 영상·상태·행동 수집과 로컬 변환 |
+```bash
+./lekiwi basic --chapter 1
+```
 
-각 편은 MD·실습 기록지·실제 화면·노션용 ZIP을 포함합니다. [교재 전체 목차](isaacsim_basic/README.md)
-1·2편은 Stage/Property에서 속성을 편집합니다. 1~6편의 초기화·조작·기록 안내 창은 Stage 옆 탭에 배치됩니다.
-교육 편성은 설치 완료 PC 기준 **2일, 총 12~14시간**의 계획용 추정입니다.
-최초 설치·충분한 집기 시연 확보·실측 카메라 보정·학습은 별도입니다.
-각 편의 초기화 버튼과 기본 화면은 [1~6편 화면·초기화 안내](isaacsim_basic/README.md)를 참고하세요.
+창을 닫고 코드를 저장한 뒤 같은 명령으로 재실행합니다. 학생 파일은 Docker에 연결되므로 코드 수정만으로 이미지 재빌드가 필요하지 않습니다.
+다음 장은 `--chapter 2`부터 `--chapter 6`까지입니다. 1장 비교 예제 번호는 `--experiment 1..6`이며 교육 장 번호와 구분합니다.
 
-리더가 없으면 5~6단계 장비 실습을 건너뛰고 7단계의 키보드 기록을 진행할 수 있습니다.
-5편의 한 관절 JSON은 기록 개념을 배우는 예제이며, 본격적인 로봇 데이터는 6편에서 수집합니다.
+| 편 | 내용 |
+|---|---|
+| 1 | 객체·색상·중력·접촉·질량·마찰·반발 |
+| 2 | 관절 축·제한·Drive 목표와 응답 |
+| 3 | Camera API·화각·LeKiwi front/wrist TF |
+| 4 | 키 입력·ArticulationAction·키보드 주행·선택 리더 실습 |
+| 5 | 한 관절 JSON 기록·저장된 명령 재생 |
+| 6 | LeKiwi 두 RGB·상태·명령 수집과 로컬 LeRobot 변환 |
+
+각 편은 MD·학생 Python·실습 기록지·실제 화면·노션 ZIP을 포함합니다.
+1~5장 API 예제는 일반 Isaac Sim 5.1 설치에서도 실행할 수 있습니다. 6장은 프로젝트 로봇·기록 모듈을 사용합니다.
+코드 실습과 리더 실습, 휴식·질문을 포함해 **2일 14~16시간**을 계획용 추정으로 잡습니다. 설치·본격 시연 확보·학습은 별도입니다.
+5장의 JSON은 에피소드 개념 예제이며 실제 로봇 학습 데이터는 6장에서 수집합니다.
 
 ## 5. SO101 리더 연결과 보정
 
@@ -189,11 +199,11 @@ ACTIVE 표시를 확인하고 리더 관절을 조금씩 움직여 방향을 확
 시작 화면은 좌측 **Perspective**, 우측 **Front Camera**가 뷰포트 영역을 반씩 사용합니다.
 `C`와 `T`는 좌측 시점을 변경하며 우측은 전방 카메라로 유지됩니다.
 
-코스 반복 실습은 Stage 옆 조작 안내 탭의 **Reset scene / randomize cubes** 버튼을 누릅니다.
+코스 반복 실습은 Viewport에서 **F8**을 누릅니다.
 가상 로봇은 시작 자세로 돌아가고, 큐브는 각 색상의 라인 안에서 위치와 방향이 새로 정해집니다.
 바구니와 도로는 유지되며 새 배치는 `data/scenes/course.*/layout.json`에 저장됩니다.
 리셋 후에는 `R`을 다시 눌러 teleop을 활성화합니다. 실제 리더암 자세는 변경하지 않습니다.
-녹화 중이거나 미저장 에피소드가 있으면 **Stop recording → Save episode 또는 Discard unsaved**를 완료한 후 리셋합니다.
+녹화 중이거나 미저장 에피소드가 있으면 **F6 종료 → F7/F9 저장 또는 F10 두 번 폐기**를 완료한 후 리셋합니다.
 
 | 키 | 동작 |
 |---|---|
@@ -245,18 +255,18 @@ LIMIT는 관절 한계, STOP은 입력 누락/만료 등에 의한 비활성 상
 ```
 
 리더 안내를 완료하고 Viewport에서 R로 가상 팔 추종을 활성화합니다.
-이어서 `Lesson 6 - LeKiwi Recording` 탭에서 진행합니다.
+기록은 Viewport 단축키와 실행 터미널로 진행합니다.
+시간은 실행 전에 `LEKIWI_RECORD_SECONDS=120`, 과제는 `LEKIWI_RECORD_TASK="Move a block to its matching basket"`로 지정하거나
+6장 학생 파일의 기본값을 수정합니다. 시간 0은 F6을 누를 때까지 수동 수집합니다.
 
-1. Task를 선택합니다. 첫 저장 검사는 직진·정지, 팔 시연은 블록 운반 과제를 사용합니다.
-2. Max seconds를 설정합니다. 첫 검사는 1~3초로 시작하고, 실제 수집에서는 원하는 초를 입력합니다. **0은 수동 종료**이며 시뮬레이션 시간 기준입니다.
-3. Record를 누르고 시연합니다. 기록 중에는 타임라인의 Pause/Stop을 누르지 않습니다.
-4. 이동키를 놓고 Stop recording을 누르거나 시간 제한이 끝나기를 기다립니다. 리더 조작 중에는 Space로 가상 베이스 정지·팔 목표 유지를 요청할 수 있습니다.
-5. FINISHING이 끝나 UNSAVED가 되면 결과를 검토합니다. 성공한 경우에만 성공 표시를 선택하고 Save episode를 누릅니다.
-6. **SAVING → SAVED**를 확인합니다. 잘못된 미저장 기록은 Discard unsaved로 버립니다.
+1. 터미널의 READY를 확인하고 F5로 기록을 시작합니다.
+2. 시연 후 이동키를 놓고 SPACE로 정지한 다음 F6으로 수집을 끝냅니다.
+3. FINISHING → UNSAVED를 기다리고, F7은 연습·실패, F9는 성공으로 저장합니다.
+4. SAVED와 `LEKIWI_RECORD saved=...`를 확인합니다. 미저장 기록 폐기는 F10을 3초 안에 두 번 누릅니다.
 
-**완료 기준:** 패널에 표시된 `data/recordings/lekiwi.*/episode.*`에 두 영상과 프레임 기록이 저장됩니다.
+**완료 기준:** 터미널에 나온 `data/recordings/lekiwi.*/episode.*`에 두 영상과 프레임 기록이 저장됩니다.
 `.partial` 폴더는 미완료 기록입니다. 자세한 항목과 오류 처리는 [6편](isaacsim_basic/06_lekiwi_dataset/README.md)을 확인하세요.
-새 Record는 현재 자세에서 시작하며 로봇·큐브가 자동 초기화되지 않습니다. 같은 시작 배치는 아래 [배치 저장과 재현](#배치-저장과-재현)을 사용합니다.
+새 F5 기록은 현재 자세에서 시작하며 로봇·큐브가 자동 초기화되지 않습니다. 같은 시작 배치는 아래 [배치 저장과 재현](#배치-저장과-재현)을 사용합니다.
 
 기록 저장을 확인한 뒤 시뮬레이터를 정상 종료하고 8단계로 진행합니다.
 

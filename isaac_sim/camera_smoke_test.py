@@ -1,6 +1,8 @@
 """학생 PC에서 실제 코스·두 RGB·짧은 기록을 검사한다. USB를 사용하지 않는다."""
 from isaacsim import SimulationApp
-app = SimulationApp({'headless': True, 'width': 640, 'height': 480})
+app = SimulationApp({'extra_args': ["--/exts/isaacsim.core.throttling/enable_async=false",
+                       "--/app/hydraEngine/waitIdle=1",
+                       "--/app/updateOrder/checkForHydraRenderComplete=1000"], 'headless': True, 'width': 640, 'height': 480})
 
 import json
 import math
@@ -52,8 +54,7 @@ def main():
     empty = recorder.directory
     recorder.directory = output
     empty.rmdir()
-    recorder.window.visible = False
-    recorder.duration.model.set_value(2)
+    recorder.duration_seconds = 2
     started = time.monotonic()
     step_times = []
 

@@ -35,6 +35,7 @@ docs/**
 !docs/so101-teleop.md
 !docs/collection-course.md
 !docs/robot-cameras.md
+!docs/remote-classroom.md
 # Final exclusions also apply inside otherwise allowed asset/course folders.
 **/__pycache__/
 **/*.py[cod]

@@ -1,20 +1,28 @@
 """Interactive PhysX contact-drive test for LeKiwi + SO101 in Isaac Sim."""
 
+import os
+
 from isaacsim import SimulationApp
+from app_runtime import launch_config, enable_streaming
 
 
 simulation_app = SimulationApp(
-    {
+    launch_config({
         "headless": False,
         "width": 1440,
         "height": 900,
         "sync_loads": False,
-    }
+        # 녹화 중 프레임을 건너뛰는 비동기 렌더 전환을 막습니다.
+        "extra_args": ["--/exts/isaacsim.core.throttling/enable_async=false",
+                       "--/app/hydraEngine/waitIdle=1",
+                       "--/app/updateOrder/checkForHydraRenderComplete=1000"]
+            if os.environ.get("LEKIWI_RECORDING") == "1" else [],
+    })
 )
+stream_connection = enable_streaming(simulation_app)
 
 import asyncio
 import math
-import os
 import sys
 import traceback
 import time
@@ -24,7 +32,6 @@ import carb
 import carb.input
 import numpy as np
 import omni.appwindow
-import omni.ui as ui
 import omni.usd
 from pxr import Gf, Usd, UsdGeom, UsdLux, UsdPhysics, Vt
 
@@ -35,7 +42,7 @@ from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from teleop_bridge import ArmTeleop, DEFAULT_ARM_OFFSETS_DEG, arm_home, atomic_json, read_packet
 from arm_control import restore_arm_position_gains
 from drive_controls import BaseSpeed
-from drive_hotkeys import SpaceStopBinding
+from drive_hotkeys import SpaceStopBinding, RecordingKeyBinding
 from robot_cameras import attach_cameras, load_camera_config
 from scene_tools import SceneReset, SplitView, reset_allowed, randomize_layout
 from gripper_contacts import configure_gripper_collisions
@@ -512,6 +519,7 @@ def main():
               f"max_speed_rad_s={speed}", flush=True)
     capture_requested = False
     reset_requested = False
+    recorder = None
     camera_tracking = False
     camera_view = "overview"
     split_view = None
@@ -531,7 +539,6 @@ def main():
                                      else robot_cameras[name]["camera_path"])
         camera_view = name
         camera_tracking = False
-        camera_mode_label.text = f"camera: {name.upper()} (C to switch, T to track)"
         print(f"LEKIWI_DRIVE camera_view={name}", flush=True)
 
     speed_keys = {carb.input.KeyboardInput.KEY_1: 1,
@@ -543,10 +550,19 @@ def main():
 
     def _on_keyboard_event(event):
         nonlocal camera_tracking, capture_requested, arm_requested
+        if stream_connection and not stream_connection.input_allowed:
+            return True
+        if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+            key_name = event.input.name
+            if key_name == "F8":
+                _request_reset()
+                return True
+            if recorder and key_name in {"F5", "F6", "F7", "F9", "F10"}:
+                recorder.handle_key(key_name)
+                return True
         if event.input in speed_keys:
             if event.type == carb.input.KeyboardEventType.KEY_PRESS:
                 base_speed.select(speed_keys[event.input])
-                speed_label.text = base_speed.label
                 print(f"LEKIWI_DRIVE {base_speed.label}", flush=True)
             return True
         if event.input == carb.input.KeyboardInput.R:
@@ -563,7 +579,6 @@ def main():
                     _select_camera("overview")
                 camera_tracking = not camera_tracking
                 mode = "TRACKING" if camera_tracking else "FREE"
-                camera_mode_label.text = f"camera: {mode} (T to toggle)"
                 print(f"LEKIWI_DRIVE camera_mode={mode}", flush=True)
             return True
         if event.input == carb.input.KeyboardInput.C:
@@ -589,33 +604,9 @@ def main():
         keyboard, _on_keyboard_event
     )
 
-    control_window = ui.Window(
-        "LeKiwi + SO101 Physical Drive", width=510, height=385
-    )
-    with control_window.frame:
-        with ui.VStack(spacing=5):
-            ui.Label("PhysX contact drive: 36 passive omni rollers", height=24)
-            if COURSE_LAYOUT:
-                ui.Label("Lanes: UP red / DOWN orange / LEFT yellow / RIGHT green" if layout["version"] == 2 else
-                         "Course: green START -> pickup blocks -> blue GOAL basket")
-            arm_label = ui.Label("SO101: R to arm / SPACE to stop" if arm_control else "SO101: holding six joints at the home pose")
-            ui.Label("Course lanes: visual markings only" if COURSE_LAYOUT else
-                     "Grid: 0.1 m minor / 0.5 m major / yellow W guide")
-            ui.Label("Click the viewport, then hold a movement key.")
-            ui.Label("W / S : forward / backward")
-            ui.Label("A / D : left / right translation")
-            ui.Label("Q / E : counter-clockwise / clockwise")
-            speed_label = ui.Label(base_speed.label)
-            ui.Label("SPACE : stop    P : save viewport    T : camera mode")
-            ui.Label("C : overview / front camera / wrist camera")
-            ui.Button("Reset scene / randomize cubes", height=28, clicked_fn=_request_reset)
-            reset_label = ui.Label("Reset robot + new cube positions in each lane. Teleop: press R again.", height=32, word_wrap=True)
-            ui.Label("Close the Isaac window to exit")
-            camera_mode_label = ui.Label("camera: FREE (T to toggle)")
-            status_label = ui.Label("command: STOP", height=24)
-
-    # Stage가 준비되면 같은 영역의 탭으로 배치하고 조작 안내를 먼저 표시한다.
-    control_window.deferred_dock_in("Stage", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
+    print("LEKIWI_CONTROLS W/S 앞뒤 A/D 좌우 Q/E 회전 | 1/2/3 속도 | SPACE 정지 | R 팔 활성화", flush=True)
+    print("LEKIWI_CONTROLS F8 장면 초기화/큐브 재배치 | C 카메라 | T 추적 | P 화면 저장", flush=True)
+    print("LEKIWI_CONTROLS 기록: F5 시작 F6 종료 F7 연습 저장 F9 성공 저장 F10 두 번 폐기", flush=True)
 
     # 사용자가 시점을 전환하기 전에 세 카메라의 렌더링을 준비한다.
     for name in ("front", "wrist", "overview"):
@@ -703,16 +694,29 @@ def main():
 
     from omni.kit.hotkeys.core import KeyCombination, get_hotkey_registry
     space_binding = SpaceStopBinding(get_hotkey_registry(), KeyCombination(carb.input.KeyboardInput.SPACE, 0))
+    # F7 저장·F10 폐기가 기본 UI 숨기기·스크린샷과 함께 실행되지 않도록 합니다.
+    recording_key_bindings = [
+        RecordingKeyBinding(get_hotkey_registry(), KeyCombination(key, 0))
+        for key in (carb.input.KeyboardInput.F7, carb.input.KeyboardInput.F10)
+    ] if RECORDING else []
     print(f"LEKIWI_DRIVE space_stop_only={len(space_binding.removed)}", flush=True)
+    print(f"LEKIWI_DRIVE recording_keys_only={sum(len(binding.removed) for binding in recording_key_bindings)}", flush=True)
     try:
         while simulation_app.is_running():
             frame += 1
+            if stream_connection:
+                changed = stream_connection.consume_reset()
+                if changed or not stream_connection.input_allowed:
+                    pressed.clear()
+                    arm_requested = False
+                    if arm_control:
+                        arm_control.armed = False
             if split_view.task.done():
                 split_view.task.result()
             if reset_requested:
                 reset_requested = False
                 if not reset_allowed(recorder):
-                    reset_label.text = "Stop recording, then Save or Discard before resetting. Wait for completion."
+                    print("LEKIWI_RESET blocked: F6으로 기록을 끝내고 F7/F9 저장 또는 F10 두 번 폐기 후 기다리세요.", flush=True)
                 else:
                     pressed.clear()
                     arm_requested = False
@@ -735,7 +739,7 @@ def main():
                         arm_control.last_update = None
                     restore_arm_position_gains(articulation_controller, arm_indices,
                                                ARM_HOLD_STIFFNESS, ARM_HOLD_DAMPING)
-                    reset_label.text = "Scene reset. Press R to enable teleop." if arm_control else "Scene reset. Ready."
+                    print("LEKIWI_RESET ready. Teleop은 R로 다시 활성화하세요.", flush=True)
                     print("LEKIWI_DRIVE scene_reset=PASS teleop_disarmed=True", flush=True)
             if frame == auto_capture_frame:
                 capture_requested = True
@@ -780,7 +784,6 @@ def main():
                     arm=arm_requested, stop=carb.input.KeyboardInput.SPACE in pressed,
                 )
                 arm_requested = False
-                arm_label.text = arm_control.status
                 if not arm_control.armed:
                     # Require a fresh key press after watchdog/SPACE/recovery.
                     pressed.clear()
@@ -849,14 +852,6 @@ def main():
                     flush=True,
                 )
 
-            if command == (0, 0, 0):
-                status_label.text = f"command: STOP (simulation {'PLAYING' if world.is_playing() else 'PAUSED'})"
-            else:
-                status_label.text = (
-                    f"vx={vx:+.2f}  vy={vy:+.2f}  wz={wz:+.2f}  "
-                    f"wheel={wheel_speeds[0]:+.1f},"
-                    f"{wheel_speeds[1]:+.1f},{wheel_speeds[2]:+.1f}"
-                )
     finally:
         pressed.clear()
         if recorder:
@@ -878,8 +873,12 @@ def main():
             carb.log_warn(f"Could not stop LeKiwi cleanly: {exc}")
         input_interface.unsubscribe_to_keyboard_events(keyboard, keyboard_subscription)
         space_binding.close()
+        for binding in recording_key_bindings:
+            binding.close()
         if split_view:
             split_view.close()
+        if stream_connection:
+            stream_connection.close()
 
 
 failed = False

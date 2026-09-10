@@ -3,6 +3,7 @@
 | 경로 | 실행 위치 | 역할 |
 |---|---|---|
 | `host_setup/` | Ubuntu 호스트 | `./lekiwi install`의 학생 PC 검사·설치. 표준 Python만 사용 |
+| `classroom/` | Ubuntu 호스트 | 1~6편 로컬 창 실행·교재 열기·실행 상태·자신의 실습 종료. Python Tk 사용 |
 | `check_runtime.py` | LeRobot 컨테이너 | 의존성과 CUDA 연산 검사 |
 | `so101_leader.py` | 리더 컨테이너 | 사용자 확인 후 리더 보정·토크 OFF·관절 읽기 |
 | `export_dataset.py` | LeRobot 컨테이너 | 저장된 에피소드를 로컬 데이터셋으로 변환 |

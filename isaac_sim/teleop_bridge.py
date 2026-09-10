@@ -52,6 +52,17 @@ def make_packet(action, session, sequence, connected=True):
             "unit": "degrees+gripper_percent", "positions": action}
 
 
+def validate_positions(positions):
+    if not isinstance(positions, dict):
+        raise ValueError("Invalid joint position object")
+    values = [positions[f"{name}.pos"] for name in JOINTS]
+    if any(type(v) not in (int, float) or not math.isfinite(v) for v in values):
+        raise ValueError("Invalid joint position")
+    if any(abs(v) > 360 for v in values[:5]) or not 0 <= values[5] <= 100:
+        raise ValueError("Leader position outside expected units/range")
+    return values
+
+
 class ArmTeleop:
     """Explicit clutch, 250 ms sample watchdog, bounded simulator joint targets.
 
@@ -79,6 +90,7 @@ The monotonic clock, not the render-frame count, controls target slew speed.
         self.sequence = -1
         self.sample_stamp = -1.0
         self.last_update = None
+        self.remote_peer = None
 
     def _positions(self, packet, now):
         if not isinstance(packet, dict):
@@ -93,12 +105,7 @@ The monotonic clock, not the render-frame count, controls target slew speed.
                 or seq < 0 or seq < self.sequence or stamp < self.sample_stamp
                 or (seq == self.sequence and stamp != self.sample_stamp)):
             raise ValueError("Stale or out-of-order leader sample")
-        positions = packet["positions"]
-        values = [positions[f"{name}.pos"] for name in JOINTS]
-        if any(type(v) not in (int, float) or not math.isfinite(v) for v in values):
-            raise ValueError("Invalid joint position")
-        if any(abs(v) > 360 for v in values[:5]) or not 0 <= values[5] <= 100:
-            raise ValueError("Leader position outside expected units/range")
+        values = validate_positions(packet["positions"])
         self.sequence, self.sample_stamp = seq, stamp
         return values
 
@@ -118,6 +125,11 @@ The monotonic clock, not the render-frame count, controls target slew speed.
             return self.targets[:]
         if stop:
             self.armed = False
+        peer = packet.get("remote_peer")
+        if peer != self.remote_peer:
+            self.remote_peer = peer
+            self.armed = False
+            arm = False  # 새 연결과 동시에 들어온 이전 R 입력을 사용하지 않습니다.
         if arm and not stop:
             if len(actual) != 6 or any(not math.isfinite(float(v)) for v in actual):
                 raise ValueError("Invalid simulated joint state")

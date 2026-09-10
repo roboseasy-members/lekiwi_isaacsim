@@ -1,66 +1,590 @@
 [
-  {"name":"01-overview","title":"실제 화면 · Viewport / Stage / Property / Play","marks":[
-    {"box":[1132,27,479,459],"label":"Stage: 객체 목록에서 편집할 객체를 선택합니다."},
-    {"box":[1132,489,479,453],"label":"Property: 선택한 객체의 설정을 확인합니다."},
-    {"box":[5,288,31,33],"label":"왼쪽 삼각형 Play 버튼: 시뮬레이션을 시작합니다."}]},
-  {"name":"02-transform","title":"실제 화면 · 위치와 실제 크기 입력","marks":[
-    {"box":[1180,245,416,21],"label":"Stage에서 RigidCollider를 선택한 예입니다."},
-    {"box":[1139,468,456,149],"label":"Transform: Translate / Rotate / Scale 입력 영역입니다."},
-    {"box":[1139,895,445,30],"label":"Geometry의 Size=1과 Scale=0.1을 함께 확인합니다."}]},
-  {"name":"03-add-physics","title":"실제 화면 · Add → Physics → Rigid Body / Collider","marks":[
-    {"box":[1143,375,54,24],"label":"선택한 객체의 Property에서 Add를 누릅니다."},
-    {"box":[1145,599,134,23],"label":"Physics 하위 메뉴를 엽니다."},
-    {"box":[1282,638,230,41],"label":"Rigid Body와 Collider는 별도 항목입니다. 위쪽의 결합 Preset과 구분합니다."}]},
-  {"name":"04-gravity","title":"실제 화면 · 중력 방향과 크기","marks":[
-    {"box":[1178,124,417,22],"label":"Stage의 PhysicsScene을 선택합니다."},
-    {"box":[1141,599,442,60],"label":"Gravity Direction=(0,0,-1), Gravity Magnitude=9.81을 확인합니다."}]},
-  {"name":"05-mass","title":"실제 화면 · 질량 속성 찾기","marks":[
-    {"box":[1141,347,452,25],"label":"Property 검색창에 mass를 입력합니다. 다른 설정을 볼 때는 검색어를 지웁니다."},
-    {"box":[1143,587,443,28],"label":"Physics → Mass의 편집 가능한 Mass 값을 사용합니다. 여기서는 0.1 kg입니다."}]},
-  {"name":"06-material","title":"실제 화면 · 마찰과 반발력","marks":[
-    {"box":[1190,223,405,22],"label":"Materials 아래 Low 물리 재질을 선택합니다."},
-    {"box":[1142,838,444,84],"label":"Physics → Rigid Body Material에서 Dynamic Friction, Static Friction, Restitution을 설정합니다."}]},
-  {"name":"07-show-colliders","title":"실제 화면 · Collider 표시 켜기","marks":[
-    {"box":[235,31,30,29],"label":"Viewport 상단의 눈 모양 표시 메뉴를 엽니다."},
-    {"box":[237,102,233,26],"label":"Show By Type을 선택합니다."},
-    {"box":[473,264,186,29],"label":"Physics로 이동합니다."},
-    {"box":[662,342,216,26],"label":"Colliders로 이동합니다."},
-    {"box":[886,395,237,26],"label":"All을 선택하면 모든 충돌 윤곽을 표시합니다."}]},
-  {"name":"08-basket-colliders","title":"실제 화면 · 열린 바구니의 충돌 구조","marks":[
-    {"box":[1188,223,407,105],"label":"Bottom과 네 벽이 각각 Collider를 가진 부품입니다."},
-    {"box":[395,200,385,326],"label":"분홍색 윤곽이 정적 Collider입니다. 입구를 가로지르는 덮개가 없는지 확인합니다."}]},
-  {"name":"09-basket-result","title":"실제 화면 · Play 후 큐브 안착","marks":[
-    {"box":[565,353,47,47],"label":"큐브가 바구니 바닥에 안착했습니다. 녹색 선은 큐브의 동적 Collider입니다."},
-    {"box":[5,287,34,71],"label":"현재 결과를 Pause로 멈춘 화면입니다. Stop으로 시작 배치에 돌아갑니다."}]},
-  {"name":"10-file","title":"실제 화면 · 저장하고 다시 열기","marks":[
-    {"box":[17,111,307,25],"label":"Open: 저장한 장면을 다시 엽니다."},
-    {"box":[17,197,307,51],"label":"Save / Save As: 현재 파일 저장 또는 새 과제 파일로 저장합니다."}]},
-  {"name":"11-create-cube","title":"실제 화면 · Create → Shape → Cube","marks":[
-    {"box":[59,1,46,22],"label":"상단 Create 메뉴를 누릅니다."},
-    {"box":[65,70,156,26],"label":"Shape 하위 메뉴를 엽니다."},
-    {"box":[232,137,104,25],"label":"Cube를 선택합니다. 이 화면은 메뉴 위치를 설명하기 위한 바구니 장면입니다."}]},
-{
-  "name": "12-reset",
-  "title": "실제 화면 · 편집값을 유지하는 실습 초기화",
-  "marks": [
-    {
-      "box": [
-        1350,
-        92,
-        562,
-        32
-      ],
-      "label": "Reset simulation: Stop 후 시작 상태로 돌아가며 물리 속성은 유지합니다."
-    },
-    {
-      "box": [
-        1348,
-        231,
-        560,
-        30
-      ],
-      "label": "RESET 상태를 확인하고 Play로 같은 실험을 반복합니다."
-    }
-  ]
-}
+  {
+    "name": "01-overview",
+    "title": "실제 화면 · Viewport / Stage / Property / Play",
+    "marks": [
+      {
+        "box": [
+          1132,
+          27,
+          479,
+          459
+        ],
+        "label": "Stage: 객체 목록에서 편집할 객체를 선택합니다."
+      },
+      {
+        "box": [
+          1132,
+          489,
+          479,
+          453
+        ],
+        "label": "Property: 선택한 객체의 설정을 확인합니다."
+      },
+      {
+        "box": [
+          5,
+          288,
+          31,
+          33
+        ],
+        "label": "왼쪽 삼각형 Play 버튼: 시뮬레이션을 시작합니다."
+      }
+    ]
+  },
+  {
+    "name": "02-transform",
+    "title": "실제 화면 · 위치와 실제 크기 입력",
+    "marks": [
+      {
+        "box": [
+          1180,
+          245,
+          416,
+          21
+        ],
+        "label": "Stage에서 RigidCollider를 선택한 예입니다."
+      },
+      {
+        "box": [
+          1139,
+          468,
+          456,
+          149
+        ],
+        "label": "Transform: Translate / Rotate / Scale 입력 영역입니다."
+      },
+      {
+        "box": [
+          1139,
+          895,
+          445,
+          30
+        ],
+        "label": "Geometry의 Size=1과 Scale=0.1을 함께 확인합니다."
+      }
+    ]
+  },
+  {
+    "name": "03-add-physics",
+    "title": "실제 화면 · Add → Physics → Rigid Body / Collider",
+    "marks": [
+      {
+        "box": [
+          1143,
+          375,
+          54,
+          24
+        ],
+        "label": "선택한 객체의 Property에서 Add를 누릅니다."
+      },
+      {
+        "box": [
+          1145,
+          599,
+          134,
+          23
+        ],
+        "label": "Physics 하위 메뉴를 엽니다."
+      },
+      {
+        "box": [
+          1282,
+          638,
+          230,
+          41
+        ],
+        "label": "Rigid Body와 Collider는 별도 항목입니다. 위쪽의 결합 Preset과 구분합니다."
+      }
+    ]
+  },
+  {
+    "name": "04-gravity",
+    "title": "실제 화면 · 중력 방향과 크기",
+    "marks": [
+      {
+        "box": [
+          1178,
+          124,
+          417,
+          22
+        ],
+        "label": "Stage의 PhysicsScene을 선택합니다."
+      },
+      {
+        "box": [
+          1141,
+          599,
+          442,
+          60
+        ],
+        "label": "Gravity Direction=(0,0,-1), Gravity Magnitude=9.81을 확인합니다."
+      }
+    ]
+  },
+  {
+    "name": "05-mass",
+    "title": "실제 화면 · 질량 속성 찾기",
+    "marks": [
+      {
+        "box": [
+          1141,
+          347,
+          452,
+          25
+        ],
+        "label": "Property 검색창에 mass를 입력합니다. 다른 설정을 볼 때는 검색어를 지웁니다."
+      },
+      {
+        "box": [
+          1143,
+          587,
+          443,
+          28
+        ],
+        "label": "Physics → Mass의 편집 가능한 Mass 값을 사용합니다. 여기서는 0.1 kg입니다."
+      }
+    ]
+  },
+  {
+    "name": "06-material",
+    "title": "실제 화면 · 마찰과 반발력",
+    "marks": [
+      {
+        "box": [
+          1190,
+          223,
+          405,
+          22
+        ],
+        "label": "Materials 아래 Low 물리 재질을 선택합니다."
+      },
+      {
+        "box": [
+          1142,
+          838,
+          444,
+          84
+        ],
+        "label": "Physics → Rigid Body Material에서 Dynamic Friction, Static Friction, Restitution을 설정합니다."
+      }
+    ]
+  },
+  {
+    "name": "07-show-colliders",
+    "title": "실제 화면 · Collider 표시 켜기",
+    "marks": [
+      {
+        "box": [
+          235,
+          31,
+          30,
+          29
+        ],
+        "label": "Viewport 상단의 눈 모양 표시 메뉴를 엽니다."
+      },
+      {
+        "box": [
+          237,
+          102,
+          233,
+          26
+        ],
+        "label": "Show By Type을 선택합니다."
+      },
+      {
+        "box": [
+          473,
+          264,
+          186,
+          29
+        ],
+        "label": "Physics로 이동합니다."
+      },
+      {
+        "box": [
+          662,
+          342,
+          216,
+          26
+        ],
+        "label": "Colliders로 이동합니다."
+      },
+      {
+        "box": [
+          886,
+          395,
+          237,
+          26
+        ],
+        "label": "All을 선택하면 모든 충돌 윤곽을 표시합니다."
+      }
+    ]
+  },
+  {
+    "name": "08-basket-colliders",
+    "title": "실제 화면 · 열린 바구니의 충돌 구조",
+    "marks": [
+      {
+        "box": [
+          1188,
+          223,
+          407,
+          105
+        ],
+        "label": "Bottom과 네 벽이 각각 Collider를 가진 부품입니다."
+      },
+      {
+        "box": [
+          395,
+          200,
+          385,
+          326
+        ],
+        "label": "분홍색 윤곽이 정적 Collider입니다. 입구를 가로지르는 덮개가 없는지 확인합니다."
+      }
+    ]
+  },
+  {
+    "name": "09-basket-result",
+    "title": "실제 화면 · Play 후 큐브 안착",
+    "marks": [
+      {
+        "box": [
+          565,
+          353,
+          47,
+          47
+        ],
+        "label": "큐브가 바구니 바닥에 안착했습니다. 녹색 선은 큐브의 동적 Collider입니다."
+      },
+      {
+        "box": [
+          5,
+          287,
+          34,
+          71
+        ],
+        "label": "현재 결과를 Pause로 멈춘 화면입니다. Stop으로 시작 배치에 돌아갑니다."
+      }
+    ]
+  },
+  {
+    "name": "10-file",
+    "title": "실제 화면 · 저장하고 다시 열기",
+    "marks": [
+      {
+        "box": [
+          17,
+          111,
+          307,
+          25
+        ],
+        "label": "Open: 저장한 장면을 다시 엽니다."
+      },
+      {
+        "box": [
+          17,
+          197,
+          307,
+          51
+        ],
+        "label": "Save / Save As: 현재 파일 저장 또는 새 과제 파일로 저장합니다."
+      }
+    ]
+  },
+  {
+    "name": "11-create-cube",
+    "title": "실제 화면 · Create → Shape → Cube",
+    "marks": [
+      {
+        "box": [
+          59,
+          1,
+          46,
+          22
+        ],
+        "label": "상단 Create 메뉴를 누릅니다."
+      },
+      {
+        "box": [
+          65,
+          70,
+          156,
+          26
+        ],
+        "label": "Shape 하위 메뉴를 엽니다."
+      },
+      {
+        "box": [
+          232,
+          137,
+          104,
+          25
+        ],
+        "label": "Cube를 선택합니다. 이 화면은 메뉴 위치를 설명하기 위한 바구니 장면입니다."
+      }
+    ]
+  },
+  {
+    "name": "12-reset",
+    "title": "실제 화면 · 편집값을 유지하는 실습 초기화",
+    "marks": [
+      {
+        "box": [
+          1350,
+          92,
+          562,
+          32
+        ],
+        "label": "Reset simulation: Stop 후 시작 상태로 돌아가며 물리 속성은 유지합니다."
+      },
+      {
+        "box": [
+          1348,
+          231,
+          560,
+          30
+        ],
+        "label": "RESET 상태를 확인하고 Play로 같은 실험을 반복합니다."
+      }
+    ]
+  },
+  {
+    "name": "13-python-experiments",
+    "title": "실제 화면 · 파이썬 중력·충돌 비교 실험",
+    "marks": [
+      {
+        "box": [
+          898,
+          56,
+          363,
+          69
+        ],
+        "label": "실험 번호·현재 중력·충돌·큐브 중심 높이를 확인합니다."
+      },
+      {
+        "box": [
+          902,
+          167,
+          360,
+          28
+        ],
+        "label": "Load 1~6: 이 1장 안의 실험 번호입니다. 교육 편 번호와 구분하세요."
+      },
+      {
+        "box": [
+          902,
+          206,
+          360,
+          27
+        ],
+        "label": "파일을 수정·저장한 뒤 Reload로 같은 실험을 다시 불러옵니다."
+      },
+      {
+        "box": [
+          902,
+          292,
+          360,
+          29
+        ],
+        "label": "Reset: 현재 편집값을 유지한 채 Play 이전 위치로 돌아갑니다."
+      },
+      {
+        "box": [
+          5,
+          289,
+          31,
+          31
+        ],
+        "label": "Play: 먼저 결과를 예상하고, 실행한 뒤 움직임과 높이를 기록합니다."
+      }
+    ]
+  },
+  {
+    "name": "14-mass-gravity",
+    "title": "실제 화면 · 질량·중력 파이썬 비교",
+    "marks": [
+      {
+        "box": [
+          898,
+          56,
+          363,
+          69
+        ],
+        "label": "Mass는 kg, g는 m/s²입니다. Z light/heavy로 같은 순간의 높이를 비교하세요."
+      },
+      {
+        "box": [
+          401,
+          98,
+          143,
+          58
+        ],
+        "label": "두 큐브의 크기와 시작 높이는 같습니다. 질량만 바꾸어 낙하를 비교합니다."
+      },
+      {
+        "box": [
+          902,
+          167,
+          360,
+          28
+        ],
+        "label": "Load 4로 이 실험을 선택합니다. 파이썬 파일의 조건부터 확인하세요."
+      },
+      {
+        "box": [
+          902,
+          206,
+          360,
+          27
+        ],
+        "label": "한 설정만 수정·저장한 뒤 Reload하여 예측한 결과와 비교합니다."
+      },
+      {
+        "box": [
+          902,
+          292,
+          360,
+          29
+        ],
+        "label": "Reset은 현재 설정을 유지하고 시작 위치로 돌아갑니다. 이후 Play하세요."
+      }
+    ]
+  },
+  {
+    "name": "15-friction-python",
+    "title": "실제 화면 · 마찰 파이썬 비교",
+    "marks": [
+      {
+        "box": [
+          898,
+          56,
+          363,
+          69
+        ],
+        "label": "S/D는 정지/운동 마찰, X는 큐브의 현재 위치입니다."
+      },
+      {
+        "box": [
+          254,
+          142,
+          421,
+          263
+        ],
+        "label": "각 큐브와 경사로에 같은 재질이 연결됩니다. 주황 Low와 파랑 High를 비교하세요."
+      },
+      {
+        "box": [
+          902,
+          167,
+          360,
+          28
+        ],
+        "label": "Load 5로 이 실험을 선택합니다. 파이썬 파일의 조건부터 확인하세요."
+      },
+      {
+        "box": [
+          902,
+          206,
+          360,
+          27
+        ],
+        "label": "한 설정만 수정·저장한 뒤 Reload하여 예측한 결과와 비교합니다."
+      },
+      {
+        "box": [
+          902,
+          292,
+          360,
+          29
+        ],
+        "label": "Reset은 현재 설정을 유지하고 시작 위치로 돌아갑니다. 이후 Play하세요."
+      }
+    ]
+  },
+  {
+    "name": "16-restitution-python",
+    "title": "실제 화면 · 반발력 파이썬 비교",
+    "marks": [
+      {
+        "box": [
+          898,
+          56,
+          363,
+          69
+        ],
+        "label": "Restitution은 반발력입니다. Z는 현재 중심 높이이며 최고 높이 기록은 아닙니다."
+      },
+      {
+        "box": [
+          305,
+          94,
+          354,
+          319
+        ],
+        "label": "두 공의 초기 높이는 같습니다. 첫 충돌 이후 다시 올라오는 높이를 비교하세요."
+      },
+      {
+        "box": [
+          902,
+          167,
+          360,
+          28
+        ],
+        "label": "Load 6로 이 실험을 선택합니다. 파이썬 파일의 조건부터 확인하세요."
+      },
+      {
+        "box": [
+          902,
+          206,
+          360,
+          27
+        ],
+        "label": "한 설정만 수정·저장한 뒤 Reload하여 예측한 결과와 비교합니다."
+      },
+      {
+        "box": [
+          902,
+          292,
+          360,
+          29
+        ],
+        "label": "Reset은 현재 설정을 유지하고 시작 위치로 돌아갑니다. 이후 Play하세요."
+      }
+    ]
+  },
+  {
+    "name": "17-code-first",
+    "title": "1장 · Python으로 만든 큐브와 기본 Play/Property",
+    "marks": [
+      {
+        "box": [
+          7,
+          283,
+          29,
+          44
+        ],
+        "label": "표준 Play로 실험을 시작합니다. 소스 수정은 창을 닫고 재실행합니다."
+      },
+      {
+        "box": [
+          942,
+          182,
+          230,
+          29
+        ],
+        "label": "Stage에서 PracticeCube를 선택합니다."
+      },
+      {
+        "box": [
+          902,
+          509,
+          368,
+          90
+        ],
+        "label": "Property의 Translate Z=0.7 m가 코드의 시작 높이입니다."
+      }
+    ]
+  }
 ]

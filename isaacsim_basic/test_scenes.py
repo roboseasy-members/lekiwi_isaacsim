@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("pxr.Usd")
-from pxr import Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils
+from pxr import Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils, UsdLux
 
 spec = importlib.util.spec_from_file_location("basic_scenes", Path(__file__).with_name("scenes.py"))
 scenes = importlib.util.module_from_spec(spec)
@@ -14,6 +14,8 @@ spec.loader.exec_module(scenes)
 
 @pytest.mark.parametrize("lesson", scenes.LESSONS)
 def test_stage_is_portable_and_has_explicit_units(tmp_path, lesson):
+    if lesson == "experiment":
+        pytest.importorskip("pxr.PhysxSchema")
     path = scenes.new_exercise(tmp_path / "clone with spaces", lesson)
     stage = Usd.Stage.Open(str(path))
     assert UsdGeom.GetStageMetersPerUnit(stage) == 1
@@ -24,6 +26,20 @@ def test_stage_is_portable_and_has_explicit_units(tmp_path, lesson):
     assert not stage.GetPrimAtPath("/World/Ground").HasAPI(UsdPhysics.RigidBodyAPI)
     layers, assets, unresolved = UsdUtils.ComputeAllDependencies(str(path))
     assert len(layers) == 1 and not assets and not unresolved
+
+
+@pytest.mark.parametrize("gravity,collision", [(False, False), (True, False), (True, True)])
+def test_experiments_change_only_gravity_and_cube_contact(tmp_path, gravity, collision):
+    PhysxSchema = pytest.importorskip("pxr.PhysxSchema")
+    stage = scenes.create_stage(tmp_path / "experiment.usda", "experiment",
+        {"gravity_enabled": gravity, "collision_enabled": collision})
+    cube = stage.GetPrimAtPath("/World/PracticeCube")
+    assert cube.HasAPI(UsdPhysics.RigidBodyAPI)
+    assert UsdPhysics.MassAPI(cube).GetMassAttr().Get() == pytest.approx(.1)
+    assert PhysxSchema.PhysxRigidBodyAPI(cube).GetDisableGravityAttr().Get() == (not gravity)
+    assert UsdPhysics.CollisionAPI(cube).GetCollisionEnabledAttr().Get() == collision
+    assert UsdPhysics.CollisionAPI(stage.GetPrimAtPath("/World/Ground")).GetCollisionEnabledAttr().Get()
+    assert UsdPhysics.Scene(stage.GetPrimAtPath("/World/PhysicsScene")).GetGravityMagnitudeAttr().Get() == pytest.approx(9.81)
 
 
 def test_drop_has_three_different_behaviors(tmp_path):
@@ -75,3 +91,25 @@ def test_exercise_does_not_overwrite_previous_work(tmp_path):
         scenes.create_stage(first)
     with pytest.raises(ValueError):
         scenes.new_exercise(tmp_path, "../../bad")
+
+
+def test_mass_comparison_preserves_illumination_and_uses_saved_values(tmp_path):
+    stage = scenes.create_stage(tmp_path / "mass.usda", "mass",
+        {"light_mass_kg": .2, "heavy_mass_kg": 2.0, "gravity_m_s2": 1.62})
+    assert stage.GetPrimAtPath("/World/Light").IsA(UsdLux.DomeLight)
+    for name, mass in (("CubeLight", .2), ("CubeHeavy", 2.0)):
+        cube = stage.GetPrimAtPath("/World/" + name)
+        assert cube.IsA(UsdGeom.Cube)
+        assert UsdPhysics.MassAPI(cube).GetMassAttr().Get() == pytest.approx(mass)
+    assert UsdPhysics.Scene(stage.GetPrimAtPath("/World/PhysicsScene")).GetGravityMagnitudeAttr().Get() == pytest.approx(1.62)
+
+
+@pytest.mark.parametrize("lesson,settings,attribute", [
+    ("friction", {"low_friction": .8, "high_friction": .2}, "GetDynamicFrictionAttr"),
+    ("bounce", {"low_restitution": .1, "high_restitution": .3}, "GetRestitutionAttr"),
+])
+def test_comparison_uses_custom_physics_material_values(tmp_path, lesson, settings, attribute):
+    stage = scenes.create_stage(tmp_path / "custom.usda", lesson, settings)
+    for name, expected in zip(("Low", "High"), settings.values()):
+        mat = UsdPhysics.MaterialAPI(stage.GetPrimAtPath("/World/Materials/" + name))
+        assert getattr(mat, attribute)().Get() == pytest.approx(expected)

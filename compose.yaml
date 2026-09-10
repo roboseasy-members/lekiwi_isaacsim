@@ -27,6 +27,8 @@ services:
       LEKIWI_ARM_MAX_SPEED: ${LEKIWI_ARM_MAX_SPEED:-3.0}
       LEKIWI_CAMERA_CONFIG: ${LEKIWI_CAMERA_CONFIG:-}
       LEKIWI_RECORDING: ${LEKIWI_RECORDING:-0}
+      LEKIWI_RECORD_SECONDS: ${LEKIWI_RECORD_SECONDS:-}
+      LEKIWI_RECORD_TASK: ${LEKIWI_RECORD_TASK:-Move forward and stop}
     volumes:
       - type: bind
         source: ${LEKIWI_DATA_DIR:-./data}

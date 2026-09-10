@@ -160,7 +160,9 @@ if args[0] == "info" and os.environ.get("DENY_DOCKER"):
 if args[0] == "ps" and os.environ.get("SIM_RUNNING"):
     print("existing-container")
 if args[0] == "inspect":
-    if os.environ.get("MANAGER_OWNED"):
+    if "lekiwi.classroom.session" in " ".join(args):
+        print(os.environ.get("CLASSROOM_OWNER", "another-session"))
+    elif os.environ.get("MANAGER_OWNED"):
         entries = [json.loads(line) for line in open(os.environ["DOCKER_CALL_LOG"])]
         launched = next(call for call in entries if "--label" in call)
         print(launched[launched.index("--label") + 1].split("=", 1)[1])
@@ -356,3 +358,27 @@ def test_local_dataset_inspection_forwards_arguments_offline(fake_docker):
     assert result.returncode == 0, result.stderr
     assert calls(log)[-1][-3:] == ['inspect','--name','example']
     assert 'HF_HUB_OFFLINE=1' in calls(log)[-1]
+
+
+@pytest.mark.parametrize('owner,allowed', [('this-session', True), ('other-session', False)])
+def test_classroom_stop_requires_same_launch_token(fake_docker, owner, allowed):
+    env, log = fake_docker
+    result = run('bash', str(ROOT / 'lekiwi'), 'stop', env=dict(env,
+        LEKIWI_CLASSROOM_SESSION='this-session', CLASSROOM_OWNER=owner))
+    assert (result.returncode == 0) == allowed
+    assert any(c[0] == 'stop' for c in calls(log)) == allowed
+
+
+def test_basic_mounts_only_editable_experiment_folder_read_only():
+    if shutil.which('docker') is None:
+        pytest.skip('Docker CLI needed for Compose parsing')
+    result = run('docker', 'compose', '-f', str(ROOT / 'compose.yaml'), '-f',
+        str(ROOT / 'docker/compose.basic.yaml'), 'config', '--format', 'json')
+    assert result.returncode == 0, result.stderr
+    mounts = json.loads(result.stdout)['services']['sim']['volumes']
+    scripts = [v for v in mounts if v['target'].endswith('/experiments')]
+    assert len(scripts) == 6
+    for mount in scripts:
+        assert mount['read_only'] is True
+        assert Path(mount['source']).is_relative_to(ROOT / 'isaacsim_basic')
+        assert Path(mount['source']).is_dir()

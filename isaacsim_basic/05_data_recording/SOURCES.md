@@ -1,37 +1,20 @@
-# 5편 출처와 검증
+# 5편 출처와 화면 기록
 
-문서 확인일: 2026-09-08. 실습 대상: Isaac Sim 5.1.0 Docker.
+## 공식 문서
 
-- [NVIDIA Data Logging 5.1](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/core_api_tutorials/tutorial_advanced_data_logging.html): DataLogger의 기록·저장·재생 흐름.
-- [NVIDIA Core API 5.1 — DataLogger](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/py/source/extensions/isaacsim.core.api/docs/index.html): 기록기 메서드와 인자.
-- [LeRobotDataset v3](https://huggingface.co/docs/lerobot/main/lerobot-dataset-v3): 수치·영상·메타데이터를 포함한 후속 데이터셋 구조. 이번 JSON을 그 형식으로 변환한 것은 아님.
-- 이미지 내부 `isaacsim.core.api/loggers/data_logger.py`: 설치된 API를 직접 확인. `add_data()`는 시작 여부를 자체 검사하지 않으므로 호출 측에서 제어.
-- [실습 코드](../recording.py), [모형 생성 코드](../scenes.py): 2편의 한 관절 모형을 재사용하고, 교재 전용 패널과 상태·행동·다음 상태 기록을 새로 구현.
+- [Isaac Sim 5.1 물리 기초](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/physics/simulation_fundamentals.html)
+- [로봇 Python 시작 예제](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/introduction/quickstart_isaacsim_robot.html)
+- [관절 제어 API](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/robot_simulation/articulation_controller.html)
+- [카메라 센서](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/sensors/isaacsim_sensors_camera.html)
 
-## 검증 범위
+문서를 참고해 프로젝트 교육용 예제를 직접 작성했습니다. 런타임 버전은 Isaac Sim 5.1.0입니다.
+1~5장 학생 파일은 로봇 자산 없이 Isaac Sim Python으로 실행합니다. 6장은 프로젝트의 기록 형식과 로봇 자산을 사용합니다.
 
-- 실제 PhysX 자동 검사: 60 Hz·180프레임 수집, 파일 재읽기, 저장 명령 재생 통과.
-- 제작 PC 자동 재생 최대 상태 오차: 0 rad. 허용 기준은 0.01 rad 미만이며 다른 환경에서 같은 오차를 보장하지 않음.
-- 새 기록 취소 후 기존 저장 파일 보존 검사 통과.
-- 빈 기록·누락 스텝·NaN·관측 짝 불일치·시간 간격 오류 거부 검사 통과.
-- 실제 GUI 캡처와 문서·ZIP 검사는 전체 [검증 기록](../VALIDATION.md)에 기록.
-- 실물 리더·모터, 카메라 영상 기록, LeRobot 변환, 정책 학습·집기 성공은 이번 검증 범위에 없음.
+## 화면
 
-캡처는 실제 교육용 Isaac Sim 창을 사용합니다. 원본 PNG 위에 SVG 사각형과 별도 하단 설명을 합성하며,
-버튼이나 측정 숫자를 생성형 이미지로 다시 만들지 않습니다.
+2026-09-10 코드 실습 개편: 전용 Lesson 탭을 사용하지 않는 실제 Isaac Sim 화면을 캡처합니다.
+원본은 images/screenshots, 빨간 표시 좌표와 설명은 images/annotations.json,
+원본을 포함한 표시본은 SVG·PNG입니다. 코드는 Markdown 코드 블록으로 제시합니다.
+기존 비교 사진은 과거 검증 자료일 수 있으며 현재 실행 안내는 README에 명시된 화면을 따릅니다.
 
-
-## 준비 구간 개선 검증 · 2026-09-08
-
-- 모형을 SingleArticulation으로 등록하고 `post_reset()`으로 기본 상태를 복원합니다. PREPARING 중 준비 물리 스텝을 나누어 실행하며 UI 갱신을 계속합니다.
-- GUI에서 기록·재생 준비의 최대 갱신 간격 22.4/23.0ms, 180프레임 재생 최대 상태 오차 0rad를 확인했습니다. 저장·완료 UI 전환에는 약 0.10초 지연이 남아 있습니다.
-- 기존 스크린샷은 같은 Record/Save/Replay 절차의 앞선 실행입니다. 추가된 PREPARING 상태는 본문에 설명했습니다.
-
-
-## 2026-09-09 초기화·화면 배치 갱신
-
-- 1·2편은 편집값을 유지하는 Stop 기반 초기화, 5편은 저장 기록을 보존하는 모형 초기화를 추가했습니다.
-- 3·4·6편은 좌측 Perspective·우측 Front Camera와 색상 라인별 랜덤 큐브 리셋을 공통 사용합니다.
-- 변경된 시작·조작·기록 화면을 실제 Isaac Sim 5.1 Docker에서 새로 캡처했습니다. 기본 도형·카메라 속성 메뉴 등 변경 없는 상세 화면은 기존 검증 캡처를 유지합니다.
-- 원본 PNG는 수정하지 않고 SVG의 빨간 테두리와 별도 설명 영역으로 강조했습니다. 캡처에 마우스 커서는 포함되지 않으며 버튼·상태가 보이는지 확인했습니다.
-- 새 캡처의 고유 폴더 이름은 제작 중 임시 실습 결과 예시이며, 학생은 자신의 실행 로그에 나온 경로를 사용합니다.
+[교재로 돌아가기](README.md)

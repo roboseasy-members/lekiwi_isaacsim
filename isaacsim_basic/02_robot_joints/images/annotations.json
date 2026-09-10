@@ -160,5 +160,38 @@
         "label": "RESET 상태를 확인하고 Play로 같은 실험을 반복합니다."
       }
     ]
+  },
+  {
+    "name": "07-code-first",
+    "title": "2장 · Joint 코드와 기본 Stage/Property",
+    "marks": [
+      {
+        "box": [
+          923,
+          181,
+          218,
+          30
+        ],
+        "label": "Hinge 왼쪽 +를 펼쳐 Base, Arm, Shoulder를 찾습니다."
+      },
+      {
+        "box": [
+          901,
+          442,
+          366,
+          34
+        ],
+        "label": "선택된 관절 경로가 /World/Hinge/Shoulder인지 확인합니다."
+      },
+      {
+        "box": [
+          422,
+          158,
+          133,
+          245
+        ],
+        "label": "기본 목표 0도의 모형입니다. 코드의 목표를 바꾸고 재실행합니다."
+      }
+    ]
   }
 ]

@@ -1,0 +1,8 @@
+# 같은 학교망에서 데스크탑 1대당 WebRTC 인스턴스 하나를 실행합니다.
+services:
+  sim:
+    network_mode: host
+    environment:
+      LEKIWI_DISPLAY_MODE: webrtc
+      LEKIWI_STREAM_HOST: ${LEKIWI_STREAM_HOST:?데스크탑의 IPv4 주소가 필요합니다}
+      NVIDIA_DRIVER_CAPABILITIES: graphics,compute,utility,display,video
