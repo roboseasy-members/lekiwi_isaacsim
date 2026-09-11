@@ -24,6 +24,10 @@ Isaac Sim 안에 전용 Lesson 탭을 만들지 않습니다. 기본 Stage·Prop
 
 ## 설치 후 처음 실행하기
 
+원격 수업에서는 [브라우저 편집기 안내](../docs/browser-classroom.md)에 따라 같은 Python 파일을 수정합니다.
+브라우저 터미널의 `lesson run 1`은 아래 `./lekiwi basic --chapter 1`에 해당하며,
+저장 후 `lesson stop` → `lesson run 1`로 다시 실행합니다. 화면은 WebRTC에서 확인합니다.
+
 프로젝트 [설치 순서](../README.md)를 마친 Ubuntu PC에서 저장소 루트의 터미널을 사용합니다.
 
 ```bash

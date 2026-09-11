@@ -1,0 +1,25 @@
+{
+  "folders": [
+    { "name": "교재와 Python 실습", "path": "/workspace/isaacsim_basic" },
+    { "name": "실행 안내", "path": "/workspace/docs" },
+    { "name": "저장된 기초 실습 결과", "path": "/results/basic" },
+    { "name": "LeKiwi 기록", "path": "/results/recordings" }
+  ],
+  "settings": {
+    "workbench.startupEditor": "none",
+    "editor.fontSize": 16,
+    "terminal.integrated.fontSize": 15,
+    "terminal.integrated.cwd": "/workspace/isaacsim_basic",
+    "task.saveBeforeRun": "always",
+    "files.autoSave": "off"
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      { "label": "현재 Python 실습 실행", "type": "process", "command": "lesson", "args": ["run", "--file", "${file}"], "problemMatcher": [] },
+      { "label": "실습 상태", "type": "process", "command": "lesson", "args": ["status"], "problemMatcher": [] },
+      { "label": "실습 로그", "type": "process", "command": "lesson", "args": ["logs"], "problemMatcher": [] },
+      { "label": "저장 후 실습 종료", "type": "process", "command": "lesson", "args": ["stop"], "problemMatcher": [] }
+    ]
+  }
+}

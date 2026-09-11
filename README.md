@@ -14,6 +14,11 @@
 노트북이 화면 수신·USB 리더암 입력을 담당합니다. 이 기능은 `feature/remote_classroom`에서 검증 중이며,
 아래의 한 PC 설치·실습 절차와 노트북 설치 절차를 구분합니다.
 
+노트북에서 직접 코드를 바꾸며 수업할 때는 [브라우저 편집기 안내](docs/browser-classroom.md)를 사용합니다.
+데스크탑의 `./lekiwi remote workspace --host 데스크탑IP`로 편집기를 켜고,
+학생은 브라우저에서 Python을 저장한 뒤 `lesson run 1` / `lesson stop`으로 실습을 실행·종료합니다.
+Isaac Sim 화면은 별도 WebRTC 클라이언트로 확인합니다.
+
 | 단계 | 이번 저장소에서 진행할 범위 |
 |---|---|
 | 1~3 · PC 준비 | 설치 도구와 개발 PC 실행 검사 준비. 새 PC의 드라이버 신규 설치·재부팅은 현장 검증 필요 |

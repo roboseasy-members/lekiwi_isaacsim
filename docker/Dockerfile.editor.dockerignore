@@ -1,0 +1,7 @@
+**
+!tools/
+!tools/web_classroom/
+!tools/web_classroom/lesson.py
+!tools/web_classroom/editor_entrypoint.py
+!tools/web_classroom/editor.yaml
+!tools/web_classroom/lekiwi.code-workspace

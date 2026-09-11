@@ -78,7 +78,7 @@ def serve_bundle(host, path):
     return server
 
 
-def serve(args):
+def serve(args, *, control_key=None):
     host = address(args.host)
     if args.teleop and (args.chapter != 6 or args.script or args.experiment):
         raise ValueError("--teleop은 LeKiwi를 사용하는 --chapter 6에서만 지정하세요.")
@@ -96,7 +96,9 @@ def serve(args):
     # 다른 체크아웃에서 열린 영상 서버도 덮어쓰지 않습니다.
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
         probe.bind((host, 49100))
-    key = connection_key() if args.teleop else None
+    key = (control_key if control_key is not None else connection_key()) if args.teleop else None
+    if args.teleop and (not isinstance(key, bytes) or len(key) != 32):
+        raise ValueError("리더 입력 인증 키가 올바르지 않습니다.")
     parent = data / "remote"
     parent.mkdir(parents=True, exist_ok=True)
     directory = Path(tempfile.mkdtemp(prefix="session.", dir=parent))
@@ -285,6 +287,11 @@ def leader(args):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    workspace = commands.add_parser("workspace", help="데스크탑: 브라우저 코드 편집기와 실습 실행 연결")
+    workspace.add_argument("--host", required=True, type=address)
+    workspace.add_argument("--port", type=int, default=8080)
+    workspace.add_argument("--password-stdin", action="store_true", help="자동 검사: 비밀번호를 표준 입력으로 전달")
+    commands.add_parser("setup-editor", help="데스크탑: 브라우저 편집기 이미지 빌드")
     server = commands.add_parser("serve", help="데스크탑: 장별 헤드리스 실습 실행")
     server.add_argument("--host", required=True, type=address)
     selection = server.add_mutually_exclusive_group()
@@ -306,6 +313,10 @@ def main(argv=None):
         if command == "leader":
             child.add_argument("--host", required=True, type=address)
     args = parser.parse_args(argv)
+    if args.command in {"workspace", "setup-editor"}:
+        sys.path.insert(0, str(ROOT))
+        from tools.web_classroom.main import run_workspace, build_editor
+        return build_editor() if args.command == "setup-editor" else run_workspace(args)
     if args.command == "serve":
         return serve(args)
     if args.command == "check":
