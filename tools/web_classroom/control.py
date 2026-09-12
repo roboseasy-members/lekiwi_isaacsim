@@ -1,4 +1,4 @@
-"""같은 사용자의 Unix 소켓으로 장별 실행·종료만 받습니다. 외부 TCP API는 열지 않습니다."""
+"""같은 사용자의 Unix 소켓으로 실습과 로컬 데이터셋 작업을 받습니다."""
 import json
 import os
 from pathlib import Path
@@ -8,6 +8,8 @@ import subprocess
 import sys
 import tempfile
 import threading
+
+from tools.web_classroom.datasets import DatasetJobs
 
 CHAPTERS = ("01_object_physics", "02_robot_joints", "03_robot_cameras",
             "04_teleoperation", "05_data_recording", "06_lekiwi_dataset")
@@ -32,6 +34,10 @@ def selection(message, root):
         allowed = [root / "isaacsim_basic" / name / "experiments" for name in CHAPTERS]
         if path.parent not in allowed or path.suffix != ".py" or not path.is_file():
             raise ValueError("각 장 experiments 폴더의 Python 파일만 실행할 수 있습니다.")
+        if path.parent == allowed[-1] and path.name in (
+                '02_dataset_list.py', '03_convert_dataset.py', '04_inspect_dataset.py',
+                '05_upload_dataset.py'):
+            raise ValueError(f'이 파일은 브라우저 터미널에서 python3 {path.name}로 실행하세요. Isaac 실습을 시작하지 않았습니다.')
         compile(path.read_text(), str(path), "exec")
         script = str(path.relative_to(root / "isaacsim_basic"))
     teleop = message.get("teleop", False)
@@ -54,6 +60,7 @@ class Session:
         self.label = None
         self.stopped = False
         self.lock = threading.Lock()
+        self.datasets = DatasetJobs(self.root, data, popen)
 
     def tail(self):
         if not self.log or not self.log.exists():
@@ -107,6 +114,8 @@ class Session:
             op = message.get("op")
             if op == "run":
                 return self.start(message)
+            if op == "dataset":
+                return self.datasets.dispatch(message)
             if set(message) != {"op"}:
                 raise ValueError("지원하지 않는 요청입니다.")
             if op == "status":
@@ -115,7 +124,7 @@ class Session:
                 return {"log": self.tail()}
             if op == "stop":
                 return self.stop()
-            raise ValueError("실행·종료·상태·로그만 지원합니다.")
+            raise ValueError("실습 실행·종료·상태·로그와 데이터셋 작업만 지원합니다.")
 
 
 class ControlServer(socketserver.ThreadingUnixStreamServer):

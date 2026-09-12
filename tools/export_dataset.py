@@ -21,6 +21,7 @@ def export(source, output, repo_id, success_only=False):
         raise FileExistsError(f"Output already exists: {output}")
     paths = [source] if (source / "manifest.json").exists() else sorted(source.glob("episode.*"))
     episodes = []
+    print('LEKIWI_DATASET stage=VALIDATING_RAW', file=sys.stderr, flush=True)
     for path in paths:
         if path.name.endswith(".partial"):
             continue
@@ -43,7 +44,9 @@ def export(source, output, repo_id, success_only=False):
                                    features=features, use_videos=True, video_backend="pyav",
                                    image_writer_threads=2)
     try:
-        for path, metadata, rows in episodes:
+        for episode_index, (path, metadata, rows) in enumerate(episodes, 1):
+            print(f'LEKIWI_DATASET stage=ENCODING episode={episode_index}/{len(episodes)} frames={len(rows)}',
+                  file=sys.stderr, flush=True)
             for row in rows:
                 frame = {key: np.asarray(row[key], dtype=np.float32) for key in ("observation.state", "action")}
                 for name in CAMERAS:
@@ -55,6 +58,7 @@ def export(source, output, repo_id, success_only=False):
     finally:
         dataset.finalize()
     # 변환 완료 표시는 실제 데이터 재열기와 두 영상의 디코딩 검사 후 기록한다.
+    print('LEKIWI_DATASET stage=CHECKING_VIDEOS', file=sys.stderr, flush=True)
     loaded = LeRobotDataset(repo_id=repo_id, root=output, video_backend="pyav")
     expected_count = sum(len(rows) for _, _, rows in episodes)
     if len(loaded) != expected_count or loaded.num_episodes != len(episodes):

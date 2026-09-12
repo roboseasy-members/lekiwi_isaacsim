@@ -57,7 +57,8 @@ def editor_command(dock, root, data, runtime, host, port, identity):
         "--mount", f"type=bind,src={root / 'docs'},dst=/workspace/docs,readonly",
         "--mount", f"type=bind,src={root / 'README.md'},dst=/workspace/README.md,readonly",
         "--mount", f"type=bind,src={data / 'isaacsim_basic'},dst=/results/basic,readonly",
-        "--mount", f"type=bind,src={data / 'recordings'},dst=/results/recordings,readonly"]
+        "--mount", f"type=bind,src={data / 'recordings'},dst=/results/recordings,readonly",
+        "--mount", f"type=bind,src={data / 'datasets'},dst=/results/datasets,readonly"]
     for chapter in CHAPTERS:
         relative = f"isaacsim_basic/{chapter}/experiments"
         args += ["--mount", f"type=bind,src={root / relative},dst=/workspace/{relative}"]
@@ -100,7 +101,7 @@ def run_workspace(args):
     dock = docker_command()
     data = Path(os.environ.get("LEKIWI_DATA_DIR", ROOT / "data")).resolve()
     state = data / "web_classroom"
-    for folder in (state / "home", data / "isaacsim_basic", data / "recordings"):
+    for folder in (state / "home", data / "isaacsim_basic", data / "recordings", data / "datasets"):
         folder.mkdir(parents=True, exist_ok=True)
     with (state / "workspace.lock").open("a") as lock:
         try:
@@ -156,7 +157,10 @@ def run_workspace(args):
                 controller.server_close()
                 try:
                     with session.lock:
-                        session.stop()
+                        try:
+                            session.stop()
+                        finally:
+                            session.datasets.close()
                 finally:
                     if process is not None:
                         stop_owned(dock, name, "lekiwi.editor.session", identity)

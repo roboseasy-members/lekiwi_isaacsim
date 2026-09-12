@@ -14,11 +14,11 @@ import socket
 import sys
 import time
 
-from teleop_bridge import atomic_json, make_packet, validate_positions
+from teleop_bridge import REMOTE_INPUT_TIMEOUT, atomic_json, make_packet, validate_positions
 
 PORT = 49101
 MAX_PACKET = 4096
-MAX_AGE = 0.20  # 기존 시뮬레이터의 250 ms watchdog보다 짧습니다.
+MAX_AGE = 0.20  # 늦게 도착한 응답의 수락 한도입니다. 다음 입력 대기 한도와 구분합니다.
 
 
 def address(value):
@@ -87,7 +87,7 @@ class Receiver:
 
     def expire(self):
         now = self.clock()
-        if self.connected and now - self.sample_stamp > MAX_AGE:
+        if self.connected and now - self.sample_stamp > REMOTE_INPUT_TIMEOUT:
             self.stop()
         # 잠시 끊긴 같은 송신기는 유지합니다. 새 프로세스는 이후 새 연결로 받습니다.
         if self.peer is not None and now - self.peer_seen > 1.0:
@@ -165,10 +165,12 @@ def receive_loop(sock, receiver, stopped):
 
 class Sender:
     """challenge 수신 후에만 reader를 호출합니다. 이전 관절값을 캐시하지 않습니다."""
-    def __init__(self, host, key, port=PORT, timeout=MAX_AGE):
+    def __init__(self, host, key, port=PORT, timeout=0.05):
         self.key = key
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.connect((address(host), port))
+        # 응답 유실 시 입력 유효 시간(200 ms)을 전부 기다리지 않고 새 관절값을 요청합니다.
+        # 서버의 입력 만료·단절 후 R 재활성화 조건은 그대로 유지합니다.
         self.sock.settimeout(timeout)
         self.client = secrets.token_hex(16)
         self.request = 0

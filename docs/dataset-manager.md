@@ -2,7 +2,13 @@
 
 교육 흐름은 **환경 준비 → 1~6편 교육·teleop → 로컬 수집·변환 → 로컬 학습 → Isaac Sim 추론**입니다.
 6편에서 저장한 시연을 선택하고 LeRobot 데이터셋으로 변환·검사합니다.
-데이터셋을 외부 서비스에 올리거나 계정에 로그인하는 단계는 없습니다.
+변환·학습은 로컬만으로 진행할 수 있습니다. 필요한 학생은 검사 완료 후 별도 스크립트로 Hugging Face에 선택 업로드할 수 있습니다.
+
+[브라우저 VS Code 수업](browser-classroom.md#7-python-파일을-수정하고-데이터-변환검사)에서는
+6장의 `02_dataset_list.py` → `03_convert_dataset.py` → `04_inspect_dataset.py`를 실행합니다.
+선택 업로드는 마지막에 `05_upload_dataset.py`를 실행합니다.
+필요한 에피소드·이름·성공 여부 조건은 파일 상단에서 수정하고, 터미널에서는 `python3 파일명.py`만 실행합니다.
+아래 `./lekiwi` 명령은 서버 호스트 터미널용입니다.
 
 ## 실행
 
@@ -60,6 +66,35 @@ Docker에 sudo가 필요한 PC에서는 먼저 `export LEKIWI_DOCKER_SUDO=1`을 
 - 기존 출력은 덮어쓰지 않습니다. 실패한 변환 출력은 보존하며 새 이름으로 재시도합니다.
 - 관리 CLI·화면은 오프라인 모드로 실행합니다. 설치된 이미지로 시연 조회·변환·검사를 하는 데 인터넷이 필요하지 않습니다.
 - 데이터와 캐시는 Git 및 Docker 이미지에 포함되지 않으며 컨테이너 종료 후에도 유지됩니다.
+
+## 선택: Hugging Face에 업로드
+
+업로드하지 않아도 로컬 학습을 진행할 수 있습니다. 업로드하려면 브라우저 VS Code에서
+`06_lekiwi_dataset/experiments/05_upload_dataset.py`를 열고 상단의 `dataset_name`, `repo_id`, `private`를 수정합니다.
+기본값은 `private = False`로 공개 업로드합니다. 비공개가 필요하면 `True`로 바꿉니다.
+저장한 뒤 같은 폴더의 터미널에서 실행합니다.
+
+```bash
+python3 05_upload_dataset.py
+```
+
+터미널이 Hugging Face **쓰기 권한 토큰**을 물으면 붙여 넣고 Enter를 누릅니다. 입력 문자는 화면에 표시되지 않습니다.
+토큰은 [Hugging Face Access Tokens 설정](https://huggingface.co/settings/tokens)에서 본인 계정의 쓰기 권한으로 발급합니다.
+토큰은 Python 파일, 명령행, 작업 로그, 로그인 캐시에 저장하지 않고 익명 파이프로 서버 컨테이너에 한 번 전달합니다.
+로컬 데이터셋 검사를 먼저 통과한 뒤 `data/`, `meta/`, `videos/`와 자동 생성한 `README.md` 카드를 업로드합니다.
+로컬 원본 경로와 카메라 검사 기록이 담긴 `recording_report.json`은 업로드하지 않습니다.
+카드에는 에피소드·프레임 수, 영상·상태·행동 규격, 성공 표시 집계와 Visualize Dataset 링크가 들어갑니다.
+[LeRobot 공식 카드 구성](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/datasets/utils.py#L393)에 맞춰
+`LeRobot`·`robotics` 메타데이터와 `data/*/*.parquet`만 읽는 표 보기 설정도 추가합니다.
+데이터셋 라이선스는 임의로 지정하지 않습니다.
+
+새 저장소 이름을 사용합니다. 기존 저장소의 공개 범위가 `private` 설정과 다르거나 데이터·`v3.0` 태그가
+이미 있으면 중단합니다. README·Git 설정 파일만 있는 빈 저장소는 사용할 수 있습니다.
+업로드한 파일 목록에 모든 학습 파일과 카드가 있는지 확인하고, 카드까지 포함한 업로드에 `v3.0` 태그를 붙여 다시 확인합니다.
+이 태그는 [LeRobot 0.6.1의 기본 Hub 로더](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/datasets/utils.py#L326)가 데이터를 찾을 때 사용합니다.
+성공하면 저장소 주소, `revision: v3.0`, `LEKIWI_DATASET_JOB result=PASS`가 출력됩니다.
+업로드 중단 후 원격 파일이 남았다면 새 저장소 이름으로 재시도합니다. 기존 원격 파일·태그는 자동 삭제하지 않습니다.
+업로드에만 인터넷이 필요하며 목록·변환·검사는 계속 오프라인으로 실행됩니다.
 
 ## 로컬 학습과 추론으로 이어가기
 

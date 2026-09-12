@@ -109,9 +109,10 @@ def serve(args, *, control_key=None):
     # 환경에 남아 있는 예전 로컬 리더 파일을 원격 실행에 사용하지 않습니다.
     env.pop("LEKIWI_TELEOP_STATE", None)
     env.pop("LEKIWI_TELEOP_SESSION", None)
+    env.pop("LEKIWI_TELEOP_REMOTE", None)
     if args.teleop:
         env.update(LEKIWI_TELEOP_STATE=f"/data/remote/{session}/leader.json",
-                   LEKIWI_TELEOP_SESSION=session)
+                   LEKIWI_TELEOP_SESSION=session, LEKIWI_TELEOP_REMOTE="1")
     command = [str(ROOT / "lekiwi"), "basic"]
     if args.script:
         command += ["--script", args.script]

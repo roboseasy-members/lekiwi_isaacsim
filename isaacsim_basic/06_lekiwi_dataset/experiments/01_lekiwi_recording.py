@@ -12,6 +12,10 @@ import os
 import sys
 import time
 
+# 이번 시연에서 수행할 작업 설명입니다. 같은 작업을 반복 수집할 때는 같은 문장을 사용합니다.
+task_description = "Move forward and stop"
+# task_description = "빨간 큐브를 빨간 바구니에 넣기"  # 집기 실습에서는 위 줄 대신 사용합니다.
+
 # 프로젝트 기록 형식·검증·백그라운드 파일 쓰기를 재사용합니다.
 SIM_DIRECTORY = Path(__file__).resolve().parents[3] / "isaac_sim"
 sys.path.insert(0, str(SIM_DIRECTORY))
@@ -66,8 +70,8 @@ class RecordingPanel:
         self.duration_seconds = int(os.environ.get("LEKIWI_RECORD_SECONDS") or self.duration_seconds)
         if self.duration_seconds < 0:
             raise ValueError("LEKIWI_RECORD_SECONDS는 0 이상의 정수입니다.")
-        self.task_text = os.environ.get("LEKIWI_RECORD_TASK", "Move forward and stop")
-        # self.task_text = "Move a block to its matching basket"  # 다음 실습: 집기 작업
+        # 비어 있지 않은 환경변수만 우선하며, 설명은 에피소드와 학습 데이터의 task 항목으로 저장됩니다.
+        self.task_text = os.environ.get("LEKIWI_RECORD_TASK") or task_description
         self.task_succeeded = False
         self.discard_deadline = 0.0
         self.last_status = None

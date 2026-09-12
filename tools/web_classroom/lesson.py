@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""브라우저 터미널에서 서버의 교육 실습만 실행합니다. Docker 권한은 사용하지 않습니다."""
+"""브라우저 터미널에서 서버의 교육 실습과 로컬 데이터셋 작업을 실행합니다."""
 import argparse
 import getpass
 import json
 import os
 import socket
 import sys
+import time
 
 MAX_REQUEST = 8192
+MAX_RESPONSE = 8_000_000
 
 
 def request(message, path=None):
@@ -19,11 +21,40 @@ def request(message, path=None):
         client.connect(path or os.environ.get("LEKIWI_CONTROL_SOCKET", "/run/lekiwi/control.sock"))
         client.sendall(payload)
         with client.makefile("rb") as response:
-            raw = response.readline(100_000)
+            raw = response.readline(MAX_RESPONSE + 1)
+            if len(raw) > MAX_RESPONSE or not raw.endswith(b"\n"):
+                raise RuntimeError("실행기의 응답이 너무 크거나 연결이 끊겼습니다. 상태를 다시 확인하세요.")
     result = json.loads(raw)
     if not result.get("ok"):
         raise RuntimeError(result.get("error", "실습 실행기에 연결하지 못했습니다."))
     return result["result"]
+
+
+def dataset(message):
+    result = request(message)
+    if message['action'] == 'logs':
+        print(result['log'])
+        return
+    if message['action'] in ('status',):
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+    identity = result['job_id']
+    print(f"데이터셋 작업 시작: {identity}", flush=True)
+    try:
+        while result['state'] == 'RUNNING':
+            print(f"진행 중 · {result['elapsed_seconds']:.1f}초 경과 · lesson dataset logs로 상세 확인", flush=True)
+            time.sleep(2)
+            result = request({'op': 'dataset', 'action': 'status', 'job_id': identity})
+    except KeyboardInterrupt:
+        print(f"\n화면 대기를 끝냈습니다. 서버 작업은 계속됩니다. lesson dataset status --job-id {identity}")
+        return
+    except (OSError, RuntimeError):
+        print(f"연결을 다시 확인한 뒤 lesson dataset status --job-id {identity}로 작업 상태를 확인하세요.", file=sys.stderr)
+        raise
+    if result['state'] != 'SUCCEEDED':
+        raise RuntimeError(result.get('error', '데이터셋 작업 실패'))
+    print(json.dumps(result['result'], ensure_ascii=False, indent=2))
+    print('LEKIWI_DATASET_JOB result=PASS', flush=True)
 
 
 def main(argv=None):
@@ -38,8 +69,39 @@ def main(argv=None):
     for name, help_text in (("stop", "저장 후 현재 실습 종료"), ("status", "준비·실행 상태 확인"),
                             ("logs", "현재 실습의 최근 로그 확인")):
         commands.add_parser(name, help=help_text)
+    data = commands.add_parser('dataset', help='저장한 시연 목록·LeRobot 변환·검사·선택 업로드')
+    operations = data.add_subparsers(dest='action', required=True)
+    operations.add_parser('list', help='완료된 시연과 변환된 데이터셋 목록')
+    export = operations.add_parser('export', help='선택한 시연을 새 데이터셋으로 변환')
+    export.add_argument('--episode', dest='episodes', action='append', required=True)
+    export.add_argument('--name', required=True)
+    export.add_argument('--success-only', action='store_true')
+    inspect = operations.add_parser('inspect', help='데이터·영상 재열기 검사')
+    inspect.add_argument('--name', required=True)
+    upload = operations.add_parser('upload', help='검사를 통과한 데이터셋을 Hugging Face에 업로드')
+    upload.add_argument('--name', required=True)
+    upload.add_argument('--repo-id', required=True)
+    visibility = upload.add_mutually_exclusive_group(required=True)
+    visibility.add_argument('--private', action='store_true')
+    visibility.add_argument('--public', dest='private', action='store_false')
+    for action in ('status', 'logs'):
+        operations.add_parser(action).add_argument('--job-id')
     args = parser.parse_args(argv)
     message = vars(args)
+    if args.op == 'dataset':
+        if args.action == 'upload':
+            if not sys.stdin.isatty():
+                raise RuntimeError('Hugging Face 토큰은 브라우저 터미널에서 숨김 입력하세요.')
+            token = getpass.getpass('Hugging Face 쓰기 토큰(저장하지 않음): ')
+            message['token'] = token
+            try:
+                dataset(message)
+            finally:
+                message.pop('token', None)
+                token = None
+        else:
+            dataset(message)
+        return
     if args.op == "run":
         if args.chapter and (args.script or args.experiment):
             parser.error("장 번호와 --file/--experiment는 함께 지정하지 않습니다.")

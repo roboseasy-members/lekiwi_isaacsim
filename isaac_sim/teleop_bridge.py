@@ -17,6 +17,8 @@ LIMITS = ((-1.91986, 1.91986), (-1.74533, 1.74533), (-1.69, 1.69),
 # Clockwise looking from the wrist toward the fingertips: wrist_roll axis in
 # the bundled URDF points back toward the arm, so this is a negative rotation.
 DEFAULT_ARM_OFFSETS_DEG = (0, 0, 0, 0, -90, 0)
+# 원격 가상 로봇만 짧은 Wi-Fi 지연을 기다립니다. 로컬 USB 입력은 250 ms입니다.
+REMOTE_INPUT_TIMEOUT = 0.5
 
 
 def arm_home(offsets_deg):
@@ -64,7 +66,7 @@ def validate_positions(positions):
 
 
 class ArmTeleop:
-    """Explicit clutch, 250 ms sample watchdog, bounded simulator joint targets.
+    """Explicit clutch, local 250 ms / remote 500 ms input watchdog, bounded targets.
 
 Five body joints use absolute calibrated degrees plus explicit model offsets.
 Gripper percent maps to 0..1.5 rad. Signs/zeros require hardware pose validation.
@@ -72,14 +74,15 @@ The monotonic clock, not the render-frame count, controls target slew speed.
 """
 
     def __init__(self, session, signs=(1, 1, 1, 1, 1, 1), timeout=0.25,
-                 offsets_deg=DEFAULT_ARM_OFFSETS_DEG, max_speed=3.0):
+                 offsets_deg=DEFAULT_ARM_OFFSETS_DEG, max_speed=3.0, remote=False):
         if len(signs) != 6 or any(x not in (-1, 1) for x in signs):
             raise ValueError("Expected six joint signs, each +1 or -1")
         if len(offsets_deg) != 6 or any(not math.isfinite(v) for v in offsets_deg):
             raise ValueError("Expected six finite zero offsets in degrees")
         if not math.isfinite(max_speed) or not 0 < max_speed <= 10:
             raise ValueError("Target speed must be in (0, 10] rad/s")
-        self.session, self.signs, self.timeout = session, signs, timeout
+        self.session, self.signs = session, signs
+        self.timeout = REMOTE_INPUT_TIMEOUT if remote else timeout
         self.offsets = [math.radians(v) for v in offsets_deg]
         self.max_speed = max_speed
         self.targets = arm_home(offsets_deg)

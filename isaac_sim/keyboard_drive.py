@@ -514,9 +514,10 @@ def main():
         signs = tuple(int(v) for v in os.environ.get("LEKIWI_ARM_SIGNS", "1,1,1,1,1,1").split(","))
         offsets = ARM_OFFSETS_DEG
         speed = float(os.environ.get("LEKIWI_ARM_MAX_SPEED", "3.0"))
-        arm_control = ArmTeleop(TELEOP_SESSION, signs=signs, offsets_deg=offsets, max_speed=speed)
+        arm_control = ArmTeleop(TELEOP_SESSION, signs=signs, offsets_deg=offsets, max_speed=speed,
+                               remote=os.environ.get("LEKIWI_TELEOP_REMOTE") == "1")
         print(f"LEKIWI_DRIVE absolute_mapping signs={signs} offsets_deg={offsets} "
-              f"max_speed_rad_s={speed}", flush=True)
+              f"max_speed_rad_s={speed} input_timeout_ms={arm_control.timeout * 1000:.0f}", flush=True)
     capture_requested = False
     reset_requested = False
     recorder = None
@@ -628,12 +629,16 @@ def main():
     main_viewport = split_view.main
 
     recorder = None
+    recording_overlay = None
     if RECORDING:
         from recording_panel import RecordingPanel
+        from recording_overlay import RecordingOverlay
         recorder = RecordingPanel(robot_cameras, camera_config,
                                   "so101_leader_keyboard" if arm_control else "keyboard_home_hold",
                                   layout if COURSE_LAYOUT else None)
         recorder.metadata["gripper_collision_approximation"] = "convexDecomposition"
+        recording_overlay = RecordingOverlay(split_view.main_window)
+        recording_overlay.update(recorder, arm_control)
 
     def recording_state():
         # 베이스 속도는 world 좌표에서 로봇의 수평 base 좌표로 변환한다.
@@ -811,6 +816,7 @@ def main():
                 break
             if recorder:
                 recorder.after_step(world, recording_state()[0])
+                recording_overlay.update(recorder, arm_control)
 
             if arm_control:
                 if arm_control.status != last_arm_status:
@@ -854,6 +860,8 @@ def main():
 
     finally:
         pressed.clear()
+        if recording_overlay:
+            recording_overlay.close()
         if recorder:
             try:
                 recorder.close()

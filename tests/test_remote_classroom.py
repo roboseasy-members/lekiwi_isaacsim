@@ -95,25 +95,99 @@ def test_bad_joint_units_are_rejected(receiver, values):
 
 def test_hello_without_new_samples_cannot_keep_input_alive(receiver):
     sample(receiver, hello(receiver))
-    receiver.test_clock[0] += 0.15
+    receiver.test_clock[0] += 0.40
     hello(receiver, 2)
-    receiver.test_clock[0] += 0.10
+    receiver.test_clock[0] += 0.11
     receiver.expire()
     assert read_packet(receiver.state)["connected"] is False
 
 
+@pytest.mark.parametrize("gap", [0.201, 0.251, 0.499, 0.500])
+def test_remote_input_waits_up_to_500ms_without_disarming(receiver, gap):
+    sample(receiver, hello(receiver))
+    arm = ArmTeleop("test-session", remote=True)
+    arm.update(read_packet(receiver.state), 500.0, arm.targets)
+    arm.update(read_packet(receiver.state), 500.0, arm.targets, arm=True)
+    receiver.test_clock[0] = 500.0 + gap
+    receiver.expire()
+    packet = read_packet(receiver.state)
+    assert packet["connected"]
+    arm.update(packet, receiver.test_clock[0], arm.targets)
+    assert arm.armed
+    sample(receiver, hello(receiver, 2))
+    assert receiver.generation == 1
+
+
+def test_remote_input_stops_after_500ms_and_requires_r_after_recovery(receiver):
+    sample(receiver, hello(receiver))
+    arm = ArmTeleop("test-session", remote=True)
+    arm.update(read_packet(receiver.state), 500.0, arm.targets)
+    arm.update(read_packet(receiver.state), 500.0, arm.targets, arm=True)
+    held = arm.targets[:]
+    receiver.test_clock[0] = 500.501
+    # 수신 루프가 늦어져도 시뮬레이터가 독립적으로 만료된 입력을 차단합니다.
+    arm.update(read_packet(receiver.state), 500.501, held)
+    assert not arm.armed and arm.targets == held
+    receiver.expire()
+    assert not read_packet(receiver.state)["connected"]
+    sample(receiver, hello(receiver, 2))
+    arm.update(read_packet(receiver.state), 500.501, held)
+    assert not arm.armed
+    arm.update(read_packet(receiver.state), 500.51, held, arm=True)
+    assert arm.armed
+
+
+@pytest.mark.parametrize("dropped_kind", ["challenge", "accepted"])
+def test_one_lost_reply_recovers_before_input_expires(receiver, monkeypatch, dropped_kind):
+    """응답 한 개가 유실돼도 새 관절값을 읽어 입력 만료 전에 회복해야 합니다."""
+    import remote_teleop
+
+    class LossySocket:
+        drop = None
+        def __init__(self, *args):
+            self.responses = []
+        def connect(self, address):
+            pass
+        def settimeout(self, timeout):
+            self.timeout = timeout
+        def send(self, data):
+            response = receiver.handle(data, PEER)
+            if response and decode(response, KEY)["kind"] == self.drop:
+                self.drop = None
+            elif response:
+                self.responses.append(response)
+        def recv(self, size):
+            if self.responses:
+                return self.responses.pop(0)
+            receiver.test_clock[0] += self.timeout
+            raise socket.timeout()
+
+    monkeypatch.setattr(remote_teleop.socket, "socket", LossySocket)
+    monkeypatch.setattr(remote_teleop.time, "monotonic", lambda: receiver.test_clock[0])
+    sender = Sender("127.0.0.1", KEY)
+    reader = lambda: dict.fromkeys((n + ".pos" for n in JOINTS), 0.0)
+    assert sender.sample(reader)
+    assert receiver.generation == 1
+    sender.sock.drop = dropped_kind
+    assert not sender.sample(reader)
+    receiver.test_clock[0] += 1 / 30  # 다음 수집 주기에 새 관절값을 요청합니다.
+    assert sender.sample(reader)
+    assert receiver.generation == 1  # 안전 정지 후 자동 재활성화로 우회하지 않습니다.
+    assert read_packet(receiver.state)["connected"]
+
+
 def test_reconnect_requires_rearming_even_if_simulator_missed_disconnect(receiver):
     sample(receiver, hello(receiver))
-    arm = ArmTeleop("test-session")
+    arm = ArmTeleop("test-session", remote=True)
     arm.update(read_packet(receiver.state), 500.0, [0] * 6)
     arm.update(read_packet(receiver.state), 500.01, [0] * 6, arm=True)
     assert arm.armed
-    receiver.test_clock[0] += 0.3
+    receiver.test_clock[0] += 0.501
     sample(receiver, hello(receiver, 2))
     assert read_packet(receiver.state)["remote_peer"].endswith(":2")
-    arm.update(read_packet(receiver.state), 500.3, [0] * 6, arm=True)
+    arm.update(read_packet(receiver.state), 500.501, [0] * 6, arm=True)
     assert not arm.armed  # 연결 변경과 같은 프레임에 남아 있던 R도 무시합니다.
-    arm.update(read_packet(receiver.state), 500.31, [0] * 6, arm=True)
+    arm.update(read_packet(receiver.state), 500.51, [0] * 6, arm=True)
     assert arm.armed
 
 

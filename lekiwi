@@ -21,7 +21,7 @@ usage() {
     echo '  record                    Open LeKiwi RGB/action recording (no USB)'
     echo '  export-dataset ARGS       Convert saved recordings to a local LeRobot dataset'
     echo '  dataset-ui                브라우저에서 로컬 시연 선택·변환·데이터셋 검사'
-    echo '  dataset COMMAND [ARGS]    list / export / inspect'
+    echo '  dataset COMMAND [ARGS]    list / export / inspect / upload'
     echo '  basic [--chapter 1..6 | --script PATH | --experiment 1..6]  학생 Python 파일 실행'
     echo '  test-recording            Check classroom recording/replay (no USB)'
     echo '  test-basic                Check classroom physics inside Docker (no USB)'
@@ -75,7 +75,7 @@ if [[ "${LEKIWI_DOCKER_SUDO:-0}" == 1 ]]; then
     else
         sudo -v || fail 'Could not obtain Docker sudo access.'
     fi
-    docker_cmd=(sudo --preserve-env=LEKIWI_UID,LEKIWI_GID,LEKIWI_DATA_DIR,LEKIWI_SIM_IMAGE,LEKIWI_LEROBOT_IMAGE,ACCEPT_EULA,DISPLAY,LEKIWI_XAUTH_FILE,LEKIWI_LEADER_PORT,LEKIWI_LEADER_GID,LEKIWI_TELEOP_STATE,LEKIWI_TELEOP_SESSION,LEKIWI_ARM_SIGNS,LEKIWI_ARM_OFFSETS_DEG,LEKIWI_ARM_MAX_SPEED,LEKIWI_COURSE_LAYOUT,LEKIWI_CAMERA_CONFIG,LEKIWI_RECORDING,LEKIWI_RECORD_SECONDS,LEKIWI_RECORD_TASK,LEKIWI_DISPLAY_MODE,LEKIWI_STREAM_HOST docker)
+    docker_cmd=(sudo --preserve-env=LEKIWI_UID,LEKIWI_GID,LEKIWI_DATA_DIR,LEKIWI_SIM_IMAGE,LEKIWI_LEROBOT_IMAGE,ACCEPT_EULA,DISPLAY,LEKIWI_XAUTH_FILE,LEKIWI_LEADER_PORT,LEKIWI_LEADER_GID,LEKIWI_TELEOP_STATE,LEKIWI_TELEOP_SESSION,LEKIWI_TELEOP_REMOTE,LEKIWI_ARM_SIGNS,LEKIWI_ARM_OFFSETS_DEG,LEKIWI_ARM_MAX_SPEED,LEKIWI_COURSE_LAYOUT,LEKIWI_CAMERA_CONFIG,LEKIWI_RECORDING,LEKIWI_RECORD_SECONDS,LEKIWI_RECORD_TASK,LEKIWI_DISPLAY_MODE,LEKIWI_STREAM_HOST docker)
 fi
 compose=("${docker_cmd[@]}" compose --project-directory "$project_dir"
     --project-name "$project_name" -f "$project_dir/compose.yaml")
@@ -160,17 +160,34 @@ if [[ "$command_name" == dataset-ui || "$command_name" == dataset ]]; then
         manager_args=(serve)
         manager_run=(-T --publish 127.0.0.1:8765:8765)
     else
-        case "${1:-}" in list|export|inspect|-h|--help) ;; *) fail 'Use dataset list|export|inspect.' ;; esac
+        case "${1:-}" in list|export|inspect|upload|-h|--help) ;; *) fail 'Use dataset list|export|inspect|upload.' ;; esac
         manager_args=("$@")
         manager_run=(-T)
     fi
+    manager_offline=1
+    manager_secret_fd=''
+    if [[ "${manager_args[0]}" == upload ]]; then
+        [[ -n "${LEKIWI_CLASSROOM_SESSION:-}" ]] \
+            || fail 'Hugging Face upload is run with python3 05_upload_dataset.py in the browser VS Code terminal.'
+        # 토큰을 다른 준비 명령이 읽지 않도록 전용 익명 FD에 보관하고 원래 stdin을 닫습니다.
+        exec 10<&0
+        exec </dev/null
+        manager_secret_fd=10
+        manager_offline=0
+    fi
     ensure_image lerobot
-    if [[ "$command_name" == dataset-ui ]]; then
+    if [[ "$command_name" == dataset-ui || -n "${LEKIWI_CLASSROOM_SESSION:-}" ]]; then
         # compose run -T may detach on Ctrl+C; explicitly stop only this launch.
         manager_run_id="${BASHPID}-${RANDOM}-${RANDOM}"
         manager_container="${project_name}-dataset-ui-${manager_run_id}"
+        manager_pid=''
         stop_manager() {
             local owner
+            # wait 중에는 trap이 즉시 실행됩니다. 이 실행의 Compose 클라이언트도 남기지 않습니다.
+            if [[ -n "$manager_pid" ]] && kill -0 "$manager_pid" 2>/dev/null; then
+                kill -TERM "$manager_pid" 2>/dev/null || true
+                wait "$manager_pid" 2>/dev/null || true
+            fi
             owner="$("${docker_cmd[@]}" inspect --format '{{index .Config.Labels "lekiwi.dataset-manager.run"}}' "$manager_container" 2>/dev/null)" || return 0
             if [[ "$owner" == "$manager_run_id" ]]; then
                 "${docker_cmd[@]}" stop --time 10 "$manager_container" >/dev/null 2>&1 || true
@@ -179,12 +196,27 @@ if [[ "$command_name" == dataset-ui || "$command_name" == dataset ]]; then
         trap stop_manager EXIT
         trap 'exit 130' INT
         trap 'exit 143' TERM
-        "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE=1 \
-            --name "$manager_container" --label "lekiwi.dataset-manager.run=$manager_run_id" lerobot \
-            python /opt/lekiwi/tools/dataset_manager/cli.py serve
+        if [[ -n "$manager_secret_fd" ]]; then
+            "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" \
+                -e HF_HUB_DISABLE_IMPLICIT_TOKEN=1 -e HF_HUB_DISABLE_TELEMETRY=1 \
+                --name "$manager_container" --label "lekiwi.dataset-manager.run=$manager_run_id" lerobot \
+                python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}" <&10 &
+            exec 10<&-
+        else
+            "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" \
+                --name "$manager_container" --label "lekiwi.dataset-manager.run=$manager_run_id" lerobot \
+                python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}" &
+        fi
+        manager_pid=$!
+        wait "$manager_pid"
         exit "$?"
     fi
-    exec "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE=1 lerobot \
+    if [[ -n "$manager_secret_fd" ]]; then
+        exec "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" \
+            -e HF_HUB_DISABLE_IMPLICIT_TOKEN=1 -e HF_HUB_DISABLE_TELEMETRY=1 lerobot \
+            python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}" <&10
+    fi
+    exec "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" lerobot \
         python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}"
 fi
 if [[ "$command_name" == record ]]; then

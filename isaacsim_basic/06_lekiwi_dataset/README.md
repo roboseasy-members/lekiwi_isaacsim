@@ -47,8 +47,22 @@ self.duration_seconds = 30
 LEKIWI_RECORD_SECONDS=120 ./lekiwi record
 ```
 
-집기 과제로 바꿀 때는 `self.task_text = "Move a block to its matching basket"` 줄을 주석 해제하거나
-`LEKIWI_RECORD_TASK` 환경변수에 같은 작업 설명을 전달합니다. 같은 의미의 시연에는 일관된 설명을 사용합니다.
+파일 상단의 `task_description`은 **이번 시연에서 수행할 작업 설명**입니다. 기본 줄을 주석 처리하고 집기 과제 줄을 해제합니다.
+
+```python
+# task_description = "Move forward and stop"
+task_description = "빨간 큐브를 빨간 바구니에 넣기"
+```
+
+설명은 에피소드의 `manifest.json` 안에 `task`로 저장되고, LeRobot 변환 시에도 같은 `task`로 전달됩니다.
+같은 의미의 시연에는 일관된 설명을 사용합니다. 설명을 바꾸면 저장할 작업 이름이 바뀌며, 로봇이 자동으로 그 작업을 수행하는 것은 아닙니다.
+`LEKIWI_RECORD_TASK` 환경변수에 비어 있지 않은 값을 지정하면 파일의 기본 설명보다 우선합니다.
+지정하지 않거나 비우면 코드의 `task_description`을 사용합니다.
+
+[브라우저 편집기 연결](../../docs/browser-classroom.md)을 마쳤다면 이 파일을 수정하고 `Ctrl+S`로 저장한 뒤,
+브라우저 터미널에서 `lesson run 6 --teleop`으로 서버의 기록 실습을 실행합니다.
+이미 실습이 켜져 있으면 기록의 저장·폐기를 마치고 `lesson stop` 후 재실행합니다.
+화면은 노트북의 WebRTC 클라이언트에서 서버 IP로 연결하고, USB 리더 입력은 노트북의 별도 연결 프로그램에서 보냅니다.
 
 ## 2. 영상이 만들어지는 코드
 
@@ -85,6 +99,26 @@ Viewport를 클릭한 상태에서 한 번씩 누릅니다. 파일 작업은 키
 | F8 | 저장·폐기 완료 후 로봇 초기화·라인별 큐브 재배치 |
 | SPACE | 로봇 주행·가상 팔 추종 정지. 파일 수집은 별도로 F6 |
 
+화면 왼쪽 위의 상태 표시에서 수집 여부와 시간을 확인합니다.
+
+![수집 중 표시와 에피소드 시간](images/10-recording-status.png)
+
+위 화면은 리더를 연결하지 않고 상태 표시를 검사한 예시입니다. `ARM Stopped`에서도 기록은 가능하며, 실제 시연에서는 팔 추종 상태도 함께 확인합니다.
+
+| 화면 표시 | 뜻 |
+|---|---|
+| `READY` | F5로 새 기록을 시작할 수 있음 |
+| 빨간 `REC / RECORDING` | 수집 중. 현재 에피소드 시간 / 최대 시간과 프레임 수 표시 |
+| `FINISHING` | 마지막 영상과 파일 쓰기를 기다리는 중 |
+| `STOPPED / NOT SAVED` | F6으로 수집을 끝냈지만 아직 저장하지 않음 |
+| `SAVING` → `SAVED` | 검증·저장 진행 → 저장 완료 |
+| `RECORDING ERROR` | 오류 확인 후 F10을 두 번 눌러 해당 기록 폐기 |
+
+시간은 **수집한 프레임 수 ÷ 30 FPS인 시뮬레이션 시간**입니다. 실행이 느리면 실제 대기 시간과 다를 수 있습니다.
+시간 제한이 0이면 `NO LIMIT`로 표시됩니다. 리더 입력 사용 시 `ARM Following leader` 또는
+`ARM Stopped - R to resume`도 함께 표시합니다. 팔 추종 정지와 기록 종료는 별개이므로 수집을 끝내려면 F6을 누릅니다.
+상태 표시는 Viewport UI에만 그려지며 저장하는 front/wrist 영상에는 포함되지 않습니다.
+
 1. READY를 확인하고 F5를 누릅니다.
 2. 짧게 W로 전진한 뒤 이동키를 모두 놓고 SPACE로 정지합니다.
 3. F6을 누릅니다. FINISHING 동안 마지막 RGB와 파일 쓰기를 기다립니다.
@@ -116,6 +150,33 @@ PNG 저장은 백그라운드에서 수행합니다. 저장이 밀리거나 RGB 
 
 ## 5. LeRobot 데이터셋으로 변환하기
 
+[브라우저 VS Code 수업](../../docs/browser-classroom.md#7-python-파일을-수정하고-데이터-변환검사)에서는 변환 설정도 Python 파일에서 수정합니다.
+먼저 저장을 완료하고, 브라우저의 새 터미널에서 다음을 실행합니다.
+
+```bash
+cd 06_lekiwi_dataset/experiments
+python3 02_dataset_list.py
+```
+
+[03_convert_dataset.py](experiments/03_convert_dataset.py) 상단의 `episode_ids`에 목록의 실제 `id`를 넣고,
+`dataset_name`을 새 이름으로 정합니다. `success_only = False`는 선택한 연습·성공 기록 모두, `True`는 F9 성공 기록만 변환합니다.
+`Ctrl+S`로 저장한 뒤 같은 터미널에서 실행합니다.
+
+```bash
+python3 03_convert_dataset.py
+```
+
+`LEKIWI_DATASET_JOB result=PASS`와 프레임·에피소드 수를 확인합니다. 변환 결과는 탐색기의 **LeRobot 데이터셋**에서 읽습니다.
+[04_inspect_dataset.py](experiments/04_inspect_dataset.py)의 `dataset_name`을 같은 이름으로 저장하고 `python3 04_inspect_dataset.py`로 재검사합니다.
+
+![브라우저에서 설정 수정 후 실제 데이터 변환·검사 완료](images/11-browser-dataset.png)
+
+2026-09-12 실제 확인 화면입니다. 전날 수집한 **1개 에피소드·422프레임·14.07초**의 연습 기록을 변환했고, 검사 파일도 통과했습니다.
+화면의 에피소드 ID와 데이터셋 이름은 이 검증의 예시이며, 학생은 자신의 목록과 새 이름을 사용합니다.
+
+긴 작업은 `lesson dataset status` / `lesson dataset logs`로 확인합니다. 브라우저 터미널의 Ctrl+C는 대기만 끝내며 서버 변환은 계속됩니다.
+다음은 **서버 호스트 터미널**에서 같은 변환을 하는 방법입니다. 브라우저에서 이미 변환했다면 중복 실행하지 않습니다.
+
 필요한 기록을 저장한 뒤 Isaac Sim을 닫고 종료를 기다립니다.
 아래 `lekiwi.XXXXXXXX`를 **터미널의 LEKIWI_RECORD directory에 나온 실행 폴더**로 바꾸고 출력 폴더는 아직 없는 새 이름을 사용합니다.
 
@@ -132,9 +193,9 @@ PNG 저장은 백그라운드에서 수행합니다. 저장이 밀리거나 RGB 
 
 ![변환 후 실제 검사 결과](images/06-export.png)
 
-이 터미널 이미지는 앞서 검증한 **2개 에피소드·19프레임**의 별도 변환 예시입니다. 위에서 새로 촬영한 40프레임 기록의 변환 결과는 아닙니다.
+이 터미널 이미지는 앞서 검증한 **2개 에피소드·19프레임**의 과거 변환 예시이며, 위 브라우저 변환 결과와 별개입니다.
 
-변환은 LeRobot 이미지에서 수행합니다. 호스트에 LeRobot을 설치하지 않고 GitHub/Hugging Face 업로드도 수행하지 않습니다.
+변환은 LeRobot 이미지에서 수행하므로 호스트에 LeRobot을 별도 설치하지 않습니다.
 PNG를 두 카메라 영상으로 인코딩하고 상태·행동은 Parquet, 에피소드·feature 정보는 meta 아래에 저장합니다.
 
 ```text
@@ -154,6 +215,20 @@ data/datasets/lekiwi_lesson6_01/
 이는 **파일 검증**이며, 로봇을 움직여 같은 동작을 재현하는 물리 재생이나 정책 성능 검증은 아닙니다.
 원본 JSON에는 후속 상태·카메라 시각도 남기고, LeRobot 학습 feature에는 관측 상태·두 RGB·행동을 전달합니다.
 
+검사한 데이터를 선택적으로 Hugging Face에 올리려면 [05_upload_dataset.py](experiments/05_upload_dataset.py)의
+`dataset_name`, `repo_id`, `private`를 수정하고 브라우저 VS Code 터미널에서 실행합니다.
+기본값 `private = False`는 공개 업로드입니다. 비공개가 필요하면 `True`로 바꿉니다.
+
+```bash
+python3 05_upload_dataset.py
+```
+
+실행할 때 쓰기 토큰을 숨김 입력합니다. 토큰은 파일·명령행·로그에 저장하지 않습니다.
+학습용 `data/`, `meta/`, `videos/`와 자동 생성한 `README.md` 카드를 업로드하고 로컬 경로가 든 `recording_report.json`은 제외합니다.
+`repo_id`에는 새 저장소 이름을 사용합니다. 기존 데이터·버전 태그가 있으면 중단합니다.
+모든 학습 파일·카드와 LeRobot이 읽을 `v3.0` 태그를 확인한 뒤 `LEKIWI_DATASET_JOB result=PASS`를 출력합니다.
+로컬 학습만 진행한다면 이 단계는 건너뜁니다.
+
 
 ## 6. 리더 시연과 로컬 학습으로 연결
 
@@ -167,7 +242,7 @@ LEKIWI_RECORD_SECONDS=120 ./lekiwi teleop \
 ```
 
 기록 옵션이 리더를 자동 활성화하지 않습니다. R 활성화 뒤 같은 F5/F6/F7/F9 키를 사용합니다.
-리더 시연을 충분히 모으고 변환이 PASS인 로컬 데이터셋으로 학습합니다. Hugging Face 업로드는 수업에 포함하지 않습니다.
+리더 시연을 충분히 모으고 변환이 PASS인 로컬 데이터셋으로 학습합니다. Hugging Face 업로드는 선택 단계입니다.
 학습·추론 명령은 [프로젝트 README](../../README.md)와 [로컬 데이터 관리](../../docs/dataset-manager.md)를 따릅니다.
 짧은 저장 검사를 통과했다는 사실과 충분한 학습 데이터·정책 성능을 구분합니다.
 

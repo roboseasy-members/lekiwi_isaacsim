@@ -10,6 +10,35 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'isaac_sim'))
 from recording_panel import RecordingPanel
 
 
+@pytest.mark.parametrize('override', [None, '', 'Pick up the red cube'])
+def test_student_task_description_is_used_unless_explicitly_overridden(tmp_path, monkeypatch, override):
+    # 렌더러와 파일 생성만 대체하고 실제 학생 코드의 설정 읽기를 실행합니다.
+    settings = NS(set=lambda *a: None, get=lambda *a: False)
+    annotator = NS(attach=lambda *a: None)
+    rep = NS(orchestrator=NS(set_capture_on_play=lambda *a: None),
+             create=NS(render_product=lambda *a: NS(path='/test')),
+             AnnotatorRegistry=NS(get_annotator=lambda *a: annotator))
+    bindings = NS(_isaacsim_core_nodes=NS(acquire_interface=lambda: None))
+    for name, module in {
+        'omni': NS(replicator=NS(core=rep)), 'omni.replicator': NS(core=rep),
+        'omni.replicator.core': rep, 'carb': NS(settings=NS(get_settings=lambda: settings)),
+        'carb.settings': NS(get_settings=lambda: settings),
+        'isaacsim.core.nodes.bindings': bindings,
+    }.items():
+        monkeypatch.setitem(sys.modules, name, module)
+    globals_ = RecordingPanel.__init__.__globals__
+    monkeypatch.setitem(globals_, 'Path', lambda *_: tmp_path)
+    monkeypatch.setitem(globals_, 'task_description', '리더암을 좌우로 움직이기')
+    if override is None:
+        monkeypatch.delenv('LEKIWI_RECORD_TASK', raising=False)
+    else:
+        monkeypatch.setenv('LEKIWI_RECORD_TASK', override)
+    cameras = {name: {'camera_path': '/test'} for name in ('front', 'wrist')}
+    config = {'cameras': {name: {'resolution': [2, 2]} for name in cameras}}
+    p = RecordingPanel(cameras, config, 'test', {})
+    assert p.task_text == (override or '리더암을 좌우로 움직이기')
+
+
 def panel(tmp_path, seconds):
     p = RecordingPanel.__new__(RecordingPanel)
     p.duration_seconds = seconds
@@ -32,11 +61,13 @@ def panel(tmp_path, seconds):
 @pytest.mark.parametrize('seconds', [0, 30, 120, 300])
 def test_start_captures_setting_and_locks_input(tmp_path, seconds):
     p = panel(tmp_path, seconds)
+    p.task_text = "빨간 큐브를 빨간 바구니에 넣기"
     p.requests = ['record']
     p.before_step(NS(current_time=0, is_playing=lambda: True), [0]*9, [0]*9, [0]*7)
     assert p.mode == 'RECORDING'
     assert p.duration_seconds == seconds
     assert p.writer.metadata['max_duration_seconds'] == seconds
+    assert p.writer.metadata['task'] == "빨간 큐브를 빨간 바구니에 넣기"
     assert p.duration_seconds == seconds  # 기록 중 모델 값이 바뀌어도 현재 기록의 상한은 유지한다.
     p.requests = ['stop']
     p.before_step(NS(current_time=0, is_playing=lambda: True), [0]*9, [0]*9, [0]*7)

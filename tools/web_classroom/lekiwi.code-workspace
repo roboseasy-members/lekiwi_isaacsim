@@ -3,7 +3,8 @@
     { "name": "교재와 Python 실습", "path": "/workspace/isaacsim_basic" },
     { "name": "실행 안내", "path": "/workspace/docs" },
     { "name": "저장된 기초 실습 결과", "path": "/results/basic" },
-    { "name": "LeKiwi 기록", "path": "/results/recordings" }
+    { "name": "LeKiwi 기록", "path": "/results/recordings" },
+    { "name": "LeRobot 데이터셋", "path": "/results/datasets" }
   ],
   "settings": {
     "workbench.startupEditor": "none",
