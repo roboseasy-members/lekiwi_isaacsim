@@ -3,7 +3,7 @@
 학생은 **`develop` 브랜치를 받은 뒤 이 문서의 번호 순서대로 진행**합니다.
 현재 `feature/remote_classroom`에는 1~6장 코드 실습 개편과 원격 실습 기능이 추가돼 있습니다. 이 변경은 아직 `develop`에 병합되지 않았습니다.
 교육 흐름은 **환경 설정 → 기초 교육 → teleop → 로컬 데이터 수집·변환 → 로컬 학습 → 추론**입니다.
-데이터셋 계정 연결이나 업로드 단계는 없습니다.
+데이터셋은 로컬에서 사용하거나, 브라우저의 별도 스크립트로 Hugging Face에 공개 업로드할 수 있습니다.
 
 실제 SO101 리더암과 키보드로 **Isaac Sim 안의 LeKiwi 베이스와 SOARM**을 조작합니다.
 실제 follower나 실제 LeKiwi 본체를 움직이는 기능은 없습니다.
@@ -23,8 +23,8 @@ Isaac Sim 화면은 별도 WebRTC 클라이언트로 확인합니다.
 |---|---|
 | 1~3 · PC 준비 | 설치 도구와 개발 PC 실행 검사 준비. 새 PC의 드라이버 신규 설치·재부팅은 현장 검증 필요 |
 | 4~8 · 교육·teleop·데이터 | 교재 1~6편, 리더 추종, 두 카메라 기록, 로컬 변환·검사 구현 |
-| 9 · ACT 학습 | CLI 연결과 실행 예시 제공. 우리 데이터로 학습 완료·모델 재로딩 검증은 아직 남음 |
-| 추론 | 학습한 모델의 Isaac Sim 제어 연결은 아직 없음. 후속 개발 단계 |
+| 9 · ACT 학습 | 학생 설정 스크립트와 공식 학습기 연결 구현. 검증 범위는 짧은 학습 실행까지 |
+| 추론 | 저장한 ACT·정규화·카메라 설정을 읽는 시뮬레이션 연결 구현. 실제 동작은 최종 리허설에서 검증 |
 
 지원 설치 환경은 **Ubuntu 22.04/24.04 x86_64, 로컬 데스크톱, NVIDIA GPU**입니다.
 Windows·WSL·macOS·ARM은 자동 설치 대상이 아닙니다.
@@ -304,35 +304,55 @@ LIMIT는 관절 한계, STOP은 입력 누락/만료 등에 의한 비활성 상
 
 완료 후 관리 도구 터미널에서 Ctrl+C로 종료합니다. [로컬 데이터셋 관리 상세](docs/dataset-manager.md)
 
-## 9. 로컬 ACT 학습 — 강사와 함께 검증할 단계
+## 9. ACT 학습과 Isaac Sim 추론
 
-**여기부터는 우리 데이터로 학습 완료·모델 재로딩을 아직 검증하지 않은 단계입니다.**
-1~8단계가 끝나면 새 PC의 설치·teleop·수집·변환 검증은 완료한 것입니다.
-아래는 학습 실행을 확인하기 위한 예시이며, 집기 성공을 보장하는 완성 학습 설정이 아닙니다.
-Isaac Sim과 데이터셋 관리 화면을 종료해 GPU 메모리를 확보한 뒤 강사와 함께 진행합니다.
+브라우저 수업에서는 6장의 `06_train_act.py`, `07_infer_act.py`를 사용합니다.
+학습은 실행 여부까지 확인하고, 추론 동작과 전체 과정은 최종 리허설에서 검증합니다.
+GPU·드라이버·CUDA 준비와 실제 과제 성공률 평가는 별도입니다.
+
+현재 실습을 종료한 뒤 학습 설정 파일에서 데이터셋 이름, 새 `run_name`, 학습 횟수와 배치 크기를 수정합니다.
+처음 실행 검사에는 `steps=1`, `batch_size=1`, `pretrained_backbone=False`를 사용합니다.
+본 학습 기본값은 `pretrained_backbone=True`이며 최초 ResNet18 가중치 다운로드가 필요합니다.
 
 ```bash
-./lekiwi check-ml
-./lekiwi dataset inspect --name basket_01
-./lekiwi train act \
-  --dataset.repo_id=local/basket_01 \
-  --dataset.root=/data/datasets/basket_01 \
-  --output_dir=/data/outputs/act_basket_01_check \
-  --batch_size=4 --steps=100
+lesson stop
+python3 06_train_act.py
+lesson train status
+lesson train logs
 ```
 
-`local/basket_01`은 8단계 도구가 만드는 내부 식별자이며 온라인 저장소를 뜻하지 않습니다.
-다른 이름으로 변환했다면 이름과 경로를 함께 바꾸세요. 기존 데이터는 `recording_report.json`의 `repo_id`를 사용합니다.
-학습 출력 폴더가 이미 있으면 지우거나 덮어쓰지 말고 새 출력 이름으로 실행합니다.
-선택한 모델의 사전학습 가중치는 최초 다운로드가 필요할 수 있습니다. 데이터셋은 로컬에서 읽습니다.
+학습 결과는 `data/outputs/<run_name>/`에 저장됩니다. 기존 이름은 덮어쓰지 않습니다.
+`train/checkpoints/last/pretrained_model`에 ACT와 정규화 통계,
+`lekiwi_policy.json`에 상태·행동 순서, 단위와 카메라 설정을 함께 보관합니다.
+브라우저의 **ACT 학습 결과**에서도 파일을 확인할 수 있습니다.
+터미널 Ctrl+C는 대기만 끝냅니다. 서버 학습도 멈추려면 `lesson train stop`을 사용합니다.
 
-**검증할 항목:** 데이터와 두 영상 읽기, 유한한 학습 손실, 설정한 학습 횟수 완료,
-`data/outputs/act_basket_01_check/checkpoints` 아래 모델 저장 여부입니다.
-GPU 메모리가 부족하면 학습 프로세스의 오류를 확인하고 배치 크기를 줄여 새 출력 폴더로 다시 검사합니다.
-짧은 실행 성공 이후에 학습용 시연의 품질·수량을 검토하고 본 학습과 모델 재로딩을 검증합니다.
+추론은 `07_infer_act.py`의 `run_name`을 같은 값으로 저장하고 실행합니다.
+`lesson status`가 READY이면 WebRTC 화면에 연결해 **R 시작 / Space 정지 / F8 장면 초기화**를 사용합니다.
+`seconds`는 R을 누른 뒤 실행할 최대 시뮬레이션 시간입니다. 종료는 `lesson stop`입니다.
 
-학습 상태·재개를 관리하는 화면과 **학습 모델로 Isaac Sim을 조작하는 추론 기능은 아직 없습니다.**
-GR00T는 의존성과 CLI만 준비되어 있으며 이 순서도의 첫 학습 대상으로 사용하지 않습니다.
+```bash
+python3 07_infer_act.py
+lesson status
+lesson logs
+```
+
+학습과 같은 front/wrist RGB, 6개 절대 관절각(rad), base_link 속도(m/s·rad/s)를 사용합니다.
+모델 계산 중에는 물리 시간을 멈추고 화면·정지 키를 처리합니다.
+일시정지·장면 초기화·화면 연결 끊김·응답 오류 때는 추론을 해제하고, 다음 R에서 행동 큐를 초기화합니다.
+이 기능은 Isaac Sim 가상 로봇 전용입니다. 추론의 실제 물리 동작은 아직 확인하지 않았습니다.
+
+서버 터미널에서 직접 실행할 수도 있습니다.
+
+```bash
+./lekiwi act train --dataset-name basket_01 --run-name act_basket_01 --steps 1000 --batch-size 4
+./lekiwi act infer --run-name act_basket_01 --seconds 30
+```
+
+공개 Hub 데이터는 `--dataset-name` 대신 `--repo-id 계정명/데이터셋명`을 사용합니다.
+로컬 변환본은 기록의 카메라 설정을 사용하고, Hub 데이터는 이 프로젝트의 기본 카메라 설정을 전제로 합니다.
+일반 LeRobot CLI를 직접 사용하려면 기존 `./lekiwi train act ...`도 유지됩니다.
+수업 추론 연결에는 `06_train_act.py` 또는 `./lekiwi act train`이 저장하는 추가 규격 파일이 필요합니다.
 
 ## 10. 종료와 다음 실행
 

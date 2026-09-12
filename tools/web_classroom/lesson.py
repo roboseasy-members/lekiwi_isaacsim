@@ -57,6 +57,30 @@ def dataset(message):
     print('LEKIWI_DATASET_JOB result=PASS', flush=True)
 
 
+def training(message):
+    result = request(message)
+    if message['action'] == 'logs':
+        print(result['log'])
+        return
+    if message['action'] != 'start':
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+    identity = result['job_id']
+    print(f'ACT 학습 시작: {identity} · lesson train logs로 손실과 진행 상황 확인', flush=True)
+    try:
+        while result['state'] == 'RUNNING':
+            time.sleep(2)
+            result = request({'op': 'train', 'action': 'status', 'job_id': identity})
+    except KeyboardInterrupt:
+        print(f'화면 대기만 종료했습니다. 학습은 계속됩니다. lesson train status --job-id {identity}')
+        print('학습도 종료하려면 lesson train stop을 실행하세요.')
+        return
+    if result['state'] != 'SUCCEEDED':
+        raise RuntimeError(result.get('error', '학습이 완료되기 전에 종료됐습니다.'))
+    print(json.dumps(result['result'], ensure_ascii=False, indent=2))
+    print('LEKIWI_TRAIN_JOB result=PASS', flush=True)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="op", required=True)
@@ -86,8 +110,29 @@ def main(argv=None):
     visibility.add_argument('--public', dest='private', action='store_false')
     for action in ('status', 'logs'):
         operations.add_parser(action).add_argument('--job-id')
+    train = commands.add_parser('train', help='ACT 학습 실행·상태·로그·종료')
+    training_commands = train.add_subparsers(dest='action', required=True)
+    start = training_commands.add_parser('start')
+    source = start.add_mutually_exclusive_group(required=True)
+    source.add_argument('--dataset-name')
+    source.add_argument('--repo-id')
+    start.add_argument('--run-name', required=True)
+    start.add_argument('--device', choices=('cuda', 'cpu'), default='cuda')
+    start.add_argument('--steps', type=int, default=1000)
+    start.add_argument('--batch-size', type=int, default=4)
+    start.add_argument('--num-workers', type=int, default=0)
+    start.add_argument('--pretrained-backbone', action=argparse.BooleanOptionalAction, default=True)
+    for action in ('status', 'logs', 'stop'):
+        training_commands.add_parser(action).add_argument('--job-id')
+    infer = commands.add_parser('infer', help='저장한 ACT 모델로 Isaac Sim 추론 준비')
+    infer.add_argument('--run-name', required=True)
+    infer.add_argument('--checkpoint', default='last')
+    infer.add_argument('--device', choices=('cuda', 'cpu'), default='cuda')
+    infer.add_argument('--seconds', type=int, default=30)
     args = parser.parse_args(argv)
     message = vars(args)
+    if args.op == 'train':
+        return training(message)
     if args.op == 'dataset':
         if args.action == 'upload':
             if not sys.stdin.isatty():
@@ -122,7 +167,7 @@ def main(argv=None):
         print(result["log"])
     else:
         print(json.dumps(result, ensure_ascii=False, indent=2))
-        if args.op == "run":
+        if args.op in ("run", "infer"):
             print("lesson status로 READY를 확인한 뒤 WebRTC에서 서버 IP로 연결하세요.")
 
 

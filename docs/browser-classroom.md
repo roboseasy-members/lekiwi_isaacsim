@@ -164,6 +164,8 @@ F5에서 빨간 `REC`, F6 이후 `STOPPED / NOT SAVED`, F7/F9 저장 완료 후 
 | `03_convert_dataset.py` | `episode_ids`, `dataset_name`, `success_only` | 선택한 시연을 새 LeRobot 데이터셋으로 변환·기본 검사 |
 | `04_inspect_dataset.py` | 변환할 때 사용한 `dataset_name` | 상태·영상 재열기 검사와 학습 입력 경로 |
 | `05_upload_dataset.py` | `dataset_name`, `repo_id`, `private` | 검사된 데이터셋을 Hugging Face에 선택 업로드 |
+| `06_train_act.py` | `dataset_name` 또는 `repo_id`, `run_name`, `steps`, `batch_size` | 공식 ACT 학습과 모델 저장 |
+| `07_infer_act.py` | 학습 때의 `run_name`, `checkpoint`, `device`, `seconds` | 저장한 ACT로 Isaac Sim 추론 준비 |
 
 **브라우저 VS Code의 새 터미널**은 `isaacsim_basic` 폴더에서 열립니다. 처음 한 번 6장 폴더로 이동하고 목록을 실행합니다.
 
@@ -233,7 +235,7 @@ python3 05_upload_dataset.py
 쓰기 토큰은 실행 중 숨김 입력합니다. 코드·명령행·로그에는 저장되지 않습니다. 검사 완료 데이터의 학습 파일과 자동 생성한 카드를 업로드하며,
 로컬 경로가 든 `recording_report.json`은 제외합니다. 새 저장소 이름을 사용하며 기존 데이터·버전 태그가 있으면 중단합니다.
 모든 학습 파일·카드와 LeRobot용 `v3.0` 태그를 확인한 뒤 Hugging Face 주소와 `LEKIWI_DATASET_JOB result=PASS`를 출력합니다.
-학습 연결은 아직 `lesson` 명령에 포함하지 않으며 [서버 학습 안내](../README.md#9-로컬-act-학습--강사와-함께-검증할-단계)를 따릅니다.
+학습은 `06_train_act.py`와 `lesson train`으로 실행하고, [ACT 학습·추론 안내](../README.md#9-act-학습과-isaac-sim-추론)를 따릅니다.
 
 이미 편집기를 사용 중이었다면 저장·작업 종료 후 서버에서 `./lekiwi setup lerobot`과 `./lekiwi remote setup-editor`를 실행하고
 `remote workspace`를 다시 시작해야 새 명령과 탐색기 폴더가 반영됩니다. 학생의 스크립트 설정 수정에는 이미지 재빌드가 필요 없습니다.
@@ -327,3 +329,25 @@ python3 05_upload_dataset.py
 - 새 LeRobot 이미지에서 기존 422프레임·두 영상을 실제 재열기하고, 네트워크가 차단된 테스트용 Hub 대체 객체로 공개 요청·카드·버전 태그 순서를 확인했습니다. 새 편집기 이미지에서는 학생 스크립트 기본값 → 설치된 `lesson` → Unix 소켓 → 서버 옵션 검증까지 통과했습니다. 이 배포 검사에서 새 Hub 저장소를 생성하거나 데이터를 다시 업로드하지 않았습니다.
 - 관련 호스트 테스트 **110개 통과, 2개 제외**(xacro·USD 미설치), Python 문법·diff 검사와 Notion ZIP 검사를 통과했습니다. 실행 중인 컨테이너가 없어 수업 중단은 없었으며 검증용 컨테이너는 종료 후 제거됐습니다.
 - 서버 소스 백업과 이미지 변경 기록은 `/tmp/lekiwi-public-deploy-3hg1rd7a`에 있습니다. 이전 이미지에는 각 기존 태그 뒤에 `-before-public-3hg1rd7a`를 붙인 이름을 남겼습니다. 실제 로봇 조작과 정책 학습·추론은 이번 작업에 포함하지 않았습니다.
+
+
+### ACT 학습·추론 스크립트
+
+6장 폴더의 `06_train_act.py`를 편집하고 저장한 뒤, 실행 중인 Isaac 실습을 `lesson stop`으로 종료합니다.
+`python3 06_train_act.py`로 학습을 시작하고, 다른 터미널에서 `lesson train logs`로 진행·손실을 확인합니다.
+`lesson train status`는 상태를, `lesson train stop`은 서버 학습 종료를 요청합니다.
+학습 명령의 Ctrl+C는 화면 대기만 끝냅니다. 원본 데이터와 기존 결과는 보존합니다.
+
+완료 결과는 탐색기의 **ACT 학습 결과**에 나타납니다.
+추론 파일 `07_infer_act.py`의 `run_name`을 같은 이름으로 저장한 뒤 `python3 07_infer_act.py`를 실행합니다.
+`lesson status`가 READY이면 WebRTC 화면에서 R로 시작합니다. Space 정지, F8 초기화, `lesson stop` 종료입니다.
+이번 구현의 학습 검증 범위는 짧은 실행까지이며, 실제 추론과 전체 리허설은 후속 검증으로 남깁니다.
+GPU·드라이버·CUDA 환경 준비와 충분한 성공 시연 수집은 별도 단계입니다.
+
+
+### ACT 스크립트 실행 검사 · 2026-09-12
+
+- `06_train_act.py` → `lesson train start` → 서버 실행기 → 공식 `lerobot-train` 연결을 구현했습니다. 옵션 전달·소켓·작업 수명은 호스트 테스트로 검사했습니다.
+- 서버의 새 실행 경로 `./lekiwi act train`으로 기존 422프레임 데이터, 배치 1, 학습 1회, 무작위 ResNet18 초기화를 실행했습니다. 손실 84.275와 가중치 갱신, 모델·전후처리 파일 저장을 확인했습니다. 로컬 원본 데이터셋은 읽기 전용 마운트로 사용했습니다.
+- 검사 결과는 서버 `data/outputs/act_script_check_20260912_01/`에 보관했습니다. 과제 성공률·본 학습·추론 동작을 검증한 결과는 아닙니다.
+- `07_infer_act.py`는 같은 학습 결과의 모델·정규화·카메라·9개 상태/행동을 Isaac Sim에 연결합니다. 정지·지연·초기화 등은 하드웨어 없는 테스트로 검사했고, 실제 시뮬레이터 추론과 최종 리허설은 실행하지 않았습니다.

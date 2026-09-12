@@ -33,3 +33,14 @@
 2026-09-12 `images/11-browser-dataset.png`: 노트북 Chrome의 실제 브라우저 VS Code 화면을 캡처했습니다.
 서버의 `03_convert_dataset.py`에서 에피소드·이름을 수정해 저장한 뒤 파일만 실행하고, `04_inspect_dataset.py`로 재검사한 결과입니다.
 1개 에피소드·422프레임·30 FPS, LeRobot v3 변환과 재열기를 확인했습니다. 커서가 설정과 결과를 가리지 않는지 확인했습니다.
+
+
+## ACT 학습·추론 구현 근거
+
+- [LeRobot ACT 공식 안내](https://huggingface.co/docs/lerobot/act)
+- [LeRobot 0.6.1 ACT 구현](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/policies/act/modeling_act.py)
+
+공식 학습기와 저장된 전·후처리기, ACT의 `select_action`·`reset`을 호출합니다.
+학생 설정·작업 수명 관리·Isaac Sim 카메라와 제어 연결은 이 프로젝트에 맞춰 작성했습니다.
+모델 계산 동안 물리 시간을 멈추어 수집과 동일한 시뮬레이션 30 FPS 행동 간격을 유지하는 구조입니다.
+실제 추론 동작과 전체 리허설은 아직 검증하지 않았습니다.

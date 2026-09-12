@@ -10,6 +10,8 @@ import tempfile
 import threading
 
 from tools.web_classroom.datasets import DatasetJobs
+from tools.web_classroom.training import TrainingJobs
+from tools.act.options import cli_args, validate
 
 CHAPTERS = ("01_object_physics", "02_robot_joints", "03_robot_cameras",
             "04_teleoperation", "05_data_recording", "06_lekiwi_dataset")
@@ -36,7 +38,7 @@ def selection(message, root):
             raise ValueError("각 장 experiments 폴더의 Python 파일만 실행할 수 있습니다.")
         if path.parent == allowed[-1] and path.name in (
                 '02_dataset_list.py', '03_convert_dataset.py', '04_inspect_dataset.py',
-                '05_upload_dataset.py'):
+                '05_upload_dataset.py', '06_train_act.py', '07_infer_act.py'):
             raise ValueError(f'이 파일은 브라우저 터미널에서 python3 {path.name}로 실행하세요. Isaac 실습을 시작하지 않았습니다.')
         compile(path.read_text(), str(path), "exec")
         script = str(path.relative_to(root / "isaacsim_basic"))
@@ -61,6 +63,7 @@ class Session:
         self.stopped = False
         self.lock = threading.Lock()
         self.datasets = DatasetJobs(self.root, data, popen)
+        self.training = TrainingJobs(self.root, data, popen)
 
     def tail(self):
         if not self.log or not self.log.exists():
@@ -79,6 +82,8 @@ class Session:
         return {"state": state, "server": self.host, "selection": self.label, "exit_code": code}
 
     def start(self, message):
+        if self.training.status()['state'] == 'RUNNING':
+            raise RuntimeError('ACT 학습이 실행 중입니다. lesson train stop으로 종료한 뒤 실습을 시작하세요.')
         if self.process is not None and self.process.poll() is None:
             raise RuntimeError("현재 실습이 실행 중입니다. 저장 후 lesson stop으로 종료하세요.")
         options = selection(message, self.root)
@@ -95,6 +100,24 @@ class Session:
                 stdin=subprocess.PIPE, stdout=output, stderr=subprocess.STDOUT, start_new_session=False)
         self.process.stdin.write(json.dumps(options).encode() + b"\n")
         self.process.stdin.close()
+        return self.status()
+
+    def start_inference(self, message):
+        options = validate({key: value for key, value in message.items() if key != 'op'}, 'infer')
+        if self.process is not None and self.process.poll() is None:
+            raise RuntimeError('현재 실습을 lesson stop으로 종료한 뒤 추론을 시작하세요.')
+        if self.training.status()['state'] == 'RUNNING' or self.datasets.status()['state'] == 'RUNNING':
+            raise RuntimeError('학습·데이터셋 작업이 끝난 뒤 추론을 시작하세요.')
+        parent = self.data / 'web_classroom/sessions'
+        parent.mkdir(parents=True, exist_ok=True)
+        self.log = Path(tempfile.mkdtemp(prefix='inference.', dir=parent)) / 'run.log'
+        self.ready = self.stopped = False
+        self.label = 'ACT ' + options['run_name']
+        with self.log.open('w') as log:
+            self.process = self.popen([str(self.root / 'lekiwi'), 'act', 'infer', *cli_args(options),
+                                      '--host', self.host], cwd=self.root,
+                env=dict(os.environ, LEKIWI_DATA_DIR=str(self.data), LEKIWI_CLASSROOM_SESSION=parent.name),
+                stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, start_new_session=False)
         return self.status()
 
     def stop(self):
@@ -114,7 +137,18 @@ class Session:
             op = message.get("op")
             if op == "run":
                 return self.start(message)
+            if op == 'infer':
+                return self.start_inference(message)
+            if op == 'train':
+                if message.get('action') == 'start':
+                    if self.process is not None and self.process.poll() is None:
+                        raise RuntimeError('현재 Isaac 실습을 lesson stop으로 종료한 뒤 학습을 시작하세요.')
+                    if self.datasets.status()['state'] == 'RUNNING':
+                        raise RuntimeError('데이터셋 작업이 끝난 뒤 학습을 시작하세요.')
+                return self.training.dispatch(message)
             if op == "dataset":
+                if message.get('action') not in ('status', 'logs') and self.training.status()['state'] == 'RUNNING':
+                    raise RuntimeError('학습이 끝난 뒤 데이터셋 작업을 시작하세요.')
                 return self.datasets.dispatch(message)
             if set(message) != {"op"}:
                 raise ValueError("지원하지 않는 요청입니다.")

@@ -40,6 +40,7 @@ usage() {
     echo '  build-assets              Rebuild assets into a new data/asset-build.* folder'
     echo '  check-ml                  Check LeRobot imports and CUDA'
     echo '  train act|groot [ARGS]     Forward training arguments to lerobot-train'
+    echo '  act train|infer [ARGS]     수업용 ACT 학습 / 저장한 ACT로 Isaac Sim 추론'
     echo '  status                    Show this project’s containers'
     echo '  stop                      Stop only this project’s simulation container'
     echo 'Recording: record / teleop --record. Local export: export-dataset. Hardware validation and policy evaluation remain separate.'
@@ -53,6 +54,9 @@ fi
 if [[ "$command_name" == classroom ]]; then
     (($# == 0)) || fail 'classroom takes no arguments.'
     exec /usr/bin/python3 -B "$project_dir/tools/classroom/main.py"
+fi
+if [[ "$command_name" == act ]]; then
+    exec /usr/bin/python3 -B -u "$project_dir/tools/act/launch.py" "$@"
 fi
 case "$command_name" in
     help|-h|--help) usage; exit 0 ;;
@@ -75,7 +79,7 @@ if [[ "${LEKIWI_DOCKER_SUDO:-0}" == 1 ]]; then
     else
         sudo -v || fail 'Could not obtain Docker sudo access.'
     fi
-    docker_cmd=(sudo --preserve-env=LEKIWI_UID,LEKIWI_GID,LEKIWI_DATA_DIR,LEKIWI_SIM_IMAGE,LEKIWI_LEROBOT_IMAGE,ACCEPT_EULA,DISPLAY,LEKIWI_XAUTH_FILE,LEKIWI_LEADER_PORT,LEKIWI_LEADER_GID,LEKIWI_TELEOP_STATE,LEKIWI_TELEOP_SESSION,LEKIWI_TELEOP_REMOTE,LEKIWI_ARM_SIGNS,LEKIWI_ARM_OFFSETS_DEG,LEKIWI_ARM_MAX_SPEED,LEKIWI_COURSE_LAYOUT,LEKIWI_CAMERA_CONFIG,LEKIWI_RECORDING,LEKIWI_RECORD_SECONDS,LEKIWI_RECORD_TASK,LEKIWI_DISPLAY_MODE,LEKIWI_STREAM_HOST docker)
+    docker_cmd=(sudo --preserve-env=LEKIWI_UID,LEKIWI_GID,LEKIWI_DATA_DIR,LEKIWI_SIM_IMAGE,LEKIWI_LEROBOT_IMAGE,ACCEPT_EULA,DISPLAY,LEKIWI_XAUTH_FILE,LEKIWI_LEADER_PORT,LEKIWI_LEADER_GID,LEKIWI_TELEOP_STATE,LEKIWI_TELEOP_SESSION,LEKIWI_TELEOP_REMOTE,LEKIWI_ARM_SIGNS,LEKIWI_ARM_OFFSETS_DEG,LEKIWI_ARM_MAX_SPEED,LEKIWI_COURSE_LAYOUT,LEKIWI_CAMERA_CONFIG,LEKIWI_RECORDING,LEKIWI_RECORD_SECONDS,LEKIWI_RECORD_TASK,LEKIWI_POLICY_DIR,LEKIWI_POLICY_SECONDS,LEKIWI_DISPLAY_MODE,LEKIWI_STREAM_HOST docker)
 fi
 compose=("${docker_cmd[@]}" compose --project-directory "$project_dir"
     --project-name "$project_name" -f "$project_dir/compose.yaml")

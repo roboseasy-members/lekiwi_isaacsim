@@ -96,23 +96,27 @@ python3 05_upload_dataset.py
 업로드 중단 후 원격 파일이 남았다면 새 저장소 이름으로 재시도합니다. 기존 원격 파일·태그는 자동 삭제하지 않습니다.
 업로드에만 인터넷이 필요하며 목록·변환·검사는 계속 오프라인으로 실행됩니다.
 
-## 로컬 학습과 추론으로 이어가기
+## ACT 학습과 추론으로 이어가기
 
-기존 학습 CLI에 로컬 데이터 경로를 지정합니다. 다음은 실행 형태 예시이며,
-우리 로봇에 맞춘 학습 설정과 학습→모델 재로딩→추론의 전체 검증은 아직 남아 있습니다.
+브라우저에서는 `06_train_act.py`에서 로컬 `dataset_name`과 새 `run_name`을 지정합니다.
+공개 업로드 데이터를 쓰려면 `dataset_name=None`, `repo_id='계정명/데이터셋명'`으로 설정합니다.
+`07_infer_act.py`에는 학습 때의 `run_name`을 지정합니다.
+
+서버 터미널의 같은 실행 경로:
 
 ```bash
-./lekiwi train act \
-  --dataset.repo_id=local/basket_01 \
-  --dataset.root=/data/datasets/basket_01 \
-  --output_dir=/data/outputs/act_basket_01 \
-  --batch_size=4 --steps=1000
+./lekiwi act train --dataset-name basket_01 --run-name act_basket_01 --steps 1000 --batch-size 4
+./lekiwi act infer --run-name act_basket_01 --seconds 30
 ```
 
-학습 출력은 `data/outputs`에 보관하고 이후 Isaac Sim에서 모델을 불러와 평가하는 흐름입니다.
-기존 데이터셋을 사용한다면 `recording_report.json`의 식별자를 `--dataset.repo_id`에 지정합니다.
-학습·추론 화면은 아직 준비 중입니다. 선택한 모델의 사전학습 가중치는 최초 다운로드가 필요할 수 있으므로,
-데이터셋을 로컬에서 사용하는 것과 전체 학습 과정이 완전히 오프라인인 것은 구분합니다.
+`data/outputs/<run_name>/train/checkpoints/last/pretrained_model`에 모델과 전·후처리기를 저장하고,
+`lekiwi_policy.json`에 상태·행동 순서, 단위, 두 카메라 설정을 저장합니다.
+기존 결과는 덮어쓰지 않습니다. 학습 중단 시에도 기록과 이미 저장한 체크포인트를 보존합니다.
+학습 진행·손실은 `lesson train logs`, 상태는 `lesson train status`, 중단은 `lesson train stop`입니다.
+
+추론은 R로 시작하고 Space로 정지합니다. F8 초기화와 연결 끊김 후에는 R로 다시 시작해야 합니다.
+학습은 짧은 실행까지만 검사하며, 추론의 실제 동작과 전체 흐름은 최종 리허설에서 확인합니다.
+자세한 학생 절차는 [프로젝트 README](../README.md#9-act-학습과-isaac-sim-추론)를 따릅니다.
 
 ## 검증 범위
 

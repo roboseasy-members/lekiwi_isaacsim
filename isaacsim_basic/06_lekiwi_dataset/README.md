@@ -246,6 +246,52 @@ LEKIWI_RECORD_SECONDS=120 ./lekiwi teleop \
 학습·추론 명령은 [프로젝트 README](../../README.md)와 [로컬 데이터 관리](../../docs/dataset-manager.md)를 따릅니다.
 짧은 저장 검사를 통과했다는 사실과 충분한 학습 데이터·정책 성능을 구분합니다.
 
+## 7. ACT 학습 스크립트
+
+[06_train_act.py](experiments/06_train_act.py) 상단에서 다음 값을 수정하고 저장합니다.
+
+```python
+dataset_name = 'lekiwi_lesson6_01'
+repo_id = None
+run_name = 'act_lesson6_01'
+steps = 1000
+batch_size = 4
+```
+
+공개 업로드 데이터를 쓰려면 `dataset_name=None`, `repo_id='계정명/데이터셋명'`으로 바꿉니다.
+실행 검사만 할 때는 `steps=1`, `batch_size=1`, `pretrained_backbone=False`를 사용합니다.
+본 학습에서는 `pretrained_backbone=True`로 시작하며 첫 다운로드에 인터넷 연결이 필요합니다.
+GPU·드라이버·CUDA 환경은 학습할 PC에 맞게 준비합니다.
+
+```bash
+lesson stop
+python3 06_train_act.py
+```
+
+다른 터미널의 `lesson train logs`에서 손실과 진행 상황을 확인합니다.
+`lesson train status`로 상태를 조회하고, 서버 학습을 중단하려면 `lesson train stop`을 사용합니다.
+Ctrl+C는 대기만 끝냅니다. 새 시도에는 새 `run_name`을 사용하며, 기존 결과를 지우지 않습니다.
+모델은 **ACT 학습 결과**의 `<run_name>/train/checkpoints/last/pretrained_model`에 저장됩니다.
+
+## 8. ACT 추론 스크립트 — 최종 리허설에서 동작 확인
+
+[07_infer_act.py](experiments/07_infer_act.py)의 `run_name`을 학습 때와 같은 이름으로 저장합니다.
+`checkpoint='last'`는 마지막 저장 모델, `seconds=30`은 시작 후 최대 시뮬레이션 시간입니다.
+
+```bash
+python3 07_infer_act.py
+lesson status
+```
+
+READY가 되면 WebRTC 화면에 연결해 **R 시작 / Space 정지 / F8 초기화**를 사용합니다.
+연결이 끊기거나 장면이 초기화되면 추론은 정지하며, R을 다시 눌러 시작합니다.
+모델과 함께 저장한 정규화 통계·두 카메라·상태 및 행동 순서를 재사용합니다.
+종료는 `lesson stop`, 오류 확인은 `lesson logs`입니다.
+
+이번 단계에서 학습은 정상 실행 여부까지만 검사합니다. 추론의 실제 동작과 수집부터 추론까지의
+전체 과정은 학습·추론 스크립트가 준비된 뒤 최종 리허설에서 확인합니다.
+짧은 연습 기록이나 실행 검사 모델로 실제 과제 성공을 기대하지 않습니다.
+
 완료 기준: [기록지](worksheet.md)에 수집 시간·프레임 수·성공 여부·저장 경로·변환 결과를 남깁니다.
 
 [공식 자료](SOURCES.md) · [전체 목차](../README.md)

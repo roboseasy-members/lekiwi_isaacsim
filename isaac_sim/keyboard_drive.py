@@ -16,7 +16,7 @@ simulation_app = SimulationApp(
         "extra_args": ["--/exts/isaacsim.core.throttling/enable_async=false",
                        "--/app/hydraEngine/waitIdle=1",
                        "--/app/updateOrder/checkForHydraRenderComplete=1000"]
-            if os.environ.get("LEKIWI_RECORDING") == "1" else [],
+            if os.environ.get("LEKIWI_RECORDING") == "1" or os.environ.get("LEKIWI_POLICY_DIR") else [],
     })
 )
 stream_connection = enable_streaming(simulation_app)
@@ -56,6 +56,7 @@ TELEOP_STATE = os.environ.get("LEKIWI_TELEOP_STATE", "")
 TELEOP_SESSION = os.environ.get("LEKIWI_TELEOP_SESSION", "")
 COURSE_LAYOUT = os.environ.get("LEKIWI_COURSE_LAYOUT", "")
 RECORDING = os.environ.get("LEKIWI_RECORDING", "0") == "1"
+POLICY_DIR = os.environ.get("LEKIWI_POLICY_DIR", "")
 GROUND_Z = float(os.environ.get("LEKIWI_GROUND_Z", "-0.021"))
 SPAWN_Z = float(os.environ.get("LEKIWI_SPAWN_Z", "0.055"))
 LINEAR_SPEED = float(os.environ.get("LEKIWI_LINEAR_SPEED", "0.25"))
@@ -407,10 +408,12 @@ def _set_camera(position, yaw):
 
 
 def main():
+    if POLICY_DIR and (RECORDING or TELEOP_STATE):
+        raise ValueError("ACT 추론은 리더 입력·기록 실행과 함께 시작할 수 없습니다.")
     print(f"LEKIWI_DRIVE opening_stage={USD_PATH}", flush=True)
     world = World(
         physics_dt=PHYSICS_DT,
-        rendering_dt=1.0 / (30.0 if RECORDING else 60.0),
+        rendering_dt=1.0 / (30.0 if RECORDING or POLICY_DIR else 60.0),
         stage_units_in_meters=1.0,
     )
     robot = world.scene.add(
@@ -508,6 +511,8 @@ def main():
     base_speed = BaseSpeed(LINEAR_SPEED, ANGULAR_SPEED)
     arm_requested = False
     arm_control = None
+    policy_control = None
+    policy_cameras = None
     if TELEOP_STATE:
         if not TELEOP_SESSION:
             raise RuntimeError("SO101 teleop requires an isolated session ID")
@@ -651,6 +656,14 @@ def main():
                   float(-math.sin(heading) * linear[0] + math.cos(heading) * linear[1]), float(angular[2])]
         return state, [float(v) for v in (*pos, *quat)]
 
+    if POLICY_DIR:
+        from act_inference import InferenceCameras, PolicyControl
+        policy_cameras = InferenceCameras(robot_cameras, camera_config)
+        policy_control = PolicyControl(Path(POLICY_DIR) / 'policy.sock',
+                                       seconds=int(os.environ.get('LEKIWI_POLICY_SECONDS', '30')))
+        print('LEKIWI_ACT_INFERENCE ready: R 시작 / SPACE 정지 / F8 장면 초기화', flush=True)
+    last_policy_status = None
+
     position = settled_position
     orientation = settled_orientation
     last_command = None
@@ -716,6 +729,8 @@ def main():
                     arm_requested = False
                     if arm_control:
                         arm_control.armed = False
+                    if policy_control:
+                        policy_control.stop('STOPPED: 화면 연결 후 R로 시작')
             if split_view.task.done():
                 split_view.task.result()
             if reset_requested:
@@ -730,6 +745,8 @@ def main():
                     if new_layout:
                         directory = save_course(new_layout)
                     scene_reset.restore(new_layout)
+                    if policy_control:
+                        policy_control.stop('READY: 초기화 완료 / R로 시작')
                     if new_layout:
                         layout = new_layout
                         stage.GetPrimAtPath(COURSE_ROOT).SetCustomDataByKey("seed", str(layout["seed"]))
@@ -799,9 +816,23 @@ def main():
                 ccw = 0.0
 
             vx, vy, wz = base_speed.velocity(forward, left, ccw)
+            if policy_control:
+                action, advance = policy_control.update(recording_state()[0], world.current_time,
+                    lambda: policy_cameras.snapshot(world), start=arm_requested,
+                    stop=carb.input.KeyboardInput.SPACE in pressed, playing=world.is_playing())
+                arm_requested = False
+                if policy_control.status != last_policy_status:
+                    print(f'LEKIWI_ACT_INFERENCE {policy_control.status}', flush=True)
+                    last_policy_status = policy_control.status
+                if not advance:
+                    # 계산을 기다리는 동안 물리는 멈추되 키·창·WebRTC 이벤트는 처리합니다.
+                    world.render()
+                    time.sleep(0.001)
+                    continue
+                targets, (vx, vy, wz) = action[:6], action[6:]
             wheel_speeds = _wheel_speeds(vx, vy, wz)
             _apply_command(robot, vx, vy, wz)
-            if arm_control:
+            if arm_control or policy_control:
                 articulation_controller.apply_action(ArticulationAction(
                     joint_positions=np.asarray(targets, dtype=np.float32), joint_indices=arm_indices,
                 ))
@@ -860,6 +891,13 @@ def main():
 
     finally:
         pressed.clear()
+        if policy_control:
+            policy_control.close()
+        if policy_cameras:
+            try:
+                policy_cameras.close()
+            except Exception as exc:
+                carb.log_warn(f'Could not close ACT camera resources: {exc}')
         if recording_overlay:
             recording_overlay.close()
         if recorder:
@@ -869,7 +907,11 @@ def main():
                 carb.log_warn(f"Could not close recording resources: {exc}")
         try:
             _apply_command(robot, 0.0, 0.0, 0.0)
-            if arm_control:
+            if policy_control:
+                articulation_controller.apply_action(ArticulationAction(
+                    joint_positions=robot.get_joint_positions(joint_indices=arm_indices), joint_indices=arm_indices,
+                ))
+            elif arm_control:
                 articulation_controller.apply_action(ArticulationAction(
                     joint_positions=np.asarray(arm_control.targets, dtype=np.float32), joint_indices=arm_indices,
                 ))

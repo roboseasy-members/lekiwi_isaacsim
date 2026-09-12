@@ -25,6 +25,8 @@ tools/**
 !tools/export_dataset.py
 !tools/dataset_manager/
 !tools/dataset_manager/**
+!tools/act/
+!tools/act/**
 !README.md
 !docs/
 docs/**

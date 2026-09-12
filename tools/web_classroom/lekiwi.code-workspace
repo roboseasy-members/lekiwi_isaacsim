@@ -4,7 +4,8 @@
     { "name": "실행 안내", "path": "/workspace/docs" },
     { "name": "저장된 기초 실습 결과", "path": "/results/basic" },
     { "name": "LeKiwi 기록", "path": "/results/recordings" },
-    { "name": "LeRobot 데이터셋", "path": "/results/datasets" }
+    { "name": "LeRobot 데이터셋", "path": "/results/datasets" },
+    { "name": "ACT 학습 결과", "path": "/results/outputs" }
   ],
   "settings": {
     "workbench.startupEditor": "none",

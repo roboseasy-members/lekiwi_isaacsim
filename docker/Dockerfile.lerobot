@@ -26,7 +26,11 @@ COPY tools/README.md /opt/lekiwi/tools/README.md
 COPY tools/so101_leader.py /opt/lekiwi/tools/so101_leader.py
 COPY tools/export_dataset.py /opt/lekiwi/tools/export_dataset.py
 COPY tools/dataset_manager /opt/lekiwi/tools/dataset_manager
+COPY tools/act /opt/lekiwi/tools/act
 COPY isaac_sim/episode_data.py /opt/lekiwi/isaac_sim/episode_data.py
+COPY isaac_sim/policy_bridge.py /opt/lekiwi/isaac_sim/policy_bridge.py
+COPY isaac_sim/robot_cameras.py /opt/lekiwi/isaac_sim/robot_cameras.py
+COPY isaac_sim/assets/cameras /opt/lekiwi/isaac_sim/assets/cameras
 COPY isaac_sim/teleop_bridge.py /opt/lekiwi/isaac_sim/teleop_bridge.py
 COPY docker/lerobot-entrypoint.sh /opt/lekiwi/docker/lerobot-entrypoint.sh
 COPY README.md /opt/lekiwi/README.md
