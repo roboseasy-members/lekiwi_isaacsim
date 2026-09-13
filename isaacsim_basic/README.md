@@ -1,76 +1,76 @@
-# Isaac Sim Basic · Python으로 배우는 1~6편
+# Isaac Sim Basic · 환경 설정·직접 제작·Python 실습 0~6장
 
-객체 물리 → 관절 → 카메라 → 입력·조작 → 관절 기록 → LeKiwi 데이터셋 순서입니다.
-**Python 코드 읽기 → 실행 → 주석 교체 → 저장·재실행 → 결과 비교**로 수업합니다.
+환경 설정 → 객체 물리 → 관절 → 카메라 → 입력·조작 → 관절 기록 → LeKiwi 데이터셋 순서입니다.
+**처음 원격 수업을 시작한다면 [0장 환경 설정](00_env_setting/README.md)부터 진행합니다.**
+학생별 데스크탑·노트북을 Tailscale로 연결하고 영상·Play 조작을 확인한 뒤 1장으로 넘어갑니다.
+**화면에서 직접 제작 → 속성을 바꾸며 관찰 → 같은 구성을 Python으로 제작 → 두 결과 비교**로 수업합니다.
 Isaac Sim 안에 전용 Lesson 탭을 만들지 않습니다. 기본 Stage·Property·Viewport·Play/Stop을 사용합니다.
 
-객체·환경·물리 설정 API에는 줄별 한국어 설명과 단위를 적었습니다.
-각 장의 `experiments/` 파일에 기본 코드와 주석 처리된 다음 단계가 함께 있습니다.
+각 장의 **README 한 문서를 처음부터 끝까지** 읽습니다. 먼저 메뉴·속성·스크린샷을 따라 실험하고 저장합니다.
+API 이름·Python 파일·코드 실행과 수정은 각 장의 마지막 ‘같은 작업을 코드로 구현하기’ 절에서 다룹니다.
+기록지도 마우스 실습 → 코드 실습 → 두 결과 비교 순서로 작성합니다.
 
-## 교재와 실행
+## 교재 읽는 순서
 
-| 편 | 교재 | 시작 명령 | ZIP |
-|---|---|---|---|
-| 1 | [객체·중력·충돌·질량·마찰·반발](01_object_physics/README.md) | `./lekiwi basic --chapter 1` | [노션](01_object_physics/01_object_physics_notion.zip) |
-| 2 | [관절과 Drive](02_robot_joints/README.md) | `./lekiwi basic --chapter 2` | [노션](02_robot_joints/02_robot_joints_notion.zip) |
-| 3 | [Camera API와 LeKiwi TF](03_robot_cameras/README.md) | `./lekiwi basic --chapter 3` | [노션](03_robot_cameras/03_robot_cameras_notion.zip) |
-| 4 | [관절 입력과 teleop](04_teleoperation/README.md) | `./lekiwi basic --chapter 4` | [노션](04_teleoperation/04_teleoperation_notion.zip) |
-| 5 | [관절 JSON 기록·재생](05_data_recording/README.md) | `./lekiwi basic --chapter 5` | [노션](05_data_recording/05_data_recording_notion.zip) |
-| 6 | [LeKiwi RGB·상태·명령 수집](06_lekiwi_dataset/README.md) | `./lekiwi basic --chapter 6` | [노션](06_lekiwi_dataset/06_lekiwi_dataset_notion.zip) |
+| 장 | 본문 | 먼저 마우스로 하는 일 | 마지막 코드 실습 | 노션 ZIP |
+|---|---|---|---|---|
+| 0 | [환경 설정](00_env_setting/README.md) | Tailscale·영상·Play 접속 확인 | 환경 준비 단계 | [노션](00_env_setting/00_env_setting_notion.zip) |
+| 1 | [객체와 물리](01_object_physics/README.md) | 바닥·물체 생성, 중력·충돌·질량·마찰·반발 실험 | 같은 여섯 물리 실험 구현 | [노션](01_object_physics/01_object_physics_notion.zip) |
+| 2 | [관절과 모터](02_robot_joints/README.md) | 받침·팔·관절·Drive 제작, 목표 각도 비교 | 같은 모형과 응답 구현 | [노션](02_robot_joints/02_robot_joints_notion.zip) |
+| 3 | [카메라와 시점](03_robot_cameras/README.md) | Camera 생성, 렌즈·자세·부모 변경 | 같은 카메라와 LeKiwi 좌표 이해 | [노션](03_robot_cameras/03_robot_cameras_notion.zip) |
+| 4 | [관절 조작과 입력](04_teleoperation/README.md) | 저장한 관절 USD에서 목표 입력·Play | 본인 USD에 키보드 제어 연결, LeKiwi·리더 확장 | [노션](04_teleoperation/04_teleoperation_notion.zip) |
+| 5 | [장면 저장과 움직임 기록](05_data_recording/README.md) | 관절 확인·직접 조작·USD 저장 | 본인 USD의 JSON 기록·재생 | [노션](05_data_recording/05_data_recording_notion.zip) |
+| 6 | [LeKiwi 데이터 수집](06_lekiwi_dataset/README.md) | 로봇 자산·큐브·바구니·관찰 카메라 구성 | 준비된 환경의 RGB·상태·명령 수집·변환·ACT | [노션](06_lekiwi_dataset/06_lekiwi_dataset_notion.zip) |
 
-각 편에는 README.md, worksheet.md, SOURCES.md, experiments/*.py, images/, 노션 ZIP이 있습니다.
-5편은 에피소드 구조를 배우는 한 관절 예제입니다. 본격적인 LeKiwi 데이터 수집·변환은 6편에서 진행합니다.
-실물 리더는 4·6편의 선택 실습에서만 필요합니다.
+1~6장에는 본문 README, 기록지 worksheet, 출처 SOURCES, 학생 Python, 실제 화면과 노션 ZIP이 있습니다.
+기존 `gui.md` 링크는 통합된 본문으로 안내합니다. 별도 직접 제작 문서를 먼저 찾아갈 필요가 없습니다.
+실물 리더는 4·6장의 선택 실습에서만 필요합니다.
 
-## 설치 후 처음 실행하기
+## 첫 실습은 빈 편집 화면에서 시작하기
 
-원격 수업에서는 [브라우저 편집기 안내](../docs/browser-classroom.md)에 따라 같은 Python 파일을 수정합니다.
-브라우저 터미널의 `lesson run 1`은 아래 `./lekiwi basic --chapter 1`에 해당하며,
-저장 후 `lesson stop` → `lesson run 1`로 다시 실행합니다. 화면은 WebRTC에서 확인합니다.
-
-프로젝트 [설치 순서](../README.md)를 마친 Ubuntu PC에서 저장소 루트의 터미널을 사용합니다.
+원격 수업은 [0장](00_env_setting/README.md)을 마친 뒤 브라우저 터미널에서 확인용 실습을 종료합니다.
 
 ```bash
-export ACCEPT_EULA=Y
-./lekiwi setup sim
-./lekiwi basic --chapter 1
+lesson stop
+lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_empty_stage.py
 ```
 
-이 개편을 받아 처음 실행할 때는 런타임 이미지 빌드가 필요합니다.
-이후 학생 Python 파일만 수정할 때는 저장 후 같은 명령을 실행하면 됩니다. 해당 폴더가 Docker에 읽기 전용으로 연결됩니다.
+화면은 WebRTC 클라이언트에서 조작합니다. 이 명령은 빈 편집 화면을 열며 객체는 [1장 본문](01_object_physics/README.md)에서 직접 만듭니다.
 
-구체적인 파일을 지정할 수도 있습니다.
+데스크탑에서 직접 수업하는 경우에는 프로젝트 설치를 마친 뒤 저장소 루트에서 다음을 실행합니다.
 
 ```bash
-./lekiwi basic --script 01_object_physics/experiments/01_no_gravity.py
+./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-1장 비교 파일은 `--experiment 1`부터 `--experiment 6`까지입니다. **실험 번호와 교육 장 번호는 별개**입니다.
-이전 `--lesson joints`, `--lesson recording`은 각각 2·5장 새 학생 파일로 연결됩니다.
-빈 장면과 바구니 보충 실습은 `--lesson blank`, `--lesson basket`입니다.
-선택용 `./lekiwi classroom`은 같은 명령을 여는 외부 실행기이며 수업은 터미널·소스 편집을 기준으로 합니다.
+일반 Isaac Sim 5.1 설치에서는 앱을 열고 `File > New`로 시작할 수 있습니다.
+1장에서 만든 `base_scene.usda`는 2·3·6장의 시작 장면으로, 2장의 `my_joint.usda`는 4·5장의 관절 모형으로 재사용합니다.
+새 실험을 시작할 때는 `Save As`로 새 이름을 사용해 기준 파일을 보관합니다.
 
-## 코드 수정과 기본 UI
+## 장 마지막의 코드 실습 실행 참고
 
-1. 편집기에서 해당 Python 파일을 엽니다.
-2. 기본 실행의 결과를 예측합니다.
-3. 실행하여 기본 Stage/Property에서 값과 객체를 확인합니다.
-4. Isaac Sim 창을 닫고 실행 종료를 기다립니다.
-5. 지정된 기본 줄을 주석 처리하고 다음 줄을 해제합니다. 들여쓰기를 유지하고 파일을 저장합니다.
-6. 같은 명령으로 다시 실행합니다.
+아래 명령은 각 장의 마우스 실습과 저장을 마친 뒤 사용합니다.
 
-1~3장 기본 예제는 정지 상태로 열려 표준 Play를 누릅니다.
-4장은 가상 관절 입력을 즉시 받으며 J/L/K로 목표를 보냅니다. 5장은 3초 기록 후 멈춥니다.
-6장은 LeKiwi를 계속 시뮬레이션하며 F5/F6/F7/F9로 기록을 관리합니다.
+| 장 | 원격 수업 — 브라우저 터미널 | 데스크탑 — 저장소 루트 터미널 |
+|---|---|---|
+| 1 | `lesson run 1` | `./lekiwi basic --chapter 1` |
+| 2 | `lesson run 2` | `./lekiwi basic --chapter 2` |
+| 3 | `lesson run 3` | `./lekiwi basic --chapter 3` |
+| 4 | `lesson run 4` | `./lekiwi basic --chapter 4` |
+| 5 | `lesson run 5` | `./lekiwi basic --chapter 5` |
+| 6 | `lesson run 6` | `./lekiwi basic --chapter 6` |
 
-| 상황 | 반복 방법 |
-|---|---|
-| 1~3장 같은 설정 재실험 | 기본 Stop → Play |
-| Python 설정 수정 | 창 닫기 → 저장 → 같은 명령 재실행 |
-| LeKiwi 큐브를 다시 배치 | Viewport에서 F8. 기록 중에는 저장·폐기부터 완료 |
-| 5장 추가 기록·재생 | 학생 파일에서 record/replay 호출을 선택하고 재실행 |
+1장 비교 파일은 `--experiment 1`부터 `--experiment 6`입니다. 실험 번호와 장 번호는 다릅니다.
+Python을 수정할 때는 실행 종료 → 코드 저장 → 같은 명령 재실행 순서로 진행합니다.
+원격 실행 종료는 `lesson stop`, 데스크탑은 Isaac Sim 창 닫기입니다. 저장·폐기 작업을 마치고 종료합니다.
 
-LeKiwi의 키보드·기록 단축키는 프로젝트 코드가 등록합니다. 기본 Isaac Sim 단축키와 구분해 교재에 표시했습니다.
+학생 파일의 객체·물리 설정 줄에는 한국어 설명과 단위, 주석 처리된 비교 예제가 있습니다.
+호스트에서 저장한 파일은 다음 실행에 반영되며, 코드만 수정할 때 Docker 이미지 재빌드는 필요 없습니다.
+GUI에서 USD를 저장해도 Python 소스가 자동 수정되지는 않습니다.
+
+1~3장 코드는 정지 상태로 열리므로 Play를 누릅니다. 4장은 J/L/K 입력을 받고, 5장은 자동으로 3초간 기록합니다.
+6장은 F5/F6/F7/F9로 기록을 관리합니다. 이런 키는 프로젝트가 등록한 기능이며 기본 Isaac Sim의 장면 저장과 구분합니다.
+6장 기록기는 직접 저장한 임의 USD를 자동으로 읽지 않습니다. 준비된 전체 코스와 동기화된 두 카메라 환경을 사용합니다.
 
 ## 일반 Isaac Sim 설치에서 사용하기
 
@@ -84,13 +84,13 @@ Docker의 `/data`는 호스트 `data`에 연결됩니다. 컨테이너 종료 �
 
 ## 노션 가져오기
 
-장별 ZIP은 HTML과 실제 PNG를 포함합니다. 노션 `Import > HTML`에서 가져옵니다.
+장별 ZIP을 노션 `Import > HTML`에서 가져온 뒤 **README 페이지**부터 읽습니다. 0장은 교재·기록지·출처 HTML, 1~6장은 HTML과 실제 PNG를 포함합니다.
 Markdown은 GitHub 또는 편집기의 Markdown Preview에서 읽습니다. 다른 장·Python 파일은 저장소 링크로 확인합니다.
 원본 스크린샷 위에 빨간 사각형을 추가하며 실제 버튼이나 화면 내용을 합성하지 않습니다.
 
 ## 수업 시간 계획
 
-코드 읽기·수정·비교를 포함한 **계획용 추정**입니다. 실제 반의 Python 경험과 GPU에 따라 달라집니다.
+아래는 기존 코드 실습 기준의 **계획용 추정**입니다. 새로 추가한 직접 제작·사진 기록 시간은 포함하지 않으며 리허설에서 다시 측정합니다.
 
 | 편 | 예상 |
 |---|---|

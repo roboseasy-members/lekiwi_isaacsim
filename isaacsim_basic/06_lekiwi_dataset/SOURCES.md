@@ -44,3 +44,45 @@
 학생 설정·작업 수명 관리·Isaac Sim 카메라와 제어 연결은 이 프로젝트에 맞춰 작성했습니다.
 모델 계산 동안 물리 시간을 멈추어 수집과 동일한 시뮬레이션 30 FPS 행동 간격을 유지하는 구조입니다.
 실제 추론 동작과 전체 리허설은 아직 검증하지 않았습니다.
+
+## 2026-09-13 · 직접 제작과 코드 연결 보강
+
+`gui.md`에 생성 메뉴·객체 경로·입력값·코드 대응·USD 저장 순서를 추가했습니다.
+기존 스크린샷은 실제 5.1 촬영본에서 필요한 메뉴·속성 화면을 재사용했습니다. 사진의 장면·수치가 이번 실습과 다르면 본문에서 구분합니다.
+삭제된 전용 Lesson·Record 버튼을 현재의 기본 기능으로 안내하지 않습니다.
+화면 제작의 공통 환경·물리·관절·카메라 안내는 아래 5.1 공식 문서와 교재 코드를 대조했습니다.
+
+- [Stage·PhysicsScene·조명 준비](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/robot_setup_tutorials/tutorial_intro_environment_setup.html)
+- [물리 속성·재질 연결·관절](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/physics/simulation_fundamentals.html)
+- [GUI에서 관절과 Drive 만들기](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/robot_setup_tutorials/tutorial_gui_simple_robot.html)
+- [GUI에서 Camera 만들기](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/robot_setup_tutorials/tutorial_gui_camera_sensors.html)
+
+실제 확인 범위와 미확인 항목은 [전체 검증 기록](../VALIDATION.md)에 구분해 남깁니다.
+
+
+## 2026-09-13 · 본문을 마우스 실습 우선 순서로 통합
+
+직접 제작 안내를 README 앞부분에 통합하고 API·Python 수정·실행 설명은 마지막 절로 옮겼습니다.
+실습 중간의 저장 시점과 기준값 복원을 명시하고, 기록지도 같은 순서로 구성했습니다.
+`gui.md`는 이전 링크를 위한 본문 안내로 유지합니다. 아래 사진 재사용은 새 촬영이나 전체 GUI 리허설을 뜻하지 않습니다.
+
+- `images/manual-create-cube.png`: [01_object_physics/images/11-create-cube.png](../01_object_physics/images/11-create-cube.png)를 동일 바이트로 복사했습니다. 단일 장 노션 ZIP 안에서도 필요한 속성 화면을 볼 수 있도록 포함합니다.
+
+- `images/manual-basket-colliders.png`: [01_object_physics/images/08-basket-colliders.png](../01_object_physics/images/08-basket-colliders.png)를 동일 바이트로 복사했습니다. 단일 장 노션 ZIP 안에서도 필요한 속성 화면을 볼 수 있도록 포함합니다.
+
+- `images/manual-camera-properties.png`: [03_robot_cameras/images/04-camera-properties.png](../03_robot_cameras/images/04-camera-properties.png)를 동일 바이트로 복사했습니다. 단일 장 노션 ZIP 안에서도 필요한 속성 화면을 볼 수 있도록 포함합니다.
+
+- 고정 관찰 카메라의 `Camera > Create from View`는 [NVIDIA 5.1 카메라 안내](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/robot_setup_tutorials/tutorial_gui_camera_sensors.html)의 메뉴를 사용합니다. 이번 변경에서는 해당 메뉴를 새로 촬영하지 않았습니다.
+
+
+## 2026-09-13 · 누락된 빨간 박스 보완
+
+본문에서 클릭·입력·확인할 대상을 실제 화면과 대조해 빨간 테두리로 표시했습니다.
+`images/annotations.json`에 좌표와 설명을 기록하고 기존 SVG 생성기로 원본 PNG를 그대로 포함했습니다.
+본문용 PNG는 SVG를 렌더링한 표시본이며, `images/screenshots/`의 원본과 구분합니다.
+아래 SHA256은 원본 기준입니다. 이 작업은 재촬영이 아니며 화면의 메뉴·숫자는 변경하지 않았습니다.
+
+| 원본 캡처 | SHA256 |
+|---|---|
+| `images/screenshots/10-recording-status.png` | `b375207ac73a3e90e702e8aef531f4dee57d8abb404911d214299ef08190a318` |
+| `images/screenshots/11-browser-dataset.png` | `0b592725873832dce63cb52ff55d371947d05f40df5605c833fa6a0e928620d3` |

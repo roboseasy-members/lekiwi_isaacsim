@@ -1,7 +1,7 @@
 # LeKiwi Isaac Sim · 설치부터 로컬 데이터 수집까지
 
-학생은 **`develop` 브랜치를 받은 뒤 이 문서의 번호 순서대로 진행**합니다.
-현재 `feature/remote_classroom`에는 1~6장 코드 실습 개편과 원격 실습 기능이 추가돼 있습니다. 이 변경은 아직 `develop`에 병합되지 않았습니다.
+이 브랜치의 원격 수업은 **`feature/remote_classroom`을 받아 [0장 환경 설정](isaacsim_basic/00_env_setting/README.md)부터 진행**합니다.
+현재 브랜치에는 0장 환경 설정, 1~6장 마우스·코드 실습과 원격 실습 기능이 있습니다. 이 변경은 아직 `develop`에 병합되지 않았습니다.
 교육 흐름은 **환경 설정 → 기초 교육 → teleop → 로컬 데이터 수집·변환 → 로컬 학습 → 추론**입니다.
 데이터셋은 로컬에서 사용하거나, 브라우저의 별도 스크립트로 Hugging Face에 공개 업로드할 수 있습니다.
 
@@ -9,15 +9,15 @@
 실제 follower나 실제 LeKiwi 본체를 움직이는 기능은 없습니다.
 로봇 URDF·USD·mesh와 교재는 저장소에 포함되며, Isaac Sim·LeRobot은 Docker 안에서 실행합니다.
 
-연구실 데스크탑과 강의실 Ubuntu 노트북을 같은 Wi-Fi에서 사용하는 구성은
-[원격 실습 안내](docs/remote-classroom.md)를 따릅니다. 데스크탑이 시뮬레이션을 실행하고
+학생별 데스크탑과 Ubuntu 노트북을 서로 다른 망에서 연결할 때는
+[0장 Tailscale 설정](isaacsim_basic/00_env_setting/README.md)을 따릅니다. 같은 LAN에서 접속하는 방법도 [원격 실습 안내](docs/remote-classroom.md)에 있습니다. 데스크탑이 시뮬레이션을 실행하고
 노트북이 화면 수신·USB 리더암 입력을 담당합니다. 이 기능은 `feature/remote_classroom`에서 검증 중이며,
 아래의 한 PC 설치·실습 절차와 노트북 설치 절차를 구분합니다.
 
 노트북에서 직접 코드를 바꾸며 수업할 때는 [브라우저 편집기 안내](docs/browser-classroom.md)를 사용합니다.
 데스크탑의 `./lekiwi remote workspace --host 데스크탑IP`로 편집기를 켜고,
-학생은 브라우저에서 Python을 저장한 뒤 `lesson run 1` / `lesson stop`으로 실습을 실행·종료합니다.
-Isaac Sim 화면은 별도 WebRTC 클라이언트로 확인합니다.
+학생은 각 장 README를 읽고 WebRTC 화면에서 객체를 직접 만들며 실습합니다.
+장 마지막의 코드 실습에서는 브라우저에서 Python을 저장한 뒤 `lesson run 1` / `lesson stop`으로 실행·종료합니다.
 
 | 단계 | 이번 저장소에서 진행할 범위 |
 |---|---|
@@ -33,7 +33,7 @@ RAM·VRAM이 공식 최소보다 적어도 경고 후 설치를 시도하지만 
 
 <a id="2-저장소-받기"></a>
 
-## 1. 새 PC에서 develop 받기
+## 1. 새 PC에서 수업 브랜치 받기
 
 Ubuntu 데스크톱의 터미널을 엽니다. Git이 없다면 먼저 설치합니다.
 
@@ -45,12 +45,12 @@ sudo apt install git
 저장소를 받을 위치에서 실행합니다. 비공개 저장소라면 GitHub 접근 권한과 인증을 먼저 준비합니다.
 
 ```bash
-git clone --branch develop https://github.com/SJun99/lekiwi_isaacsim.git
+git clone --branch feature/remote_classroom https://github.com/SJun99/lekiwi_isaacsim.git
 cd lekiwi_isaacsim
 git branch --show-current
 ```
 
-**완료 기준:** 마지막 출력이 `develop`입니다. 이후 명령은 이 저장소 폴더에서 실행합니다.
+**완료 기준:** 마지막 출력이 `feature/remote_classroom`입니다. 이후 명령은 이 저장소 폴더에서 실행합니다.
 clone만으로 드라이버나 프로그램이 자동 설치되지는 않습니다. 다음 단계의 설치 도구를 실행하세요.
 
 <a id="1-처음-한-번-pc-준비"></a>
@@ -119,21 +119,25 @@ export ACCEPT_EULA=Y
 설치 이후 GPU 검사를 다시 할 때만 `./lekiwi install --verify`를 사용합니다.
 설치가 성공했다면 지금 `setup all`을 다시 실행할 필요는 없습니다.
 
-## 4. 기초 교육 1~6편 진행
+## 4. 환경 설정과 기초 교육 0~6장 진행
 
 [교재 전체 목차](isaacsim_basic/README.md)를 순서대로 따라갑니다.
-각 장의 `experiments/*.py`에서 실제 객체·물리·관절·카메라 API를 읽고, 기본 코드와 주석 처리된 다음 단계를 교체합니다.
-객체 생성·환경·물리 속성 줄에는 한국어 설명과 단위를 적었습니다. 전용 Lesson 탭 없이 기본 Stage·Property·Viewport를 사용합니다.
+각 장 README에서 **마우스로 객체 생성 → 속성 변경·Play 관찰 → 저장·정리 → 마지막에 코드 구현** 순서로 진행합니다.
+스크린샷과 입력값이 같은 본문에 있으며, 기본 Stage·Property·Viewport를 사용합니다.
+데스크탑의 첫 실습은 빈 편집 화면으로 시작합니다.
 
 ```bash
-./lekiwi basic --chapter 1
+./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-창을 닫고 코드를 저장한 뒤 같은 명령으로 재실행합니다. 학생 파일은 Docker에 연결되므로 코드 수정만으로 이미지 재빌드가 필요하지 않습니다.
-다음 장은 `--chapter 2`부터 `--chapter 6`까지입니다. 1장 비교 예제 번호는 `--experiment 1..6`이며 교육 장 번호와 구분합니다.
+원격 수업에서는 0장의 접속 확인 후 1장 README의 빈 편집 화면 실행 명령을 사용합니다.
+마지막 코드 절에서 `experiments/*.py`를 읽고 실행·수정합니다. 객체·물리·관절·카메라 설정 줄에는 한국어 설명과 단위가 있습니다.
+코드 실습 실행은 `./lekiwi basic --chapter 1`부터 `--chapter 6`, 원격은 `lesson run 1`부터 `lesson run 6`입니다.
+학생 파일을 저장한 뒤 재실행하면 반영되며, 코드 수정만으로 이미지 재빌드가 필요하지 않습니다.
 
 | 편 | 내용 |
 |---|---|
+| 0 | 학생별 Tailscale 설정·브라우저와 영상 접속·Play 확인·결과 제출·공용 데스크탑 반납 |
 | 1 | 객체·색상·중력·접촉·질량·마찰·반발 |
 | 2 | 관절 축·제한·Drive 목표와 응답 |
 | 3 | Camera API·화각·LeKiwi front/wrist TF |
@@ -141,9 +145,9 @@ export ACCEPT_EULA=Y
 | 5 | 한 관절 JSON 기록·저장된 명령 재생 |
 | 6 | LeKiwi 두 RGB·상태·명령 수집과 로컬 LeRobot 변환 |
 
-각 편은 MD·학생 Python·실습 기록지·실제 화면·노션 ZIP을 포함합니다.
+0장은 준비 교재·실습 기록지·출처·노션 ZIP, 1~6편은 MD·학생 Python·실습 기록지·실제 화면·노션 ZIP을 포함합니다.
 1~5장 API 예제는 일반 Isaac Sim 5.1 설치에서도 실행할 수 있습니다. 6장은 프로젝트 로봇·기록 모듈을 사용합니다.
-코드 실습과 리더 실습, 휴식·질문을 포함해 **2일 14~16시간**을 계획용 추정으로 잡습니다. 설치·본격 시연 확보·학습은 별도입니다.
+기존 코드·리더 실습 기준의 계획 추정은 **2일 14~16시간**입니다. 직접 제작 시간을 포함한 일정은 리허설에서 다시 측정합니다. 설치·본격 시연 확보·학습은 별도입니다.
 5장의 JSON은 에피소드 개념 예제이며 실제 로봇 학습 데이터는 6장에서 수집합니다.
 
 ## 5. SO101 리더 연결과 보정
@@ -375,14 +379,14 @@ sudo를 사용하는 긴 세션에서는 인증 만료로 기존 터미널의 �
 
 ## 업데이트와 브랜치
 
-학생은 `develop`을 사용합니다. `main`은 현재 초기 teleop 버전이며 최신 교육·설치 기능의 기준이 아닙니다.
-`feature/isaacsim_basic`은 작업 브랜치이고 PR로 `develop`에 통합합니다.
+현재 원격 수업은 `feature/remote_classroom`을 사용합니다. `test`는 별도 사전 점검용 브랜치입니다.
+`develop`으로의 통합과 본 수업 배포 브랜치 변경은 강사가 별도 안내합니다.
 
 나중에 업데이트할 때는 장비·시뮬레이터를 정상 종료하고 저장소에서 실행합니다.
 
 ```bash
 git status --short
-git pull --ff-only origin develop
+git pull --ff-only origin feature/remote_classroom
 ./lekiwi setup all
 ```
 
@@ -481,7 +485,7 @@ compose.yaml           # Docker 서비스와 공통 데이터 연결
 docker/                # 이미지 빌드·컨테이너 진입점
 isaac_sim/             # 로봇 실행·카메라·코스·GPU 검사
   assets/              # 배포용 URDF·USD·mesh·기본 카메라 TF
-isaacsim_basic/         # 1~6편 교재·이미지·ZIP·교육 전용 코드
+isaacsim_basic/         # 0장 환경 설정·1~6편 교재·이미지·ZIP·교육 전용 코드
 tools/
   host_setup/          # 호스트 설치·환경 검사
   dataset_manager/     # 로컬 시연 선택·변환·검사 화면과 CLI

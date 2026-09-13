@@ -82,6 +82,9 @@ def main():
         context = omni.usd.get_context()
         context.new_stage()  # 비어 있는 새 Stage를 만듭니다. 이전 실행 결과는 별도 저장 폴더에 남습니다.
         build_scene(context.get_stage())  # 현재 열린 Stage 객체를 가져와 그 안에 물체를 추가합니다.
+        # 직접 만든 2장 USD를 쓰려면 위 new_stage/build_scene 두 줄 대신 아래를 사용합니다.
+        # if not context.open_stage("/data/isaacsim_basic/my_joint.usda"):
+        #     raise RuntimeError("직접 만든 관절 USD를 열 수 없습니다. 저장 경로를 확인하세요.")
         world = World(physics_dt=1/60, rendering_dt=1/60, set_defaults=False,
                       physics_prim_path="/World/PhysicsScene")
         robot = world.scene.add(SingleArticulation(prim_path="/World/Hinge/FixedBase", name="hinge"))

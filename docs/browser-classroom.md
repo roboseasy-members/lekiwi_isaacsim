@@ -4,6 +4,10 @@
 편집기는 별도 **code-server Docker 컨테이너**입니다. VS Code 기반의 브라우저 편집기로, Microsoft 배포판과 확장 마켓은 다릅니다.
 Isaac Sim을 종료해도 편집기는 유지됩니다. 이 기능은 현재 `feature/remote_classroom`에서 제공합니다.
 
+처음 접속할 때는 [0장 환경 설정](../isaacsim_basic/00_env_setting/README.md)부터 진행합니다.
+학생마다 자기 계정으로 배정된 데스크탑·노트북을 연결하고, 같은 **데스크탑 Tailscale IPv4**를 실행기·SSH·영상 클라이언트에 사용합니다.
+이후에는 아래 절차로 수업을 시작합니다. 같은 LAN에서 사용할 때는 접속 가능한 데스크탑 LAN 주소를 사용할 수 있습니다.
+
 ## 1. 데스크탑에서 한 번 준비
 
 [설치 안내](../README.md)에 따라 Isaac Sim 설치·실행 검사를 완료합니다.
@@ -21,11 +25,11 @@ export ACCEPT_EULA=Y
 ## 2. 데스크탑에서 수업 편집기 시작
 
 기존 Isaac Sim 실습을 정상 종료합니다. AnyDesk로 연 데스크탑 터미널에서 다음을 실행합니다.
-아래 주소는 예시이므로 **실제 데스크탑 IP로 바꿉니다**.
+아래 주소는 예시이므로 **데스크탑에서 `tailscale ip -4`로 확인한 주소로 바꿉니다**.
 
 ```bash
 export ACCEPT_EULA=Y
-./lekiwi remote workspace --host 192.168.0.171
+./lekiwi remote workspace --host 100.80.10.20
 ```
 
 브라우저 로그인용 비밀번호를 12자 이상으로 정해 숨김 입력합니다.
@@ -43,11 +47,11 @@ sudo systemctl enable --now ssh
 ```
 
 노트북의 로컬 터미널에서 아래 명령을 실행합니다. `사용자명`은 **데스크탑 Ubuntu 로그인 계정**이고,
-주소는 실제 데스크탑 IP로 바꿉니다. 첫 접속에서는 서버 키를 확인하고 데스크탑 계정으로 인증합니다.
+주소는 편집기 실행에 사용한 데스크탑 Tailscale IP로 바꿉니다. 첫 접속에서는 서버 키를 확인하고 데스크탑 계정으로 인증합니다.
 
 ```bash
 ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
-  -L 127.0.0.1:8080:127.0.0.1:8080 사용자명@192.168.0.171
+  -L 127.0.0.1:8080:127.0.0.1:8080 사용자명@100.80.10.20
 ```
 
 이 명령이 오류 없이 대기하면 연결된 것입니다. **수업 동안 이 터미널을 유지합니다.**
@@ -63,18 +67,18 @@ ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
 왼쪽 `교재와 Python 실습`에서 다음 파일을 엽니다.
 
 ```text
-01_object_physics/experiments/01_no_gravity.py
+01_object_physics/README.md
 ```
 
 각 장 README는 파일을 연 뒤 `Ctrl+Shift+V`로 이미지가 포함된 미리보기를 볼 수 있습니다.
 메뉴 `Terminal → New Terminal`로 편집기 아래 터미널을 엽니다.
 
-## 4. 기본 코드를 실행하고 화면 확인
+## 4. 빈 편집 화면을 열고 마우스 실습 시작
 
 **브라우저 편집기 안의 터미널**에서 실행합니다.
 
 ```bash
-lesson run 1
+lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_empty_stage.py
 ```
 
 실행은 즉시 시작되지만 GPU 준비는 시간이 걸립니다. 상태를 확인합니다.
@@ -84,13 +88,16 @@ lesson status
 ```
 
 `READY`가 나오면 노트북의 [공식 Isaac Sim 5.1 WebRTC 클라이언트](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/download.html)를 열고,
-Server에 **같은 데스크탑 IP**를 입력해 Connect합니다. 1~3장 기본 예제는 화면의 표준 Play 버튼을 누릅니다.
+Server에 **같은 데스크탑 IP**를 입력해 Connect합니다. 빈 Stage와 격자가 보이면 1장 본문에서 바닥·물체를 직접 만드는 실습을 시작합니다.
 브라우저는 코드와 터미널, WebRTC 클라이언트는 Isaac Sim 화면을 담당합니다.
 
 오래 기다려도 준비되지 않거나 `FAILED`이면 `lesson logs`로 확인합니다.
 출력된 데스크탑의 `data/remote/session.*/sim.log`에 전체 Isaac Sim 로그가 있습니다.
 
-## 5. 코드 수정 → 저장 → 종료 → 재실행
+## 5. 장 마지막에서 코드 수정 → 저장 → 재실행
+
+각 장의 마우스 실습과 USD 저장을 마친 뒤 진행합니다. 1장에서는
+`01_object_physics/experiments/01_no_gravity.py`를 열고 본문 마지막의 코드 설명을 읽습니다.
 
 1. 예제의 파란색 기본 줄을 주석 처리하고 바로 아래 주황색 줄을 해제합니다.
 2. `Ctrl+S`로 저장합니다.
@@ -112,6 +119,8 @@ Isaac Sim 화면의 Play/Stop은 물리 시뮬레이션을 조절합니다. **Py
 기록 중인 경우 저장·폐기를 마친 뒤 `lesson stop`을 사용합니다.
 
 ## 6. 나머지 장과 직접 만든 파일
+
+각 장은 README의 마우스 실습부터 진행합니다. 아래 표는 마지막 코드 실습에서 사용할 실행 명령입니다.
 
 | 목적 | 브라우저 터미널 명령 |
 |---|---|
