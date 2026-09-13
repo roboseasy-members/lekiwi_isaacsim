@@ -1,4 +1,4 @@
-"""브라우저 터미널에서 python3 07_infer_act.py 실행. 실제 동작은 최종 리허설에서 확인합니다."""
+"""브라우저 터미널에서 python3 07_infer_act.py 실행. 준비 후 WebRTC 화면에서 R로 시작합니다."""
 import shutil
 import subprocess
 
