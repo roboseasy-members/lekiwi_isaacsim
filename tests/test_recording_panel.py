@@ -51,6 +51,7 @@ def panel(tmp_path, seconds):
     p.playing = True
     p.resume_frames = 0
     p.mode, p.error = 'READY', ''
+    p.interruption = ''
     p.writer = p.pending = p.last_saved = p.capture = None
     p.waiting = deque()
     p.directory, p.metadata, p.requests = tmp_path, {}, []
@@ -315,3 +316,73 @@ def test_zero_delay_rgb_is_kept_until_next_state_is_known(tmp_path):
     assert row["simulation_time"] == row["cameras"]["front"]["simulation_time"] == 2.0
     assert row["next_observation.state"] == [3]*9
     assert row["action"] == [2]*9 and images["front"] == "at_t"
+
+
+def test_connection_loss_finishes_existing_frames_and_blocks_success(tmp_path):
+    p = queued_panel(tmp_path)
+    p.requests = ['record']
+    p.interrupt('Leader input lost')
+    assert p.mode == 'FINISHING' and not p.requests and p.pending is None
+    assert len(p.waiting) == 2 and not p.writer.stopped
+    p.accept_capture({'front': 'first'}, stamps(2.0))
+    p.accept_capture({'front': 'second'}, stamps(2+1/30))
+    assert p.mode == 'UNSAVED' and p.writer.count == 2 and p.writer.stopped
+    p.handle_key('F9')
+    assert p.requests == []
+    p.handle_key('F7')
+    assert p.requests == ['save'] and not p.task_succeeded
+    p.writer.save = lambda success: setattr(p.writer, 'success', success)
+    p.before_step(NS(current_time=2.1, is_playing=lambda: True), [0]*9, [0]*9, [0]*7)
+    assert p.mode == 'SAVING' and p.writer.success is False
+    assert p.writer.count == 2 and p.pending is None
+
+
+def test_remote_recording_does_not_start_until_control_is_ready(tmp_path):
+    p = panel(tmp_path, 30)
+    p.requests = ['record']
+    p.before_step(NS(current_time=0, is_playing=lambda: True), [0]*9, [0]*9, [0]*7,
+                  control_ready=False)
+    assert p.mode == 'READY' and p.writer is None and not p.requests
+
+
+def test_connection_loss_does_not_change_an_already_completed_take(tmp_path):
+    p = panel(tmp_path, 30)
+    p.mode, p.task_succeeded = 'UNSAVED', True
+    p.interrupt('Video connection changed')
+    assert p.mode == 'UNSAVED' and not p.interruption and p.task_succeeded
+
+
+def test_interrupted_real_recording_saves_only_completed_frames(tmp_path):
+    import numpy as np
+    from episode_data import validate_episode
+    p = panel(tmp_path, 30)
+    p.metadata = {'camera_config': {'cameras': {
+        name: {'resolution': [16, 16]} for name in ('front', 'wrist')}},
+        'source': 'so101_leader_keyboard', 'course_layout': None}
+    p.snapshot = lambda world: (
+        {n: np.zeros((16, 16, 3), dtype=np.uint8) for n in ('front', 'wrist')},
+        stamps(world.current_time))
+    world = NS(current_time=2.0, is_playing=lambda: True)
+    p.handle_key('F5')
+    p.before_step(world, [0]*9, [.1]*9, [0, 0, .04, 1, 0, 0, 0])
+    try:
+        for i in range(3):
+            if i:
+                p.before_step(world, [i/100]*9, [.1]*9, [0, 0, .04, 1, 0, 0, 0])
+            world.current_time = 2+(i+1)/30
+            p.after_step(world, [(i+1)/100]*9)
+        p.interrupt('Leader input lost')
+        p.before_step(world, [.03]*9, [0]*9, [0, 0, .04, 1, 0, 0, 0], control_ready=False)
+        p.writer.stop_future.result(timeout=2)
+        p.finish_if_drained()
+        assert p.mode == 'UNSAVED' and p.writer.count == 3 and p.pending is None
+        p.handle_key('F7')
+        p.before_step(world, [.03]*9, [0]*9, [0, 0, .04, 1, 0, 0, 0])
+        p.writer.operation_future.result(timeout=2)
+        p.poll_io()
+        manifest, rows = validate_episode(p.last_saved)
+        assert p.mode == 'SAVED'
+        assert manifest['complete'] and manifest['success'] is False and manifest['frames'] == 3
+        assert len(rows) == 3 and rows[-1]['next_simulation_time'] == pytest.approx(2.1)
+    finally:
+        p.writer.close()

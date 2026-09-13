@@ -57,3 +57,23 @@ def test_ready_without_writer_and_user_pause():
     view = recording_view(p)
     assert view.timer.startswith("00:00.0")
     assert "Play" in view.hint
+
+
+def test_connection_wait_and_interrupted_take_have_distinct_instructions():
+    p = recorder('FINISHING', 90, interruption='Leader input lost')
+    view = recording_view(p, NS(armed=False, recovering=True))
+    assert 'Reconnecting' in view.arm and 'SPACE' in view.arm
+    assert 'Connection interrupted' in view.detail
+    assert 'Finishing' in view.hint
+    p.mode = 'UNSAVED'
+    view = recording_view(p, NS(armed=True, recovering=False))
+    assert 'Following' in view.arm and 'NOT SAVED' in view.title
+    assert 'F7' in view.hint and 'F10' in view.hint and 'F9' not in view.hint
+
+
+def test_remote_recording_start_hint_waits_for_arm_connection():
+    p = recorder('READY')
+    arm = NS(armed=False, remote=True, recovering=False)
+    assert 'R  Follow leader' in recording_view(p, arm).hint
+    arm.recovering = True
+    assert 'Wait for leader connection' in recording_view(p, arm).hint

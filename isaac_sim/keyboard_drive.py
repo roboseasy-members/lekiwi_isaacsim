@@ -508,6 +508,7 @@ def main():
                         camera_prim_path="/OmniverseKit_Persp")
 
     pressed = set()
+    blocked_keys = set()  # 복구 후 누른 채인 이동키의 자동 반복으로 다시 출발하지 않습니다.
     base_speed = BaseSpeed(LINEAR_SPEED, ANGULAR_SPEED)
     arm_requested = False
     arm_control = None
@@ -593,6 +594,12 @@ def main():
                 _select_camera(choices[(choices.index(camera_view) + 1) % len(choices)])
             return True
         if event.input not in CONTROL_KEYS:
+            return True
+        if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+            blocked_keys.discard(event.input)
+        elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
+            blocked_keys.discard(event.input)
+        elif event.input in blocked_keys:
             return True
         if event.type in (
             carb.input.KeyboardEventType.KEY_PRESS,
@@ -725,10 +732,13 @@ def main():
             if stream_connection:
                 changed = stream_connection.consume_reset()
                 if changed or not stream_connection.input_allowed:
+                    blocked_keys.update(pressed)
                     pressed.clear()
                     arm_requested = False
                     if arm_control:
-                        arm_control.armed = False
+                        arm_control.disarm()
+                    if recorder:
+                        recorder.interrupt("Video connection lost or changed")
                     if policy_control:
                         policy_control.stop('STOPPED: 화면 연결 후 R로 시작')
             if split_view.task.done():
@@ -738,6 +748,7 @@ def main():
                 if not reset_allowed(recorder):
                     print("LEKIWI_RESET blocked: F6으로 기록을 끝내고 F7/F9 저장 또는 F10 두 번 폐기 후 기다리세요.", flush=True)
                 else:
+                    blocked_keys.update(pressed)
                     pressed.clear()
                     arm_requested = False
                     _apply_command(robot, 0.0, 0.0, 0.0)
@@ -755,7 +766,7 @@ def main():
                             recorder.resume_frames = 3
                         print(f"LEKIWI_COURSE saved={directory} seed={layout['seed']} reset=True", flush=True)
                     if arm_control:
-                        arm_control.armed = False
+                        arm_control.disarm()
                         arm_control.targets = scene_reset.joints[arm_indices].tolist()
                         arm_control.goals = arm_control.targets[:]
                         arm_control.last_update = None
@@ -800,14 +811,21 @@ def main():
                 carb.input.KeyboardInput.E in pressed
             )
             if arm_control:
+                was_armed = arm_control.armed
+                manual_stop = carb.input.KeyboardInput.SPACE in pressed
                 targets = arm_control.update(
                     read_packet(TELEOP_STATE), time.monotonic(),
                     robot.get_joint_positions(joint_indices=arm_indices),
-                    arm=arm_requested, stop=carb.input.KeyboardInput.SPACE in pressed,
+                    arm=arm_requested, stop=manual_stop,
                 )
                 arm_requested = False
-                if not arm_control.armed:
+                if recorder and arm_control.remote and (
+                        not arm_control.input_valid or arm_control.recovering
+                        or (was_armed and not arm_control.armed and not manual_stop)):
+                    recorder.interrupt("Leader input lost")
+                if not arm_control.armed or arm_control.resumed:
                     # Require a fresh key press after watchdog/SPACE/recovery.
+                    blocked_keys.update(pressed)
                     pressed.clear()
                     forward = left = ccw = 0.0
             if carb.input.KeyboardInput.SPACE in pressed:
@@ -841,7 +859,8 @@ def main():
             if recorder:
                 state, pose = recording_state()
                 action = [float(v) for v in (targets if arm_control else ARM_HOME_POSITIONS)] + [vx, vy, wz]
-                recorder.before_step(world, state, action, pose)
+                recorder.before_step(world, state, action, pose,
+                                     control_ready=not arm_control or not arm_control.remote or arm_control.armed)
             world.step(render=True)
             if not simulation_app.is_running():
                 break
@@ -857,6 +876,7 @@ def main():
                     atomic_json(Path(TELEOP_STATE).with_name("sim.json"), {
                         "session": TELEOP_SESSION, "monotonic": time.monotonic(),
                         "armed": arm_control.armed, "status": arm_control.status,
+                        "recovering": arm_control.recovering,
                         "joint_names": list(ARM_JOINT_NAMES), "unit": "radians",
                         "targets": arm_control.targets,
                         "goals": arm_control.goals, "clipped": arm_control.clipped,

@@ -149,6 +149,9 @@ lesson run 6 --teleop
 리더 실습의 정확한 설치·안전 확인·연결 명령은 해당 문서의 4~5절을 따릅니다.
 USB 리더암은 화면을 받는 **노트북**에 연결합니다. 브라우저 편집기에서 USB 장치를 열지 않습니다.
 
+원격 조작이 늦거나 끊겼을 때는 [4장 복구 안내](../isaacsim_basic/04_teleoperation/README.md#47-실습-중-늦어지거나-끊기면)를 따릅니다.
+녹화 중 연결 문제가 생기면 해당 기록이 자동 중지되며 [6장 저장·재시작 안내](../isaacsim_basic/06_lekiwi_dataset/README.md#기록-중-연결이-끊기면)에 따라 처리합니다.
+
 기록 작업 설명은 `06_lekiwi_dataset/experiments/01_lekiwi_recording.py` 상단의
 `task_description`에서 수정합니다. `Ctrl+S`로 저장하고 위 명령으로 실행하면 서버의 Isaac Sim이
 수정한 코드를 읽습니다. 이 설명은 저장한 에피소드의 `task`와 변환한 학습 데이터에 전달됩니다.

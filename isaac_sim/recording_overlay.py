@@ -44,9 +44,20 @@ def recording_view(recorder, arm_control=None):
     detail = f"{frames:,} frames  |  Episode time (simulation)"
     if recorder.mode == "ERROR":
         detail = recorder.error
+    if getattr(recorder, "interruption", "") and recorder.mode in {"FINISHING", "UNSAVED"}:
+        detail = "Connection interrupted - recording stopped"
+        if recorder.mode == "UNSAVED":
+            hint = "F7  Save practice   /   F10 twice  Discard"
     arm = ""
     if arm_control is not None:
         arm = "ARM  Following leader" if arm_control.armed else "ARM  Stopped - R to resume"
+        if getattr(arm_control, "recovering", False):
+            arm = "ARM  Reconnecting - SPACE cancels resume"
+        if (getattr(arm_control, "remote", False) and not arm_control.armed
+                and recorder.playing and recorder.mode in {"READY", "SAVED", "DISCARDED"}):
+            hint = "R  Follow leader, then F5  Start recording"
+            if getattr(arm_control, "recovering", False):
+                hint = "Wait for leader connection before F5"
     return RecordingView(title, f"{clock_text(frames)}  /  {limit}", detail, hint, tone, arm)
 
 

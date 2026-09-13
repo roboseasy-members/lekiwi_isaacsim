@@ -63,6 +63,7 @@ class RecordingPanel:
         self.mode = "WARMING UP"
         self.last_saved = None
         self.error = ""
+        self.interruption = ""
         self.duration_seconds = 30  # 기본: 최대 30초
         # self.duration_seconds = 120  # 다음 실습: 위 줄 대신 2분
         # self.duration_seconds = 0  # 다음 실습: 수동 F6 종료까지 무제한
@@ -101,7 +102,18 @@ class RecordingPanel:
             raise ValueError("Front and wrist render references differ")
         return images, stamps
 
-    def before_step(self, world, state, action, base_pose):
+    def interrupt(self, reason):
+        """통신 단절 전까지의 기록을 마감합니다. 저장은 사용자가 F7로 확인합니다."""
+        self.requests = [request for request in self.requests if request != "record"]
+        if self.mode in {"RECORDING", "FINISHING"}:
+            if not self.interruption:
+                print(f"LEKIWI_RECORD interrupted={reason}; F7 연습 저장 또는 F10 두 번 폐기", flush=True)
+            self.interruption = reason
+            self.task_succeeded = False
+            self.pending = None
+            self.mode = "FINISHING"
+
+    def before_step(self, world, state, action, base_pose, *, control_ready=True):
         # 같은 시각의 영상과 명령을 연결합니다. 지연 영상도 촬영 시각으로 검증합니다.
         self.capture = None
         try:
@@ -152,7 +164,7 @@ class RecordingPanel:
             self.finish_if_drained()
             for request in self.requests:
                 if request == "record" and self.mode in {"READY", "SAVED", "DISCARDED"}:
-                    if not self.playing or self.resume_frames:
+                    if not self.playing or self.resume_frames or not control_ready:
                         continue
                     if self.writer:
                         self.writer.close()  # 이 기록 작업자의 남은 작업과 자원을 정리합니다.
@@ -160,12 +172,13 @@ class RecordingPanel:
                         self.metadata, task=self.task_text, max_duration_seconds=self.duration_seconds))
                     self.waiting.clear()
                     self.mode, self.error = "RECORDING", ""
+                    self.interruption = ""
                     self.task_succeeded = False
                 elif request == "stop" and self.mode == "RECORDING":
                     self.mode = "FINISHING"
                     self.finish_if_drained()
                 elif request == "save" and self.mode == "UNSAVED":
-                    self.writer.save(self.task_succeeded)  # 사용자가 선택한 성공 여부로 검증·최종 저장을 요청합니다.
+                    self.writer.save(self.task_succeeded and not self.interruption)
                     self.mode = "SAVING"
             self.requests.clear()
             if self.mode == "RECORDING":
@@ -251,6 +264,9 @@ class RecordingPanel:
         elif key == "F6":
             self.requests.append("stop")
         elif key in {"F7", "F9"} and self.mode == "UNSAVED":
+            if key == "F9" and self.interruption:
+                print("LEKIWI_RECORD 통신으로 중단된 기록은 F7 연습 저장 또는 F10 두 번 폐기하세요.", flush=True)
+                return
             self.task_succeeded = key == "F9"
             self.requests.append("save")
         elif key == "F10" and self.mode in {"RECORDING", "FINISHING", "UNSAVED", "ERROR"}:

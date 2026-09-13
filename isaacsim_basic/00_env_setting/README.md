@@ -196,6 +196,10 @@ chmod u+x isaacsim-webrtc-streaming-client-1.1.5-linux-x64.AppImage
 오류가 있을 때만 사용합니다. [공식 클라이언트 안내](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/manual_livestream_clients.html)
 
 클라이언트의 **Server**에 2절의 **데스크탑 Tailscale 주소**를 입력하고 **Connect**합니다.
+
+![서버 Tailscale 주소와 Connect 버튼](images/01-client-server-address.png)
+
+사진의 주소는 검증 장비의 예시입니다. 본인에게 배정된 데스크탑 주소를 입력합니다.
 브라우저 편집기는 코드를, 별도의 WebRTC 클라이언트는 Isaac Sim 화면을 보여줍니다.
 
 | 주소를 넣는 곳 | 넣을 주소 |
@@ -270,6 +274,9 @@ Docker·NVIDIA 드라이버·다른 사람의 파일은 다음 수업에도 쓰�
 | 반납 전 연결이 끊겨 로그아웃 확인 불가 | 데스크탑 직접 접속 또는 AnyDesk로 현재 상태 확인 |
 
 방화벽을 전체 해제하거나 공유기 설정을 임의로 바꾸지 않습니다. 필요한 통신을 강사·관리자와 확인합니다.
-0장의 확인 범위는 두 PC의 접속·영상·Play/Stop입니다. 리더암 입력과 15쌍 동시 사용 성능은 별도 리허설에서 확인합니다.
+0장의 확인 범위는 두 PC의 접속·영상·Play/Stop입니다.
+수업 중 조작 지연·끊김 대처는 [4장 텔레옵](../04_teleoperation/README.md#47-실습-중-늦어지거나-끊기면),
+녹화 중단 후 저장·재시작은 [6장 데이터 취득](../06_lekiwi_dataset/README.md#기록-중-연결이-끊기면)에서 다룹니다.
+15쌍 동시 사용 성능은 별도 리허설에서 확인합니다.
 
 [실습 기록지](worksheet.md) · [공식 자료와 확인 범위](SOURCES.md) · [교재 목차](../README.md) · [다음: 1장](../01_object_physics/README.md)

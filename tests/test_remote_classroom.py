@@ -1,5 +1,6 @@
 """LAN 입력의 인증·시간 기준·단절 복구와 원격 실행 설정을 검사합니다. USB 미사용."""
 import importlib.util
+import errno
 import json
 from pathlib import Path
 import socket
@@ -99,6 +100,10 @@ def test_hello_without_new_samples_cannot_keep_input_alive(receiver):
     hello(receiver, 2)
     receiver.test_clock[0] += 0.11
     receiver.expire()
+    assert receiver.waiting
+    assert read_packet(receiver.state)["monotonic"] == 500.0
+    receiver.test_clock[0] = 502.0
+    hello(receiver, 3)
     assert read_packet(receiver.state)["connected"] is False
 
 
@@ -118,7 +123,7 @@ def test_remote_input_waits_up_to_500ms_without_disarming(receiver, gap):
     assert receiver.generation == 1
 
 
-def test_remote_input_stops_after_500ms_and_requires_r_after_recovery(receiver):
+def test_remote_input_stops_after_500ms_then_requires_three_new_samples(receiver):
     sample(receiver, hello(receiver))
     arm = ArmTeleop("test-session", remote=True)
     arm.update(read_packet(receiver.state), 500.0, arm.targets)
@@ -127,14 +132,20 @@ def test_remote_input_stops_after_500ms_and_requires_r_after_recovery(receiver):
     receiver.test_clock[0] = 500.501
     # 수신 루프가 늦어져도 시뮬레이터가 독립적으로 만료된 입력을 차단합니다.
     arm.update(read_packet(receiver.state), 500.501, held)
-    assert not arm.armed and arm.targets == held
+    assert not arm.armed and arm.recovering and arm.targets == held
     receiver.expire()
-    assert not read_packet(receiver.state)["connected"]
-    sample(receiver, hello(receiver, 2))
-    arm.update(read_packet(receiver.state), 500.501, held)
-    assert not arm.armed
-    arm.update(read_packet(receiver.state), 500.51, held, arm=True)
-    assert arm.armed
+    for request in (2, 3, 4):
+        receiver.test_clock[0] += 0.04
+        sample(receiver, hello(receiver, request))
+        arm.update(read_packet(receiver.state), receiver.test_clock[0], held)
+        assert arm.armed is (request == 4)
+        if request != 4:
+            for _ in range(4):
+                arm.update(read_packet(receiver.state), receiver.test_clock[0], held)
+                assert not arm.armed  # 같은 최신 표본을 여러 번 렌더링해도 세지 않습니다.
+    assert arm.resumed and not arm.recovering
+    assert arm.targets == held  # 재개 프레임은 실제 자세에서 시작하고 밀린 목표로 뛰지 않습니다.
+    assert receiver.generation == 1
 
 
 @pytest.mark.parametrize("dropped_kind", ["challenge", "accepted"])
@@ -176,18 +187,62 @@ def test_one_lost_reply_recovers_before_input_expires(receiver, monkeypatch, dro
     assert read_packet(receiver.state)["connected"]
 
 
+@pytest.mark.parametrize("reply_delay, accepted", [(0.075, True), (0.25, False)])
+def test_sender_waits_for_wan_reply_but_never_reads_expired_challenge(
+        receiver, monkeypatch, reply_delay, accepted):
+    """50ms보다 늦은 정상 응답은 수신하고, 전체 대기 한도를 넘으면 읽지 않습니다."""
+    import remote_teleop
+
+    class DelayedSocket:
+        def __init__(self, *args):
+            self.responses = []
+        def connect(self, address):
+            pass
+        def settimeout(self, timeout):
+            self.timeout = timeout
+        def send(self, data):
+            response = receiver.handle(data, PEER)
+            if response:
+                self.responses.append((receiver.test_clock[0] + reply_delay, response))
+        def recv(self, size):
+            end = receiver.test_clock[0] + self.timeout
+            if self.responses and self.responses[0][0] <= end:
+                receiver.test_clock[0], response = self.responses.pop(0)
+                return response
+            receiver.test_clock[0] = end
+            raise socket.timeout()
+
+    monkeypatch.setattr(remote_teleop.socket, "socket", DelayedSocket)
+    monkeypatch.setattr(remote_teleop.time, "monotonic", lambda: receiver.test_clock[0])
+    sender = Sender("127.0.0.1", KEY)
+    reads = []
+    def reader():
+        reads.append(receiver.test_clock[0])
+        return dict.fromkeys((n + ".pos" for n in JOINTS), 0.0)
+
+    started = receiver.test_clock[0]
+    assert sender.sample(reader) is accepted
+    assert len(reads) == int(accepted)
+    assert receiver.test_clock[0] - started <= MAX_AGE + 1e-9
+    if accepted:
+        assert receiver.accepted == 1
+        assert read_packet(receiver.state)["connected"]
+    else:
+        assert not receiver.state.exists()
+
+
 def test_reconnect_requires_rearming_even_if_simulator_missed_disconnect(receiver):
     sample(receiver, hello(receiver))
     arm = ArmTeleop("test-session", remote=True)
     arm.update(read_packet(receiver.state), 500.0, [0] * 6)
     arm.update(read_packet(receiver.state), 500.01, [0] * 6, arm=True)
     assert arm.armed
-    receiver.test_clock[0] += 0.501
+    receiver.test_clock[0] += 2.001
     sample(receiver, hello(receiver, 2))
     assert read_packet(receiver.state)["remote_peer"].endswith(":2")
-    arm.update(read_packet(receiver.state), 500.501, [0] * 6, arm=True)
+    arm.update(read_packet(receiver.state), 502.001, [0] * 6, arm=True)
     assert not arm.armed  # 연결 변경과 같은 프레임에 남아 있던 R도 무시합니다.
-    arm.update(read_packet(receiver.state), 500.51, [0] * 6, arm=True)
+    arm.update(read_packet(receiver.state), 502.01, [0] * 6, arm=True)
     assert arm.armed
 
 
@@ -268,7 +323,21 @@ def test_real_udp_roundtrip_and_timeout_without_usb(tmp_path):
             assert sender.sample(reader)
         assert len(reads) == 5 and receiver.accepted == 5
         assert read_packet(receiver.state)["connected"]
+        arm = ArmTeleop('loopback', remote=True)
+        arm.update(read_packet(receiver.state), time.monotonic(), arm.targets)
+        arm.update(read_packet(receiver.state), time.monotonic(), arm.targets, arm=True)
         deadline = time.monotonic() + 1
+        while not receiver.waiting and time.monotonic() < deadline:
+            time.sleep(0.02)
+        assert receiver.waiting
+        arm.update(read_packet(receiver.state), time.monotonic(), arm.targets)
+        assert arm.recovering and not arm.armed
+        for i in range(3):
+            assert sender.sample(reader)
+            arm.update(read_packet(receiver.state), time.monotonic(), arm.targets)
+            assert arm.armed is (i == 2)
+        assert arm.resumed
+        deadline = time.monotonic() + 3
         while read_packet(receiver.state)["connected"] and time.monotonic() < deadline:
             time.sleep(0.02)
         assert not read_packet(receiver.state)["connected"]
@@ -311,3 +380,135 @@ def test_cleanup_stops_only_owned_container(monkeypatch, owner, should_stop):
     monkeypatch.setattr(module.subprocess, "run", run)
     assert module.stop_owned(["docker"], "test-sim", "run", "ours") is should_stop
     assert any("stop" in args for args in calls) is should_stop
+
+
+def armed_remote(receiver):
+    sample(receiver, hello(receiver))
+    arm = ArmTeleop('test-session', remote=True)
+    arm.update(read_packet(receiver.state), 500.0, arm.targets)
+    arm.update(read_packet(receiver.state), 500.0, arm.targets, arm=True)
+    assert arm.armed
+    return arm
+
+
+@pytest.mark.parametrize('cancel', ['space', 'video_or_reset', 'bad_packet', 'deadline', 'new_sender'])
+def test_recovery_cancellation_never_rearms_by_itself(receiver, cancel):
+    arm = armed_remote(receiver)
+    receiver.test_clock[0] = 500.6
+    arm.update(read_packet(receiver.state), 500.6, arm.targets)
+    assert arm.recovering
+    if cancel == 'space':
+        arm.update(read_packet(receiver.state), 500.6, arm.targets, stop=True, arm=True)
+    elif cancel == 'video_or_reset':
+        arm.disarm()
+    elif cancel == 'bad_packet':
+        bad = read_packet(receiver.state)
+        bad['positions'] = {}
+        arm.update(bad, 500.6, arm.targets)
+    elif cancel == 'deadline':
+        receiver.test_clock[0] = 502.0
+        arm.update(read_packet(receiver.state), 502.0, arm.targets)
+    else:
+        receiver.stop()  # 송신기 재시작이나 명시적인 연결 종료는 새로운 세대입니다.
+    for request in range(2, 6):
+        receiver.test_clock[0] += 0.04
+        sample(receiver, hello(receiver, request))
+        arm.update(read_packet(receiver.state), receiver.test_clock[0], arm.targets)
+        assert not arm.armed and not arm.recovering
+    arm.update(read_packet(receiver.state), receiver.test_clock[0], arm.targets, arm=True)
+    assert arm.armed
+
+
+def test_receiver_remembers_short_gap_between_simulator_frames(receiver):
+    arm = armed_remote(receiver)
+    receiver.test_clock[0] = 500.6
+    # 수신 루프만 단절을 관측하고, 시뮬레이터에는 복구된 표본부터 보입니다.
+    sample(receiver, hello(receiver, 2))
+    assert receiver.generation == 1
+    arm.update(read_packet(receiver.state), 500.6, arm.targets)
+    assert arm.recovering and not arm.armed
+    for request in (3, 4):
+        receiver.test_clock[0] += 0.04
+        sample(receiver, hello(receiver, request))
+        arm.update(read_packet(receiver.state), receiver.test_clock[0], arm.targets)
+    assert arm.armed and arm.resumed
+
+
+def test_recovery_deadline_is_not_extended_by_partial_recovery(receiver):
+    arm = armed_remote(receiver)
+    receiver.test_clock[0] = 500.6
+    arm.update(read_packet(receiver.state), 500.6, arm.targets)
+    for request, now in [(2, 501.8), (3, 501.9), (4, 502.0)]:
+        receiver.test_clock[0] = now
+        sample(receiver, hello(receiver, request))
+        arm.update(read_packet(receiver.state), now, arm.targets)
+        assert not arm.armed
+    assert not arm.recovering
+
+
+@pytest.mark.parametrize('failure_at', ['hello', 'recv', 'sample', 'reader'])
+@pytest.mark.parametrize('error_number', [errno.ENETUNREACH, errno.EPERM, errno.EACCES, errno.ECONNREFUSED])
+def test_sender_retries_network_errors_but_propagates_reader_errors(receiver, monkeypatch, failure_at, error_number):
+    import remote_teleop
+
+    class InterruptedSocket:
+        fail = failure_at
+        def __init__(self, *args):
+            self.responses = []
+        def connect(self, endpoint):
+            pass
+        def settimeout(self, timeout):
+            pass
+        def send(self, data):
+            if decode(data, KEY)['kind'] == self.fail:
+                self.fail = None
+                raise OSError(error_number, 'test route unavailable')
+            response = receiver.handle(data, PEER)
+            if response:
+                self.responses.append(response)
+        def recv(self, size):
+            if self.fail == 'recv':
+                self.fail = None
+                raise OSError(error_number, 'test route unavailable')
+            return self.responses.pop(0)
+
+    monkeypatch.setattr(remote_teleop.socket, 'socket', InterruptedSocket)
+    sender = Sender('127.0.0.1', KEY)
+    reads = []
+    def reader():
+        reads.append(True)
+        if sender.sock.fail == 'reader':
+            raise OSError(error_number, 'test USB reader failure')
+        return dict.fromkeys((n + '.pos' for n in JOINTS), 0.0)
+    if failure_at == 'reader':
+        with pytest.raises(OSError, match='USB reader'):
+            sender.sample(reader)
+        assert len(reads) == 1
+    else:
+        assert not sender.sample(reader)
+        assert sender.sample(reader)  # 같은 송신기에서 다음 주기의 새 입력으로 복구합니다.
+        assert len(reads) == (2 if failure_at == 'sample' else 1)
+
+
+def test_another_gap_during_recovery_restarts_sample_count_not_deadline(receiver):
+    arm = armed_remote(receiver)
+    for request, now in [(2, 500.6), (3, 500.7)]:
+        receiver.test_clock[0] = now
+        sample(receiver, hello(receiver, request))
+        arm.update(read_packet(receiver.state), now, arm.targets)
+    assert arm.recovery_samples == 2
+    for request, now in [(4, 501.3), (5, 501.4), (6, 501.5)]:
+        receiver.test_clock[0] = now
+        sample(receiver, hello(receiver, request))
+        arm.update(read_packet(receiver.state), now, arm.targets)
+        assert arm.armed is (request == 6)
+        if request != 6:
+            assert arm.recovery_deadline == 502.0
+
+
+def test_manual_arm_stop_does_not_hide_later_input_loss_from_recorder(receiver):
+    arm = armed_remote(receiver)
+    arm.update(read_packet(receiver.state), 500.1, arm.targets, stop=True)
+    assert not arm.armed and arm.input_valid
+    arm.update(read_packet(receiver.state), 500.6, arm.targets)
+    assert not arm.armed and not arm.recovering and not arm.input_valid
