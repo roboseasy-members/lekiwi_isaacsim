@@ -22,6 +22,9 @@ lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_emp
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
+원격으로 새 실행을 시작했다면 `lesson status`가 READY가 될 때까지 기다린 뒤 WebRTC에서 같은 서버 주소로 다시 Connect합니다.
+영상 창을 클릭한 상태에서 마우스와 키보드를 조작합니다. 이후 코드 예제를 재실행할 때도 같은 순서로 접속합니다.
+
 일반 Isaac Sim 설치에서는 앱을 직접 엽니다. 이전 실습이 실행 중이면 저장을 마치고 종료한 뒤 시작합니다.
 
 `File > Open`으로 1장에서 저장한 `base_scene.usda`를 엽니다.

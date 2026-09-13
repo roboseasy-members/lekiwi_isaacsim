@@ -23,6 +23,9 @@ lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_emp
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
+원격으로 새 실행을 시작했다면 `lesson status`가 READY가 될 때까지 기다린 뒤 WebRTC에서 같은 서버 주소로 다시 Connect합니다.
+영상 창을 클릭한 상태에서 마우스와 키보드를 조작합니다. 이후 코드 예제를 재실행할 때도 같은 순서로 접속합니다.
+
 일반 Isaac Sim 설치에서는 앱을 직접 엽니다. 이전 실습이 실행 중이면 저장을 마치고 종료한 뒤 시작합니다.
 
 `File > Open`으로 1장의 `base_scene.usda`를 열고 `File > Save As`로 `my_lekiwi_scene.usda`를 만듭니다.
@@ -191,10 +194,9 @@ task_description = "빨간 큐브를 빨간 바구니에 넣기"
 `LEKIWI_RECORD_TASK` 환경변수에 비어 있지 않은 값을 지정하면 파일의 기본 설명보다 우선합니다.
 지정하지 않거나 비우면 코드의 `task_description`을 사용합니다.
 
-[브라우저 편집기 연결](../../docs/browser-classroom.md)을 마쳤다면 이 파일을 수정하고 `Ctrl+S`로 저장한 뒤,
-브라우저 터미널에서 `lesson run 6 --teleop`으로 서버의 기록 실습을 실행합니다.
-이미 실습이 켜져 있으면 기록의 저장·폐기를 마치고 `lesson stop` 후 재실행합니다.
-화면은 노트북의 WebRTC 클라이언트에서 서버 IP로 연결하고, USB 리더 입력은 노트북의 별도 연결 프로그램에서 보냅니다.
+[브라우저 편집기 연결](../../docs/browser-classroom.md)을 마쳤다면 이 파일을 수정하고 `Ctrl+S`로 저장합니다.
+이미 실습이 켜져 있으면 기록의 저장·폐기를 마치고 `lesson stop` 후 **`lesson run 6`**으로 재실행합니다.
+지금은 키보드만 사용하는 기록 검사입니다. 실제 리더 시연은 6.6절에서 `lesson run 6 --teleop`과 노트북 리더 프로그램을 연결합니다.
 
 ### 6.2. 기록·저장·폐기
 
@@ -318,7 +320,7 @@ rgba = np.asarray(rgb.get_data())
 먼저 저장을 완료하고, 브라우저의 새 터미널에서 다음을 실행합니다.
 
 ```bash
-cd 06_lekiwi_dataset/experiments
+cd /workspace/isaacsim_basic/06_lekiwi_dataset/experiments
 python3 02_dataset_list.py
 ```
 
@@ -396,8 +398,22 @@ python3 05_upload_dataset.py
 
 ### 6.6. 리더 시연과 로컬 학습으로 연결
 
-[4편](../04_teleoperation/README.md)의 장비 준비·보정을 끝낸 뒤 기존 시뮬레이터를 닫습니다.
-본인 USB 경로로 다음을 실행합니다. 실물 장비의 안전 확인은 한 단계씩 수행합니다.
+[4편](../04_teleoperation/README.md)의 장비 준비·보정을 끝낸 뒤 현재 기록을 저장하고 실습을 종료합니다.
+실물 장비의 안전 확인은 한 단계씩 수행합니다.
+
+**원격 수업:** `01_lekiwi_recording.py`의 기록 길이·작업 설명을 저장한 뒤 브라우저 터미널에서 실행합니다.
+
+```bash
+lesson stop
+lesson run 6 --teleop
+```
+
+접속 문구를 정하고 READY를 확인합니다. 노트북에서는 [리더 연결 절차](../../docs/remote-classroom.md#5-실제-리더암-연결)의
+`./lekiwi remote leader`에 같은 서버 Tailscale 주소·접속 문구·본인 USB 경로·기존 리더 ID를 사용합니다.
+같은 리더 송신기가 아직 실행 중이라면 중복 실행하지 않고 같은 접속 문구를 사용합니다.
+WebRTC에서 같은 서버 주소로 다시 Connect하고 팔·집게·베이스의 추종을 확인합니다.
+
+**데스크탑 직접 실행:** 본인 USB 경로로 다음을 실행합니다.
 
 ```bash
 LEKIWI_RECORD_SECONDS=120 ./lekiwi teleop \
@@ -407,12 +423,14 @@ LEKIWI_RECORD_SECONDS=120 ./lekiwi teleop \
 
 기록 옵션이 리더를 자동 활성화하지 않습니다. R 활성화 뒤 같은 F5/F6/F7/F9 키를 사용합니다.
 리더 시연을 충분히 모으고 변환이 PASS인 로컬 데이터셋으로 학습합니다. Hugging Face 업로드는 선택 단계입니다.
+리더 시연을 새로 취득했다면 **6.5절로 돌아가 새 에피소드 ID를 선택하고 새 이름으로 변환·검사**한 뒤 6.7절로 진행합니다.
 학습·추론 명령은 [프로젝트 README](../../README.md)와 [로컬 데이터 관리](../../docs/dataset-manager.md)를 따릅니다.
 짧은 저장 검사를 통과했다는 사실과 충분한 학습 데이터·정책 성능을 구분합니다.
 
 ### 6.7. ACT 학습 스크립트
 
 [06_train_act.py](experiments/06_train_act.py) 상단에서 다음 값을 수정하고 저장합니다.
+`dataset_name`은 6.5절에서 검사에 통과한 실제 이름으로 맞춥니다. 아래 이름은 예시이며 `run_name`은 기존에 없는 새 이름을 사용합니다.
 
 ```python
 dataset_name = 'lekiwi_lesson6_01'
@@ -426,8 +444,10 @@ batch_size = 4
 실행 검사만 할 때는 `steps=1`, `batch_size=1`, `pretrained_backbone=False`를 사용합니다.
 본 학습에서는 `pretrained_backbone=True`로 시작하며 첫 다운로드에 인터넷 연결이 필요합니다.
 GPU·드라이버·CUDA 환경은 학습할 PC에 맞게 준비합니다.
+아래는 **브라우저 편집기 터미널**에서 실행합니다. 새 터미널을 열었어도 같은 폴더로 이동합니다.
 
 ```bash
+cd /workspace/isaacsim_basic/06_lekiwi_dataset/experiments
 lesson stop
 python3 06_train_act.py
 ```
@@ -435,6 +455,8 @@ python3 06_train_act.py
 다른 터미널의 `lesson train logs`에서 손실과 진행 상황을 확인합니다.
 `lesson train status`로 상태를 조회하고, 서버 학습을 중단하려면 `lesson train stop`을 사용합니다.
 Ctrl+C는 대기만 끝냅니다. 새 시도에는 새 `run_name`을 사용하며, 기존 결과를 지우지 않습니다.
+**완료 기준:** `LEKIWI_TRAIN_JOB result=PASS`와 `lesson train status`의 `SUCCEEDED`를 확인합니다.
+실패·중단 상태이면 `lesson train logs`를 확인하고 추론으로 넘어가지 않습니다.
 모델은 **ACT 학습 결과**의 `<run_name>/train/checkpoints/last/pretrained_model`에 저장됩니다.
 
 ### 6.8. ACT 추론 스크립트
@@ -443,6 +465,7 @@ Ctrl+C는 대기만 끝냅니다. 새 시도에는 새 `run_name`을 사용하�
 `checkpoint='last'`는 마지막 저장 모델, `seconds=30`은 시작 후 최대 시뮬레이션 시간입니다.
 
 ```bash
+cd /workspace/isaacsim_basic/06_lekiwi_dataset/experiments
 python3 07_infer_act.py
 lesson status
 ```

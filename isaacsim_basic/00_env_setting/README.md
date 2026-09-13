@@ -121,7 +121,9 @@ export ACCEPT_EULA=Y
 ./lekiwi remote setup-editor
 ```
 
-이미 같은 브랜치의 이미지가 준비돼 있다면 매 수업마다 다시 빌드할 필요는 없습니다.
+이미 현재 코드로 이미지를 준비했다면 매 수업마다 다시 빌드할 필요는 없습니다.
+기존 수업 폴더의 코드를 갱신한 경우에는 [업데이트 절차](../../README.md#업데이트와-브랜치)를 따릅니다.
+이번 시작 오류 우회 변경은 `./lekiwi setup sim`으로 이미지를 다시 빌드해야 적용됩니다.
 새 터미널에서는 라이선스 동의와 필요한 Docker 권한 설정을 다시 적용합니다.
 편집기에 연결할 SSH 서버도 데스크탑에서 한 번 준비합니다.
 
@@ -147,6 +149,7 @@ export ACCEPT_EULA=Y
 
 노트북의 로컬 터미널에서 실행합니다. 마지막의 `데스크탑계정@데스크탑_Tailscale_IP`를 2절에서 기록한 값으로 바꿉니다.
 예를 들어 Ubuntu 계정이 `student`이고 주소가 `100.80.10.20`이면 `student@100.80.10.20`입니다.
+`ssh`가 없으면 노트북에서 `sudo apt update` 후 `sudo apt install openssh-client`로 준비합니다.
 
 ```bash
 ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
@@ -230,12 +233,24 @@ chmod u+x isaacsim-webrtc-streaming-client-1.1.5-linux-x64.AppImage
 
 ```bash
 lesson stop
-lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_empty_stage.py
 ```
 
-1장은 빈 편집 화면에서 시작합니다. [1장 본문](../01_object_physics/README.md)을 열고
+1장은 빈 편집 화면에서 시작합니다. [1장 본문](../01_object_physics/README.md)의 첫 실행 명령으로 화면을 열고
 마우스로 바닥·큐브·물리 속성을 직접 만든 뒤, 장 마지막에서 코드 구현을 확인합니다.
 **아래 5절은 수업을 모두 마치고 공용 데스크탑을 반납할 때 진행합니다.**
+
+### 다음 날 또는 Wi-Fi를 바꾼 뒤 다시 시작하기
+
+설치와 계정 등록을 마친 두 PC를 다시 사용할 때는 다음 순서로 진행합니다.
+
+1. 양쪽 인터넷 연결과 `tailscale status`를 확인하고, 데스크탑에서 `tailscale ip -4`로 주소를 다시 확인합니다.
+2. 노트북에서 그 주소로 `tailscale ping`을 확인합니다. 로그인 상태가 유지돼 있으면 `tailscale up`을 다시 실행할 필요는 없습니다.
+3. 3절의 **데스크탑 편집기 시작 → 노트북 SSH 터널 → 브라우저 → 확인용 장면 → WebRTC 연결**을 순서대로 진행합니다.
+4. 4절의 Play·Stop을 확인하고 `lesson stop` 후 1장으로 이동합니다.
+
+기존 편집기·터널이 실행 중이면 같은 것을 사용합니다. 연결이 끊겨 종료됐다면 해당 실행만 다시 시작합니다.
+이전에 저장한 USD·시연·학습 결과는 보존하고, 다시 실습할 때는 새 파일·데이터셋·학습 이름을 사용합니다.
+휴대폰 핫스팟으로 별도 회선을 검사할 때는 휴대폰의 Wi-Fi를 끄고 모바일 데이터를 사용합니다.
 
 ## 5. 공용 데스크탑 반납 시 개인 Tailscale 연결 해제
 

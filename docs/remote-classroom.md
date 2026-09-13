@@ -73,7 +73,38 @@ Isaac 라이선스에 동의한 데스크탑에서 `export ACCEPT_EULA=Y`를 설
 
 ## 4. 노트북에 리더암 환경 준비
 
-노트북에서 한 번 빌드합니다. Isaac Sim·NVIDIA 드라이버를 설치하는 `./lekiwi install`은 노트북용 명령이 아닙니다.
+아래는 **노트북의 로컬 터미널**에서 진행합니다. 0장에서는 데스크탑에만 저장소를 받았으므로,
+실제 리더암을 연결할 노트북에도 수업 코드를 준비합니다. Isaac Sim·NVIDIA 드라이버를 설치하는 `./lekiwi install`은 노트북용 명령이 아닙니다.
+
+Git·Python이 없다면 설치한 뒤 저장소를 받습니다. 같은 이름의 폴더가 있으면 새로 덮어쓰지 말고
+그 폴더에서 `git branch --show-current`와 `git status --short`를 먼저 확인합니다.
+
+```bash
+sudo apt update
+sudo apt install git python3
+git clone --branch feature/remote_classroom --single-branch https://github.com/SJun99/lekiwi_isaacsim.git lekiwi_classroom
+cd lekiwi_classroom
+git branch --show-current
+```
+
+브랜치가 `feature/remote_classroom`인지 확인합니다. 이후 노트북의 `./lekiwi remote ...`는 이 폴더에서 실행합니다.
+`docker --version`과 `docker info`로 Docker 설치·접근을 확인합니다.
+Docker가 **아직 설치되지 않은 Ubuntu 노트북**은 다음과 같이 Ubuntu 제공 패키지를 준비합니다.
+기존 Docker가 있으면 이 설치를 건너뜁니다. [Ubuntu 공식 Docker 설치 안내](https://ubuntu.com/server/docs/how-to/containers/docker-for-system-admins/)
+
+```bash
+sudo apt install docker.io
+sudo systemctl enable --now docker
+```
+
+`docker info`는 권한 오류지만 `sudo docker info`가 성공하면 다음을 설정합니다.
+새 터미널에서 리더를 실행할 때도 같은 설정이 필요합니다.
+
+```bash
+export LEKIWI_DOCKER_SUDO=1
+```
+
+Docker 실행을 확인한 뒤 CPU 리더 이미지를 한 번 빌드합니다.
 
 ```bash
 ./lekiwi remote setup-client
@@ -84,6 +115,11 @@ CPU 전용 PyTorch와 LeRobot 0.6.1을 격리한 이미지입니다. 최초 다�
 장치 경로는 노트북에서 `ls -l /dev/serial/by-id/`로 확인합니다.
 
 ## 5. 실제 리더암 연결
+
+서버가 리더 입력을 기다리고 있어야 합니다. 브라우저 수업은 저장·종료 후 **브라우저 터미널**에서
+`lesson run 6 --teleop`을 실행하고 12자 이상의 접속 문구를 정합니다. `lesson status`의 READY를 확인한 뒤
+WebRTC로 접속합니다. 데스크탑에서 직접 실행하는 방식은 위 3절을 사용하며, 두 방식을 동시에 실행하지 않습니다.
+이미 `lesson run 6 --teleop`으로 시작한 실습이 READY라면 그 실습과 접속 문구를 그대로 사용하고 실행 명령을 반복하지 않습니다.
 
 리더암이 맞는지 확인하고, 팔을 지지한 상태에서 전원을 바로 끌 수 있도록 준비합니다.
 아래 명령의 연결 확인 단계는 리더암 토크를 해제하므로 팔이 떨어지지 않도록 지지해야 합니다.
@@ -99,7 +135,8 @@ CPU 전용 PyTorch와 LeRobot 0.6.1을 격리한 이미지입니다. 최초 다�
 브라우저 편집기가 선택되어 있으면 R/W 등의 키가 Python 코드에 입력될 수 있습니다.
 SPACE는 정지, F8은 장면 초기화·큐브 재배치입니다. 저장하지 않은 기록이 있으면 초기화가 차단됩니다.
 F5 기록 시작, F6 종료, F7 연습 저장, F9 성공 저장, F10 두 번은 폐기입니다.
-기록 길이는 데스크탑에서 실행 전에 `export LEKIWI_RECORD_SECONDS=120` 등으로 설정합니다.
+브라우저 수업의 기록 길이는 `01_lekiwi_recording.py`의 `duration_seconds`를 수정하고 실습을 재실행합니다.
+데스크탑에서 직접 실행하는 경우에는 실행 전에 `export LEKIWI_RECORD_SECONDS=120` 등으로 설정합니다.
 
 - 보정 JSON: 노트북의 `data/calibration/so101_leader/`.
 - 데이터셋·시연·학습 결과: 데스크탑의 `data/`를 컨테이너 `/data`에 연결해 보존합니다.

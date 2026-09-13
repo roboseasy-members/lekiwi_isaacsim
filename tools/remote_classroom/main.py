@@ -78,6 +78,13 @@ def serve_bundle(host, path):
     return server
 
 
+def check_stream_port(host, port=49100):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        # 영상 종료 후 TIME_WAIT은 허용하되, 다른 서버의 LISTEN 소켓과는 공유하지 않습니다.
+        probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        probe.bind((host, port))
+
+
 def serve(args, *, control_key=None):
     host = address(args.host)
     if args.teleop and (args.chapter != 6 or args.script or args.experiment):
@@ -94,8 +101,7 @@ def serve(args, *, control_key=None):
     if active:
         raise RuntimeError("이미 실행 중인 실습을 정상 종료한 뒤 다시 실행하세요.")
     # 다른 체크아웃에서 열린 영상 서버도 덮어쓰지 않습니다.
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
-        probe.bind((host, 49100))
+    check_stream_port(host)
     key = (control_key if control_key is not None else connection_key()) if args.teleop else None
     if args.teleop and (not isinstance(key, bytes) or len(key) != 32):
         raise ValueError("리더 입력 인증 키가 올바르지 않습니다.")

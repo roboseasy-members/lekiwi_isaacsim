@@ -36,4 +36,9 @@ def test_loading_scene_function_does_not_start_isaac_and_reads_saved_changes(tmp
 def test_foundational_scripts_import_without_isaac_or_project_helpers(path):
     # 앱을 띄우거나 pxr/omni를 import하는 최상위 부작용도 이 환경에서 발견됩니다.
     values = runpy.run_path(str(path), run_name='student_test')
-    assert callable(values['build_scene']) and callable(values['main'])
+    assert callable(values['main'])
+    if path.name == '00_empty_stage.py':
+        # 마우스 실습은 학생이 장면을 만드므로 자동 생성 함수가 없습니다.
+        assert 'build_scene' not in values
+    else:
+        assert callable(values['build_scene'])

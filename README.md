@@ -318,8 +318,10 @@ GPU·드라이버·CUDA 준비와 실제 과제 성공률 평가는 별도입니
 현재 실습을 종료한 뒤 학습 설정 파일에서 데이터셋 이름, 새 `run_name`, 학습 횟수와 배치 크기를 수정합니다.
 처음 실행 검사에는 `steps=1`, `batch_size=1`, `pretrained_backbone=False`를 사용합니다.
 본 학습 기본값은 `pretrained_backbone=True`이며 최초 ResNet18 가중치 다운로드가 필요합니다.
+아래는 **브라우저 편집기 터미널**에서 실행합니다. 앞에서 변환한 데이터셋의 실제 이름을 설정 파일에 입력합니다.
 
 ```bash
+cd /workspace/isaacsim_basic/06_lekiwi_dataset/experiments
 lesson stop
 python3 06_train_act.py
 lesson train status
@@ -387,12 +389,20 @@ sudo를 사용하는 긴 세션에서는 인증 만료로 기존 터미널의 �
 
 ```bash
 git status --short
-git pull --ff-only origin feature/remote_classroom
-./lekiwi setup all
 ```
 
 로컬 수정이 있다면 먼저 보존하고 충돌을 확인하세요. 강제 초기화로 해결하지 않습니다.
-코드·교재는 이미지에 복사되므로 업데이트 후 재빌드해야 반영됩니다. 매 실행마다 빌드하지는 않습니다.
+작업 트리가 깨끗하고 현재 브랜치가 `feature/remote_classroom`인 경우 다음을 진행합니다.
+
+```bash
+git pull --ff-only origin feature/remote_classroom
+```
+
+**데스크탑:** 라이선스에 동의한 터미널에서 `export ACCEPT_EULA=Y`와 필요한 `LEKIWI_DOCKER_SUDO=1`을 설정하고,
+`./lekiwi setup all`과 `./lekiwi remote setup-editor`로 이미지를 갱신합니다.
+**리더암 노트북:** 같은 브랜치의 코드를 갱신한 뒤 `./lekiwi remote setup-client`로 CPU 리더 이미지만 갱신합니다.
+학생 Python 수정은 다음 실행에 반영됩니다. 공통 실행기·컨테이너 의존성 변경은 이미지 재빌드와 편집기 재시작이 필요합니다.
+매 실행마다 빌드하지는 않습니다.
 현재 프로젝트 이미지는 공개 레지스트리에 배포하지 않았으며 각 PC에서 빌드합니다.
 
 ## 참고 자료와 검증 범위

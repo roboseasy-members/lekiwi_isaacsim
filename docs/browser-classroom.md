@@ -22,6 +22,10 @@ export ACCEPT_EULA=Y
 `docker info`에 권한 오류가 나지만 `sudo docker info`는 성공한다면, 실행 전 같은 터미널에
 `export LEKIWI_DOCKER_SUDO=1`을 설정합니다. `./lekiwi` 전체를 sudo로 실행하지 않습니다.
 
+기존 PC에 이번 시작 오류 우회 변경을 적용할 때는 코드를 갱신한 뒤 `./lekiwi setup sim`으로
+시뮬레이션 이미지를 다시 빌드합니다. 수업 명령은 그대로 사용하며, 공통 실행기가 NVTX 설정을
+적용합니다. 적용 이유와 검증 범위는 [시작 오류 조사·검증 기록](act-rehearsal-20260913.md)을 참고하세요.
+
 ## 2. 데스크탑에서 수업 편집기 시작
 
 기존 Isaac Sim 실습을 정상 종료합니다. AnyDesk로 연 데스크탑 터미널에서 다음을 실행합니다.
@@ -126,17 +130,18 @@ Isaac Sim 화면의 Play/Stop은 물리 시뮬레이션을 조절합니다. **Py
 |---|---|
 | 2~6장 기본 파일 | `lesson run 2`부터 `lesson run 6` |
 | 1장 비교 예제 1~6 | `lesson run --experiment 2` 등 |
-| 직접 선택한 파일 | `lesson run --file 01_object_physics/experiments/01_no_gravity.py` |
+| 직접 선택한 파일 | `lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/01_no_gravity.py` |
 | 실행 상태 / 최근 로그 | `lesson status` / `lesson logs` |
 | 현재 실습 종료 | `lesson stop` |
 
 실행 가능한 파일은 각 장의 `experiments/` 바로 아래 `.py`입니다. 새 파일도 여기에 만듭니다.
-`--file`은 편집기 터미널의 현재 폴더를 기준으로 해석합니다. 위 예시는 기본 터미널 위치에서 실행합니다.
+`--file`에 상대 경로를 쓰면 편집기 터미널의 현재 폴더를 기준으로 해석합니다. 위 절대 경로 예시는 어느 폴더에서도 사용할 수 있습니다.
 표준 메뉴 `Terminal → Run Task → 현재 Python 실습 실행`으로 열어 둔 파일을 실행할 수도 있습니다.
 장 번호와 1장의 실험 번호는 다릅니다.
 
-편집기 컨테이너에 Isaac Sim Python은 없습니다. `python3 파일.py` 대신 `lesson run`을 사용해야
+편집기 컨테이너에 Isaac Sim Python은 없습니다. **장면을 만드는 Python 파일**은 `lesson run`으로 실행해야
 Isaac Sim 컨테이너의 `SimulationApp`, `pxr`, `omni`를 사용할 수 있습니다.
+6장의 목록·변환·검사·업로드·ACT 연결 파일인 02~07번은 아래 안내대로 `python3`로 실행합니다.
 
 6장에서 노트북의 실제 리더 입력을 받으려면 다음 명령으로 시작합니다.
 
@@ -182,7 +187,7 @@ F5에서 빨간 `REC`, F6 이후 `STOPPED / NOT SAVED`, F7/F9 저장 완료 후 
 **브라우저 VS Code의 새 터미널**은 `isaacsim_basic` 폴더에서 열립니다. 처음 한 번 6장 폴더로 이동하고 목록을 실행합니다.
 
 ```bash
-cd 06_lekiwi_dataset/experiments
+cd /workspace/isaacsim_basic/06_lekiwi_dataset/experiments
 python3 02_dataset_list.py
 ```
 
@@ -217,7 +222,7 @@ python3 03_convert_dataset.py
 python3 04_inspect_dataset.py
 ```
 
-이 네 파일은 **`python3`로 실행**합니다. `lesson run`이나 ‘현재 Python 실습 실행’ 작업은 Isaac 장면 파일용입니다.
+02~07번 연결 스크립트는 **`python3`로 실행**합니다. `lesson run`이나 ‘현재 Python 실습 실행’ 작업은 Isaac 장면 파일용입니다.
 스크립트 아래쪽의 `lesson` 호출 코드는 브라우저에서 서버로 설정을 보내는 연결 부분이며 수업 중 수정하지 않아도 됩니다.
 
 작업은 한 번에 하나만 실행됩니다. 다른 브라우저 터미널에서 아래 명령으로 상태와 진행 단계·오류를 확인할 수 있습니다.
@@ -260,9 +265,10 @@ python3 05_upload_dataset.py
 - 편집기 설정·실행 로그: 데스크탑 `data/web_classroom/`. Git에서 제외됩니다.
 - 변환 결과: 데스크탑 `data/datasets/`. 편집기의 **LeRobot 데이터셋**에서 읽을 수 있습니다.
 - 변환 작업 로그: 데스크탑 `data/web_classroom/datasets/dataset.*/`. `lesson dataset logs`로 확인합니다.
-- 학습 명령은 기존 데스크탑 절차를 사용합니다. 편집기 터미널에는 실습 실행과 데이터 목록·변환·검사·선택 업로드가 연결됩니다.
+- 학습·추론은 브라우저 터미널의 `python3 06_train_act.py`·`python3 07_infer_act.py`로 실행하며 서버 GPU에서 처리됩니다.
 
-수업 종료 시 기록을 저장하고 `lesson stop`을 실행합니다. 그 뒤 데스크탑에서 `remote workspace`를 실행한 터미널에 Ctrl+C를 보냅니다.
+수업 종료 시 기록을 저장하고 `lesson stop`을 실행합니다. `lesson dataset status`와 `lesson train status`에서 진행 중인 작업이 없는지 확인합니다.
+학습을 중단하려면 `lesson train stop`을 사용하고, 변환은 완료 결과를 확인합니다. 그 뒤 데스크탑에서 `remote workspace`를 실행한 터미널에 Ctrl+C를 보냅니다.
 이 실행기가 만든 편집기와 실습만 종료합니다. 노트북 SSH 터미널도 Ctrl+C로 종료합니다. 브라우저 창만 닫으면 서버는 계속 실행됩니다.
 
 편집기 접속에는 데스크탑의 SSH TCP 22가 필요합니다. 데스크탑의 8080을 공유기나 방화벽에 공개하지 않습니다. WebRTC·리더 입력 포트는 [원격 실습 안내](remote-classroom.md)를 따릅니다.

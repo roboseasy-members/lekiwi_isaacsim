@@ -23,6 +23,36 @@ CLIENT = "a" * 32
 PEER = ("127.0.0.1", 32001)
 
 
+def test_stream_port_check_allows_time_wait_after_video_disconnect():
+    from tools.remote_classroom.main import check_stream_port
+    with socket.socket() as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("127.0.0.1", 0))
+        port = listener.getsockname()[1]
+        listener.listen()
+        with socket.create_connection(("127.0.0.1", port)) as client:
+            peer, _ = listener.accept()
+            peer.close()  # 서버 쪽에 실제 TIME_WAIT 상태를 만듭니다.
+            assert client.recv(1) == b""
+    with socket.socket() as old_probe:
+        with pytest.raises(OSError) as failure:
+            old_probe.bind(("127.0.0.1", port))
+        assert failure.value.errno == errno.EADDRINUSE
+    check_stream_port("127.0.0.1", port)
+
+
+@pytest.mark.parametrize("host", ["127.0.0.1", "0.0.0.0"])
+def test_stream_port_check_still_rejects_active_video_server(host):
+    from tools.remote_classroom.main import check_stream_port
+    with socket.socket() as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind((host, 0))
+        listener.listen()
+        with pytest.raises(OSError) as failure:
+            check_stream_port("127.0.0.1", listener.getsockname()[1])
+        assert failure.value.errno == errno.EADDRINUSE
+
+
 @pytest.fixture
 def receiver(tmp_path):
     clock = [500.0]

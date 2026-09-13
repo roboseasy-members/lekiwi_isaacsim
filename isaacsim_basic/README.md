@@ -35,7 +35,7 @@ lesson stop
 lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_empty_stage.py
 ```
 
-화면은 WebRTC 클라이언트에서 조작합니다. 이 명령은 빈 편집 화면을 열며 객체는 [1장 본문](01_object_physics/README.md)에서 직접 만듭니다.
+이 명령으로 이미 빈 화면을 열었다면 1장의 실행 명령은 건너뜁니다. `lesson status`의 READY를 확인하고 WebRTC에서 다시 Connect합니다. 객체는 [1장 본문](01_object_physics/README.md)에서 직접 만듭니다.
 
 데스크탑에서 직접 수업하는 경우에는 프로젝트 설치를 마친 뒤 저장소 루트에서 다음을 실행합니다.
 

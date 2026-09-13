@@ -1,6 +1,35 @@
 """Isaac Sim 5.1의 표준 UI를 로컬 창 또는 WebRTC로 표시합니다."""
 import ipaddress
 import os
+import sys
+
+
+def install_profiler_defaults():
+    """첫 앱에 NVTX 기본값을 적용하고 생성 직전에 원래 SDK 클래스를 복구합니다."""
+    import isaacsim
+    original = isaacsim.SimulationApp
+    # 학생 실행기가 sys.argv를 바꿔도 실행 시 명시한 Kit 옵션은 존중합니다.
+    command_args = sys.argv[1:]
+
+    def create(launch_config=None, *args, **kwargs):
+        isaacsim.SimulationApp = original
+        config = dict(launch_config or {})
+        extra = list(config.get("extra_args", []))
+        options = command_args + extra
+
+        def provided(key):
+            return any(value == key or value.startswith(key + "=") for value in options)
+
+        if not config.get("profiler_backend") and not provided("--/app/profilerBackend"):
+            # TSC가 역행하는 CPU에서 Carbonite 206.6 CPU 프로파일러가 종료되는 문제를 피합니다.
+            defaults = ["--/app/profilerBackend=nvtx"]
+            if not provided("--/app/profileFromStart"):
+                defaults.append("--/app/profileFromStart=false")
+            config["extra_args"] = defaults + extra
+            print("LEKIWI_RUNTIME profiler_backend=nvtx", flush=True)
+        return original(config, *args, **kwargs)
+
+    isaacsim.SimulationApp = create
 
 
 def stream_host(value):

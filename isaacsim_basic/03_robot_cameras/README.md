@@ -22,6 +22,9 @@ lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_emp
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
+원격으로 새 실행을 시작했다면 `lesson status`가 READY가 될 때까지 기다린 뒤 WebRTC에서 같은 서버 주소로 다시 Connect합니다.
+영상 창을 클릭한 상태에서 마우스와 키보드를 조작합니다. 이후 코드 예제를 재실행할 때도 같은 순서로 접속합니다.
+
 일반 Isaac Sim 설치에서는 앱을 직접 엽니다. 이전 실습이 실행 중이면 저장을 마치고 종료한 뒤 시작합니다.
 
 `File > Open`으로 1장의 `base_scene.usda`를 열고 `File > Save As`로 `my_camera.usda`를 만듭니다.
@@ -185,7 +188,19 @@ USD 카메라는 **-Z가 렌즈 정면, +Y가 위**입니다. ROS optical의 +Z 
 
 ### 6.4. LeKiwi로 확장
 
-기존 창을 닫고 다음을 실행합니다. USB 리더는 필요 없습니다.
+기존 실습을 종료하고 본인 환경의 한 가지만 실행합니다. USB 리더는 필요 없습니다.
+
+원격 수업 — 브라우저 터미널:
+
+```bash
+lesson stop
+lesson run 6
+```
+
+`lesson status`가 READY이면 WebRTC에서 다시 Connect합니다. 6장의 준비된 LeKiwi 환경으로 카메라를 관찰합니다.
+이 단계에서는 기록 시작 키 F5를 누르지 않습니다.
+
+데스크탑 직접 실행 — 기존 Isaac Sim 창을 닫은 뒤 저장소 루트 터미널:
 
 ```bash
 ./lekiwi scene
@@ -258,7 +273,9 @@ front의 예로, 현재 URDF의 `base_link → soarm_base_link`는
 
 #### 설정 파일의 작업 복사본 만들기
 
-저장소 최상위에서 실행합니다. 기존 파일을 덮어쓰지 않는 명령입니다.
+실측한 장착값을 적용할 때만 진행하는 선택 실습입니다. 기본 카메라 관찰을 마쳤다면 6.7절로 이동합니다.
+아래는 **데스크탑의 저장소 최상위 터미널**에서 실행합니다. 브라우저 편집기의 교재·자산 폴더는 읽기 전용입니다.
+기존 파일을 덮어쓰지 않는 명령입니다.
 
 ```bash
 mkdir -p data/cameras
