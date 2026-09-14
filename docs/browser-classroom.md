@@ -2,7 +2,7 @@
 
 연구실 데스크탑이 Isaac Sim을 실행하고, 학생 Ubuntu 노트북은 브라우저 편집기와 WebRTC 화면을 엽니다.
 편집기는 별도 **code-server Docker 컨테이너**입니다. VS Code 기반의 브라우저 편집기로, Microsoft 배포판과 확장 마켓은 다릅니다.
-Isaac Sim을 종료해도 편집기는 유지됩니다. 이 기능은 현재 `feature/remote_classroom`에서 제공합니다.
+Isaac Sim을 종료해도 편집기는 유지됩니다. 이 기능은 현재 `develop`에서 제공합니다.
 
 처음 접속할 때는 [0장 환경 설정](../isaacsim_basic/00_env_setting/README.md)부터 진행합니다.
 학생마다 자기 계정으로 배정된 데스크탑·노트북을 연결하고, 같은 **데스크탑 Tailscale IPv4**를 실행기·SSH·영상 클라이언트에 사용합니다.

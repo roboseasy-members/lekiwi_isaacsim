@@ -20,7 +20,7 @@
 ## 프로젝트에 적용한 범위
 
 `test` 브랜치의 데스크탑·노트북 구분과 관찰 결과 제출 흐름을 참고했습니다.
-0장은 현재 `feature/remote_classroom`의 브라우저 편집기와 `lesson` 명령으로 진행합니다.
+0장은 현재 `develop`의 브라우저 편집기와 `lesson` 명령으로 진행합니다.
 화면 확인에는 기존 [1장 중력·충돌 예제](../01_object_physics/experiments/03_gravity_collision.py)를 사용합니다.
 0장은 준비 교재이며 시뮬레이션 장 번호 1~6은 그대로 사용합니다.
 

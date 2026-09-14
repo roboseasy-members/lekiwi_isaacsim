@@ -1,7 +1,7 @@
 # LeKiwi Isaac Sim · 설치부터 로컬 데이터 수집까지
 
-이 브랜치의 원격 수업은 **`feature/remote_classroom`을 받아 [0장 환경 설정](isaacsim_basic/00_env_setting/README.md)부터 진행**합니다.
-현재 브랜치에는 0장 환경 설정, 1~6장 마우스·코드 실습과 원격 실습 기능이 있습니다. 이 변경은 아직 `develop`에 병합되지 않았습니다.
+원격 수업 리허설은 **`develop`을 받아 [0장 환경 설정](isaacsim_basic/00_env_setting/README.md)부터 진행**합니다.
+`develop`에는 0장 환경 설정, 1~6장 마우스·코드 실습과 원격 실습 기능이 통합되어 있습니다. 실제 수업 순서로 리허설을 마친 뒤 `main`에 반영합니다.
 교육 흐름은 **환경 설정 → 기초 교육 → teleop → 로컬 데이터 수집·변환 → 로컬 학습 → 추론**입니다.
 데이터셋은 로컬에서 사용하거나, 브라우저의 별도 스크립트로 Hugging Face에 공개 업로드할 수 있습니다.
 
@@ -11,7 +11,7 @@
 
 학생별 데스크탑과 Ubuntu 노트북을 서로 다른 망에서 연결할 때는
 [0장 Tailscale 설정](isaacsim_basic/00_env_setting/README.md)을 따릅니다. 같은 LAN에서 접속하는 방법도 [원격 실습 안내](docs/remote-classroom.md)에 있습니다. 데스크탑이 시뮬레이션을 실행하고
-노트북이 화면 수신·USB 리더암 입력을 담당합니다. 이 기능은 `feature/remote_classroom`에서 검증 중이며,
+노트북이 화면 수신·USB 리더암 입력을 담당합니다. 이 기능은 `develop`에서 제공하며,
 아래의 한 PC 설치·실습 절차와 노트북 설치 절차를 구분합니다.
 
 노트북에서 직접 코드를 바꾸며 수업할 때는 [브라우저 편집기 안내](docs/browser-classroom.md)를 사용합니다.
@@ -45,12 +45,12 @@ sudo apt install git
 저장소를 받을 위치에서 실행합니다. 비공개 저장소라면 GitHub 접근 권한과 인증을 먼저 준비합니다.
 
 ```bash
-git clone --branch feature/remote_classroom https://github.com/SJun99/lekiwi_isaacsim.git
+git clone --branch develop https://github.com/SJun99/lekiwi_isaacsim.git
 cd lekiwi_isaacsim
 git branch --show-current
 ```
 
-**완료 기준:** 마지막 출력이 `feature/remote_classroom`입니다. 이후 명령은 이 저장소 폴더에서 실행합니다.
+**완료 기준:** 마지막 출력이 `develop`입니다. 이후 명령은 이 저장소 폴더에서 실행합니다.
 clone만으로 드라이버나 프로그램이 자동 설치되지는 않습니다. 다음 단계의 설치 도구를 실행하세요.
 
 <a id="1-처음-한-번-pc-준비"></a>
@@ -382,20 +382,21 @@ sudo를 사용하는 긴 세션에서는 인증 만료로 기존 터미널의 �
 
 ## 업데이트와 브랜치
 
-현재 원격 수업은 `feature/remote_classroom`을 사용합니다. `test`는 별도 사전 점검용 브랜치입니다.
-`develop`으로의 통합과 본 수업 배포 브랜치 변경은 강사가 별도 안내합니다.
+현재 원격 수업 리허설은 통합 브랜치인 `develop`을 사용합니다. `test`는 별도 사전 점검용 브랜치로 유지합니다.
+`main`은 리허설을 마친 수업 내용을 반영하는 안정 버전입니다. 본 수업 배포 브랜치는 강사가 별도 안내합니다.
 
 나중에 업데이트할 때는 장비·시뮬레이터를 정상 종료하고 저장소에서 실행합니다.
 
 ```bash
 git status --short
+git branch --show-current
 ```
 
 로컬 수정이 있다면 먼저 보존하고 충돌을 확인하세요. 강제 초기화로 해결하지 않습니다.
-작업 트리가 깨끗하고 현재 브랜치가 `feature/remote_classroom`인 경우 다음을 진행합니다.
+작업 트리가 깨끗하고 현재 브랜치가 `develop`인 경우 다음을 진행합니다.
 
 ```bash
-git pull --ff-only origin feature/remote_classroom
+git pull --ff-only origin develop
 ```
 
 **데스크탑:** 라이선스에 동의한 터미널에서 `export ACCEPT_EULA=Y`와 필요한 `LEKIWI_DOCKER_SUDO=1`을 설정하고,

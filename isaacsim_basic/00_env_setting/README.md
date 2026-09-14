@@ -25,12 +25,12 @@ Git이 없다면 먼저 `sudo apt update`와 `sudo apt install git`으로 준비
 같은 이름의 폴더가 이미 있으면 새로 덮어쓰지 말고 그 폴더의 브랜치를 확인합니다.
 
 ```bash
-git clone --branch feature/remote_classroom --single-branch https://github.com/SJun99/lekiwi_isaacsim.git lekiwi_classroom
+git clone --branch develop --single-branch https://github.com/SJun99/lekiwi_isaacsim.git lekiwi_classroom
 cd lekiwi_classroom
 git branch --show-current
 ```
 
-마지막 출력이 `feature/remote_classroom`인지 확인합니다. 이후 데스크탑의 `./lekiwi` 명령은 이 폴더에서 실행합니다.
+마지막 출력이 `develop`인지 확인합니다. 이후 데스크탑의 `./lekiwi` 명령은 이 폴더에서 실행합니다.
 이 교재는 GitHub에서 읽을 수 있으며, 3절에서 편집기가 열리면 **교재와 Python 실습 → 00_env_setting → README.md**에서도 볼 수 있습니다.
 
 데스크탑의 GPU·드라이버·Docker 설치는 [프로젝트 설치 안내](../../README.md#2-gpu드라이버docker-준비)를 따릅니다.

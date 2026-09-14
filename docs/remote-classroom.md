@@ -82,12 +82,12 @@ Git·Python이 없다면 설치한 뒤 저장소를 받습니다. 같은 이름�
 ```bash
 sudo apt update
 sudo apt install git python3
-git clone --branch feature/remote_classroom --single-branch https://github.com/SJun99/lekiwi_isaacsim.git lekiwi_classroom
+git clone --branch develop --single-branch https://github.com/SJun99/lekiwi_isaacsim.git lekiwi_classroom
 cd lekiwi_classroom
 git branch --show-current
 ```
 
-브랜치가 `feature/remote_classroom`인지 확인합니다. 이후 노트북의 `./lekiwi remote ...`는 이 폴더에서 실행합니다.
+브랜치가 `develop`인지 확인합니다. 이후 노트북의 `./lekiwi remote ...`는 이 폴더에서 실행합니다.
 `docker --version`과 `docker info`로 Docker 설치·접근을 확인합니다.
 Docker가 **아직 설치되지 않은 Ubuntu 노트북**은 다음과 같이 Ubuntu 제공 패키지를 준비합니다.
 기존 Docker가 있으면 이 설치를 건너뜁니다. [Ubuntu 공식 Docker 설치 안내](https://ubuntu.com/server/docs/how-to/containers/docker-for-system-admins/)
