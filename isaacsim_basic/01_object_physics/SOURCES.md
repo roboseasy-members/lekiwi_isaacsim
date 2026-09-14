@@ -68,3 +68,11 @@
 | `images/screenshots/19-create-physics.png` | `c2488dee24c91aeac758f3466744f32320e42fc1868ca26e98e11fad21cfd027` |
 | `images/screenshots/20-add-mass.png` | `879f295bbe994a99b8bbe46c41028bfcf945f68054da186510d5fbc25b4f3f6c` |
 | `images/screenshots/21-empty-editor.png` | `c80384a40879198bc97f89726afdbeb242d32afea6ca11ba9267580865f26d04` |
+
+## 2026-09-14 · 0장에서 1장으로 넘어가는 실행 안내 보완
+
+수강생 리허설에서 브라우저 편집기 터미널(`/workspace/isaacsim_basic`)에 `./lekiwi basic`을 입력해
+`No such file or directory`가 발생했습니다. 본문 시작을 `lesson stop` → `STOPPED` 확인 →
+`lesson run --file .../00_empty_stage.py` → `READY` 확인 → WebRTC 재접속 순서로 안내했습니다.
+브라우저 터미널의 표시와 사용할 명령을 명시하고 데스크탑 직접 실행 명령은 끝의 참고로 옮겼습니다.
+이번 보완은 실행 위치와 장 전환 안내 수정이며, 1장 전체 마우스 실습의 검증 완료를 뜻하지 않습니다.

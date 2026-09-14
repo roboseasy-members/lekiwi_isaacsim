@@ -4,6 +4,9 @@
 서로 다른 와이파이나 다른 건물에서도 접속할 수 있도록 Tailscale을 사용합니다.
 학생마다 자기 계정으로 **데스크탑 1대 + 노트북 1대**를 하나의 개인 네트워크에 연결합니다.
 
+**처음 읽을 수업 문서는 이 0장 README입니다.** 아래의 **시작 전 · 배정 확인과 교재 받기**부터 순서대로 진행하세요.
+저장소 맨 앞의 [README](../../README.md)는 프로젝트 개요와 설치·실행의 상세 참고 문서입니다. 이 장에서 설치 안내 링크를 열었다면 해당 준비를 마친 뒤 이 0장으로 돌아옵니다. 0장의 영상·Play/Stop 확인을 마치면 1장으로 이동합니다.
+
 | 컴퓨터 | 역할 | 이 장에서 준비할 프로그램 |
 |---|---|---|
 | 배정된 Ubuntu 데스크탑 | GPU로 Isaac Sim 실행·영상 송출 | Tailscale, SSH 서버, 프로젝트 실행 환경 |
@@ -41,6 +44,8 @@ git branch --show-current
 
 먼저 **데스크탑**, 다음으로 **노트북**에서 같은 절차를 진행합니다.
 
+### 1.1. 설치 여부 확인
+
 ```bash
 tailscale version
 ```
@@ -54,23 +59,58 @@ curl -fsSL https://tailscale.com/install.sh | sh
 ```
 
 설치 명령의 출처는 [Tailscale 공식 Linux 다운로드](https://tailscale.com/download/linux)입니다.
-그다음 각 PC에서 로그인합니다.
+
+### 1.2. 터미널의 인증 링크를 열고 로그인
+
+`sudo tailscale up`은 **이 PC를 Tailscale 네트워크에 연결하는 명령**입니다. 먼저 각 PC를 Wi-Fi나 유선 인터넷에 연결하세요.
+두 PC가 같은 Wi-Fi에 있을 필요는 없습니다. 예를 들어 데스크탑은 회사 인터넷, 노트북은 휴대폰 핫스팟을 사용해도 같은 Tailscale 네트워크로 연결할 수 있습니다. [공식 기기 연결 안내](https://tailscale.com/docs/how-to/connect-to-devices)
+
+설치를 마쳤거나 이미 설치되어 있다면 **등록할 PC의 터미널**에서 실행합니다.
 
 ```bash
 sudo tailscale up
 ```
 
-표시되는 링크를 브라우저에서 열고 본인 계정으로 인증합니다. **데스크탑과 노트북에서 같은 계정·같은 개인 네트워크를 선택**합니다.
-데스크탑 터미널에 나온 인증 링크를 본인 노트북 브라우저에서 열어도 됩니다.
-가입·로그인 링크와 비밀번호는 실습 기록지에 넣지 않습니다.
+처음 연결하거나 로그아웃한 상태라면 **명령 실행 → 인증 링크 열기 → 브라우저 로그인·기기 인증 완료**까지 진행해야 합니다.
+이미 로그인되어 연결된 PC에서는 인증 링크가 나오지 않을 수 있으므로 1.3절의 상태 확인으로 넘어갑니다.
+로그인과 연결 상태를 유지한 채 Wi-Fi만 바꿨다면 보통 자동으로 재연결됩니다. 매번 이 명령을 다시 입력하기보다 `tailscale status`와 2절의 ping으로 확인합니다.
 
-각 PC에서 다음을 확인합니다.
+인증 링크가 표시되면 브라우저에서 엽니다. 데스크탑 터미널에 나온 링크를 본인 노트북 브라우저에서 열어도 **등록하는 기기는 그 링크를 만든 데스크탑**입니다.
+
+**처음 가입하는 경우:** 사용할 계정의 버튼을 선택합니다. 아래는 Google 계정으로 가입하는 예시입니다. Microsoft·GitHub 등 다른 계정을 사용할 때는 해당 버튼을 선택합니다.
+
+![Tailscale 가입 화면에서 Google 계정 선택 버튼 확인](images/02-tailscale-sign-up.png)
+
+**이미 가입한 경우:** 가입할 때 사용한 방식으로 로그인합니다. Google로 가입했다면 아래의 **Sign in with Google**을 선택하고 같은 Google 계정으로 인증합니다.
+
+![Tailscale 기존 계정 로그인 화면에서 Google 로그인 버튼 확인](images/03-tailscale-sign-in.png)
+
+계정 선택 화면에서는 **강사가 안내한 본인 계정**인지 확인합니다. 데스크탑과 노트북에서 같은 계정·같은 개인 네트워크를 선택해야 합니다.
+Tailscale은 Google 등 기존 계정으로 인증하므로 별도의 Tailscale 비밀번호를 새로 만드는 단계는 없습니다. [공식 로그인 방식 안내](https://tailscale.com/docs/integrations/identity)
+`User approval required`가 나오면 조직 관리자의 승인이 필요한 상태입니다. 강사에게 실습 계정·네트워크가 맞는지 확인하고, 승인 대기 화면을 연결 완료로 판단하지 않습니다.
+
+사진은 공식 가입·로그인 페이지의 실제 캡처이며 Google 계정을 사용하는 예시입니다. 계정 선택 이후의 화면은 로그인 방식과 기존 가입 상태에 따라 달라질 수 있습니다.
+가입·로그인 링크와 비밀번호는 실습 기록지나 캡처에 넣지 않습니다.
+
+### 1.3. 두 기기가 등록되었는지 확인
+
+브라우저의 인증 안내를 마친 뒤 **원래 명령을 실행한 PC의 터미널**로 돌아옵니다.
+웹사이트 로그인만으로 PC 연결까지 완료됐다고 판단하지 말고, 아래 명령으로 각 PC의 상태를 확인합니다.
 
 ```bash
 tailscale status
 ```
 
-**완료 기준:** 같은 개인 네트워크의 기기 목록에서 배정된 데스크탑과 노트북을 모두 확인할 수 있습니다.
+노트북 브라우저에서 [Tailscale 기기 목록(Machines)](https://login.tailscale.com/admin/machines)을 열어 같은 계정으로 로그인합니다. 데스크탑과 노트북의 이름을 각각 `hostname` 출력과 대조하고, 각 행의 주소와 **Connected** 상태를 확인합니다.
+이번 실습의 대상은 **데스크탑과 노트북 두 대**이므로 두 행이 보이는 것이 정상입니다. 계정에 다른 기기가 이미 등록되어 있다면 총 개수 대신 본인의 실습 기기 두 대를 찾아 확인합니다.
+
+![Tailscale Machines 목록에서 두 컴퓨터의 이름, 주소와 Connected 상태 확인](images/04-tailscale-machines.png)
+
+사진은 두 Ubuntu PC를 실제로 연결한 예시입니다. `roboseasy`는 **서버 역할의 서브 노트북**, `ysj`는 **화면을 볼 메인 노트북**입니다.
+각 행의 **기기 이름 → Tailscale 주소 → Connected**를 차례로 확인하세요. 사진 속 이름과 주소를 그대로 쓰지 말고 본인의 두 PC와 대조합니다.
+두 기기가 Connected여도 영상 연결까지 끝난 것은 아닙니다. 이어서 2절의 통신 확인과 3·4절의 영상·조작 확인을 진행합니다.
+
+**완료 기준:** 같은 개인 네트워크의 기기 목록에서 배정된 데스크탑과 노트북을 모두 확인하고, 두 PC의 연결 상태도 확인했습니다.
 노트북의 Tailscale은 수업하는 동안 연결 상태로 둡니다.
 
 ## 2. 배정된 데스크탑의 Tailscale 주소 확인
@@ -142,12 +182,17 @@ export ACCEPT_EULA=Y
 ```
 
 이 명령은 **데스크탑 자신의 Tailscale 주소**를 읽어 편집기와 실습 실행기에 전달합니다.
-안내에 따라 브라우저 편집기 비밀번호를 숨김 입력합니다.
-`LEKIWI_WORKSPACE ready`가 표시되면 이 터미널을 열어 둡니다. 아래 노트북 연결 안내도 출력됩니다.
+브라우저 편집기는 **VS Code 기반의 code-server**입니다. 노트북 브라우저에서 서버의 수업 파일을 편집하고 실습 명령을 실행합니다.
+**편집기용 비밀번호를 만드는 단계는 없습니다.** 아래에서 서버의 Ubuntu 계정으로 SSH 인증을 마치면 브라우저에서 편집기를 바로 엽니다.
+`LEKIWI_WORKSPACE ready`가 표시되면 이 터미널을 열어 둡니다. 이어서 **실제 서버 계정과 주소가 채워진 SSH 명령**이 출력됩니다.
+아직 본 노트북의 브라우저를 열 단계는 아닙니다. 아래 SSH 연결을 먼저 진행합니다.
 
 ### 노트북 · 브라우저 편집기 연결
 
-노트북의 로컬 터미널에서 실행합니다. 마지막의 `데스크탑계정@데스크탑_Tailscale_IP`를 2절에서 기록한 값으로 바꿉니다.
+**본 노트북에서 새 로컬 터미널을 열고, 서버에 출력된 `ssh -N ...` 한 줄을 그대로 복사해 실행합니다.** 서버에 SSH로 접속해 둔 터미널과 구분하세요.
+`127.0.0.1`은 브라우저를 연 컴퓨터 자신을 뜻합니다. SSH 연결이 본 노트북의 8080을 서버 편집기에 이어 주므로 이 단계가 먼저 필요합니다.
+
+아래는 직접 작성할 때 참고하는 **명령 형식**입니다. 마지막의 `데스크탑계정@데스크탑_Tailscale_IP`를 2절에서 기록한 값으로 바꿉니다.
 예를 들어 Ubuntu 계정이 `student`이고 주소가 `100.80.10.20`이면 `student@100.80.10.20`입니다.
 `ssh`가 없으면 노트북에서 `sudo apt update` 후 `sudo apt install openssh-client`로 준비합니다.
 
@@ -157,8 +202,14 @@ ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
 ```
 
 첫 접속의 서버 키를 확인하고 데스크탑 Ubuntu 계정으로 인증합니다.
+비밀번호를 묻는 줄의 `계정@주소`가 본인 서버 정보와 일치하는지 확인합니다. `사용자명@...`이나 `데스크탑계정@...`이 그대로 보이면 예시 문구를 입력한 것이므로 `Ctrl+C`로 취소하고 실제 계정으로 다시 실행합니다.
+이 실습에서 서버의 `whoami`가 `roboseasy`였다면 접속 계정도 `roboseasy`입니다. 비밀번호 입력 중 화면에 글자가 표시되지 않는 것은 정상입니다.
 오류 없이 대기하면 터널이 열린 것이므로 터미널을 유지합니다.
-노트북 브라우저에서 **http://127.0.0.1:8080**을 열고, 편집기 시작 때 정한 비밀번호로 로그인합니다.
+노트북 브라우저에서 **http://127.0.0.1:8080**을 열면 **별도 로그인 없이 편집기가 표시**됩니다.
+편집기는 서버 내부 주소에만 열려 있으므로 수업하는 동안 SSH 터널을 유지합니다.
+
+이전 버전의 비밀번호 입력이나 로그인 화면이 보인다면 실행기를 종료하고,
+코드를 갱신한 서버에서 `./lekiwi remote setup-editor`를 실행해 편집기 이미지를 다시 빌드한 뒤 실행기를 시작합니다.
 
 8080이 이미 사용 중이면 위 명령의 `127.0.0.1:8080:127.0.0.1:8080`을 `127.0.0.1:8081:127.0.0.1:8080`으로 바꾸고
 브라우저에서도 **http://127.0.0.1:8081**을 엽니다. 다른 프로그램은 임의로 종료하지 않습니다.
@@ -172,30 +223,35 @@ lesson run --experiment 3
 lesson status
 ```
 
-`STARTING`이면 기다렸다가 `lesson status`로 다시 확인합니다. `READY`가 나오면 영상 클라이언트로 넘어갑니다.
-문제가 있으면 `lesson logs`로 오류를 확인합니다. 실행 명령을 반복해 새 실습을 중복으로 띄우지 않습니다.
+`STARTING`은 Isaac Sim이 장면을 준비 중이라는 뜻입니다. **처음 실행하거나 새 수업 폴더에서 시작하면 GPU 화면 처리에 필요한 자료(셰이더 캐시)를 만들면서 몇 분 걸릴 수 있습니다.** [NVIDIA의 최초 실행 안내](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/install_container.html#container-deployment)
+**이미 출력된 상태는 자동으로 갱신되지 않습니다.** 20~30초 정도 기다린 뒤 `lesson status`만 다시 입력해 확인합니다. `READY`가 나오면 영상 클라이언트로 넘어갑니다.
+`FAILED`가 나오거나 오래 기다려도 준비 상태가 계속되면 `lesson logs`의 출력과 표시된 Isaac 로그 경로를 강사에게 전달합니다. `lesson run`을 반복해 새 실습을 중복으로 띄우지 않습니다.
 
 ### 노트북 · Isaac Sim 영상 연결
 
 노트북에서 [공식 다운로드](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/download.html)의
 **Isaac Sim WebRTC Streaming Client 1.1.5 → Linux (x86_64)**를 받습니다.
 `test` 사전 점검에서 같은 클라이언트를 이미 준비했다면 그 프로그램을 사용해도 됩니다.
-처음 실행한다면 받은 AppImage 파일만 별도 폴더에 옮기고 그 폴더의 **노트북 터미널**에서 실행합니다.
+처음 실행한다면 **본 노트북에서 AppImage 파일이 있는 폴더**를 엽니다. 파일 관리자의 빈 공간을 우클릭 → **터미널에서 열기**를 선택합니다.
+예를 들어 Downloads에 받았다면 `~/Downloads`에서 실행합니다. 수업 프로젝트 폴더와는 별개이며, 아래 파일명이 실제 다운로드한 파일명과 같은지 확인하세요.
 
 ```bash
 chmod u+x isaacsim-webrtc-streaming-client-1.1.5-linux-x64.AppImage
 ./isaacsim-webrtc-streaming-client-1.1.5-linux-x64.AppImage --appimage-extract
-./squashfs-root/AppRun
+APPDIR="$PWD/squashfs-root" ./squashfs-root/AppRun
 ```
 
 이 방법은 FUSE 설치 없이 실행 파일을 풉니다. 다음에는 같은 폴더에서 마지막 줄만 실행합니다.
 `No usable sandbox` 또는 `chrome-sandbox` 오류가 나온 경우에는 다음 방법을 사용합니다.
 
 ```bash
-./squashfs-root/AppRun --no-sandbox
+APPDIR="$PWD/squashfs-root" ./squashfs-root/AppRun --no-sandbox
 ```
 
-이 옵션은 해당 클라이언트 프로세스의 Chromium sandbox를 해제합니다. 시스템 전체 보안 설정은 변경하지 않으며,
+`APPDIR`은 압축이 풀린 프로그램 폴더의 위치입니다. 이 버전의 실행 스크립트가 옵션을 받으면 경로를 잘못 찾을 수 있어 명시합니다.
+`/isaacsim-webrtc-streaming-client: No such file or directory`가 나왔다면, `squashfs-root`가 있는 폴더에서 위 명령 전체를 다시 실행합니다.
+
+`--no-sandbox`는 해당 클라이언트 프로세스의 Chromium sandbox를 해제합니다. 시스템 전체 보안 설정은 변경하지 않으며,
 오류가 있을 때만 사용합니다. [공식 클라이언트 안내](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/manual_livestream_clients.html)
 
 클라이언트의 **Server**에 2절의 **데스크탑 Tailscale 주소**를 입력하고 **Connect**합니다.

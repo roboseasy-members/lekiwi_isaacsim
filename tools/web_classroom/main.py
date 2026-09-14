@@ -1,12 +1,11 @@
 """데스크탑의 브라우저 편집기와 실습 제어를 한 터미널에서 유지합니다."""
 import fcntl
-import getpass
-import json
 import os
 from pathlib import Path
+import pwd
+import shlex
 import socket
 import subprocess
-import sys
 import tempfile
 import threading
 import time
@@ -48,7 +47,7 @@ def build_editor(dock=None):
 
 def editor_command(dock, root, data, runtime, host, port, identity):
     name = f"lekiwi-editor-{os.getuid()}-{identity[:8]}"
-    args = dock + ["run", "--rm", "-i", "--init", "--name", name,
+    args = dock + ["run", "--rm", "--init", "--name", name,
         "--label", f"lekiwi.editor.session={identity}", "--user", f"{os.getuid()}:{os.getgid()}",
         "--publish", f"127.0.0.1:{port}:8080",
         "--mount", f"type=bind,src={data / 'web_classroom/home'},dst=/home/coder",
@@ -75,20 +74,6 @@ def healthy(url):
         return False
 
 
-def password_input(from_stdin):
-    if from_stdin:
-        if sys.stdin.isatty():
-            raise RuntimeError("--password-stdin은 익명 파이프를 사용하는 자동 검사 전용입니다.")
-        password = sys.stdin.buffer.readline(2049).decode().rstrip("\r\n")
-    else:
-        if not sys.stdin.isatty():
-            raise RuntimeError("편집기 비밀번호를 지정할 대화형 터미널이 필요합니다.")
-        password = getpass.getpass("브라우저 편집기에서 사용할 비밀번호(12자 이상, 저장하지 않음): ")
-    if not 12 <= len(password) <= 512:
-        raise ValueError("편집기 비밀번호는 12~512자로 정하세요.")
-    return password
-
-
 def run_workspace(args):
     from tools.remote_classroom.main import stop_owned
     from isaac_sim.remote_teleop import address
@@ -112,7 +97,6 @@ def run_workspace(args):
         if subprocess.run(dock + ["image", "inspect", os.environ.get("LEKIWI_EDITOR_IMAGE", IMAGE)],
                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode:
             build_editor(dock)
-        password = password_input(args.password_stdin)
         session = Session(ROOT, data, host)
         with tempfile.TemporaryDirectory(prefix=f"lekiwi-editor-{os.getuid()}-") as temporary:
             runtime = Path(temporary)
@@ -126,11 +110,8 @@ def run_workspace(args):
             process = None
             try:
                 with log_path.open("w") as log:
-                    process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=log,
+                    process = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=log,
                                                stderr=subprocess.STDOUT, start_new_session=False)
-                process.stdin.write(json.dumps({"password": password}).encode() + b"\n")
-                process.stdin.close()
-                del password
                 print(f"LEKIWI_WORKSPACE starting url={url} log={log_path}", flush=True)
                 started = refreshed = time.monotonic()
                 ready = False
@@ -139,8 +120,13 @@ def run_workspace(args):
                         ready = healthy(url)
                         if ready:
                             print(f"LEKIWI_WORKSPACE ready url={url}", flush=True)
-                            print(f"노트북에서 SSH 연결: ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:{args.port}:127.0.0.1:{args.port} 사용자명@{host}", flush=True)
-                            print("SSH 연결 후 노트북 브라우저에서 위 주소로 접속하세요. 수업 동안 두 터미널을 유지합니다.", flush=True)
+                            account = pwd.getpwuid(os.getuid()).pw_name
+                            target = shlex.quote(f"{account}@{host}")
+                            print("1. 본 노트북의 새 로컬 터미널에서 아래 명령을 그대로 실행하세요.", flush=True)
+                            print(f"ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -L 127.0.0.1:{args.port}:127.0.0.1:{args.port} {target}", flush=True)
+                            print(f"비밀번호를 물으면 서버 Ubuntu 계정({account})의 비밀번호를 입력하세요.", flush=True)
+                            print(f"2. SSH 연결이 오류 없이 대기하면, 본 노트북 브라우저에서 {url} 을 여세요.", flush=True)
+                            print("127.0.0.1은 본 노트북 자신을 뜻하므로 SSH 연결이 먼저 필요합니다. 수업 동안 두 터미널을 유지합니다.", flush=True)
                         elif time.monotonic() - started > 120:
                             raise RuntimeError(f"편집기가 2분 내 준비되지 않았습니다. {log_path}")
                     if dock[0] == "sudo" and time.monotonic() - refreshed >= 60:

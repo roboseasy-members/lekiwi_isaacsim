@@ -9,20 +9,33 @@
 
 ## 1. 빈 편집 화면과 기본 도구 익히기
 
-이미 빈 편집 화면을 열었다면 아래 실행 명령은 건너뛰고 화면 설명부터 읽습니다.
-다른 실습이 열려 있으면 저장하고 종료합니다. 0장의 원격 접속을 마쳤다면 **브라우저 터미널**에서 실행합니다.
+0장을 마쳤다면 **본 노트북에서 열어 둔 브라우저 편집기의 터미널**을 계속 사용합니다.
+`coder@…:/workspace/isaacsim_basic$`처럼 표시되면 맞는 터미널입니다. 여기서는 `lesson` 명령을 사용합니다.
+`./lekiwi basic`을 입력해 `No such file or directory`가 나왔다면 아래 명령으로 진행합니다.
+`./lekiwi`는 서버의 프로젝트 폴더에서 쓰는 명령으로, 브라우저 편집기에서는 사용하지 않습니다.
+
+이미 빈 편집 화면이 열려 있다면 아래 실행 명령은 건너뛰고 화면 설명부터 읽습니다.
+0장의 확인용 실습이 아직 열려 있으면 먼저 종료합니다. 저장할 작업이 있다면 종료 전에 저장합니다.
+
+```bash
+lesson stop
+lesson status
+```
+
+`STOPPED`를 확인한 뒤 **빈 장면**을 엽니다. 0장 마지막에서 이미 종료했다면 여기부터 실행합니다.
 
 ```bash
 lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_empty_stage.py
 ```
 
-화면은 WebRTC 클라이언트에서 조작합니다. 데스크탑에서 직접 실행하는 경우에는 **저장소 루트의 터미널**에서 아래 명령을 대신 사용합니다.
+실행 상태를 확인합니다.
 
 ```bash
-./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
+lesson status
 ```
 
-원격으로 새 실행을 시작했다면 `lesson status`가 READY가 될 때까지 기다린 뒤 WebRTC에서 같은 서버 주소로 다시 Connect합니다.
+`STARTING`이면 기다렸다가 `lesson status`를 다시 입력합니다. 출력은 자동으로 갱신되지 않습니다.
+`READY`가 되면 본 노트북의 **WebRTC 클라이언트에서 0장과 같은 서버 Tailscale 주소로 다시 Connect**합니다.
 영상 창을 클릭한 상태에서 마우스와 키보드를 조작합니다. 이후 코드 예제를 재실행할 때도 같은 순서로 접속합니다.
 
 이 명령은 빈 편집 화면을 여는 준비입니다. 파일을 열거나 수정할 필요는 없습니다. 바닥·물체·물리 장면은 아래에서 마우스로 만듭니다.
@@ -397,4 +410,14 @@ UsdShade.MaterialBindingAPI.Apply(prim).Bind(mat, materialPurpose="physics")
 직접 만드는 과정은 6장에서 진행합니다. 바닥과 네 벽을 각각 Collider로 만들어 입구를 비워 둡니다.
 
 [기록지](worksheet.md)의 코드 구현·비교 부분까지 작성합니다.
+
+## 참고 · 데스크탑에서 직접 빈 장면 열기
+
+0장의 브라우저 편집기로 수업 중이라면 이 명령은 실행하지 않습니다.
+데스크탑에서 직접 실행할 때는 `lekiwi` 파일이 있는 **프로젝트 최상위 폴더**의 터미널에서 다음 명령을 사용합니다.
+
+```bash
+./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
+```
+
 [공식 자료와 촬영 기록](SOURCES.md) · [다음: 2장](../02_robot_joints/README.md)

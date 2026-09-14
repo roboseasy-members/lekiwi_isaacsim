@@ -2,6 +2,7 @@
 import io
 import json
 from pathlib import Path
+import runpy
 import signal
 import socket
 import subprocess
@@ -13,7 +14,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tools.web_classroom.control import CHAPTERS, ControlServer, Session, selection
 from tools.web_classroom.lesson import request
-from tools.web_classroom.main import editor_command, password_input
+from tools.web_classroom.main import editor_command
 
 
 @pytest.fixture
@@ -156,10 +157,80 @@ def test_editor_mounts_only_student_files_for_editing(course):
     assert not any(arg.startswith("192.168.1.2:") for arg in command)
 
 
-def test_password_input_refuses_echoed_terminal_and_short_value(monkeypatch):
+
+def test_editor_entrypoint_starts_without_reading_a_password(monkeypatch):
+    import os
+    monkeypatch.setattr(sys, "stdin", io.TextIOWrapper(io.BytesIO(b"")))
+    monkeypatch.setattr(os, "umask", lambda mask: None)
+    launches = []
+    monkeypatch.setattr(os, "execv", lambda path, args: launches.append((path, args)))
+    entrypoint = Path(__file__).resolve().parents[1] / "tools/web_classroom/editor_entrypoint.py"
+    runpy.run_path(str(entrypoint), run_name="__main__")
+    assert launches == [("/usr/bin/entrypoint.sh", ["/usr/bin/entrypoint.sh", "--config",
+        "/opt/lekiwi-editor/editor.yaml", "/opt/lekiwi-editor/lekiwi.code-workspace"])]
+
+
+def test_workspace_ready_without_password_input(course, monkeypatch, capsys):
+    from types import SimpleNamespace
+    import pwd
+    import shlex
+    import tools.remote_classroom.main as remote
     import tools.web_classroom.main as workspace
-    monkeypatch.setattr(workspace.sys, "stdin", io.TextIOWrapper(io.BytesIO(b"short\n")))
-    with pytest.raises(ValueError):
-        password_input(True)
-    with pytest.raises(RuntimeError, match="대화형"):
-        password_input(False)
+    monkeypatch.setattr(workspace, "ROOT", course)
+    monkeypatch.setenv("LEKIWI_DATA_DIR", str(course / "data"))
+    monkeypatch.setenv("ACCEPT_EULA", "Y")
+    monkeypatch.setenv("USER", "unrelated-environment-user")
+    monkeypatch.setattr(pwd, "getpwuid", lambda uid: SimpleNamespace(pw_name="classroom-user"))
+    monkeypatch.setattr(workspace, "docker_command", lambda: ["docker"])
+    monkeypatch.setattr(workspace.subprocess, "run", lambda command, **kwargs: subprocess.CompletedProcess(command, 0))
+    children, stopped = [], []
+
+    class Editor:
+        returncode = 0
+
+        def __init__(self, command, **kwargs):
+            self.command, self.options = command, kwargs
+            self.polls = iter([None, 0])
+            children.append(self)
+
+        def poll(self):
+            return next(self.polls)
+
+        def wait(self, timeout):
+            return 0
+
+    monkeypatch.setattr(workspace.subprocess, "Popen", Editor)
+    monkeypatch.setattr(workspace, "healthy", lambda url: True)
+    monkeypatch.setattr(workspace.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(remote, "stop_owned", lambda *args: stopped.append(args))
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    workspace.run_workspace(SimpleNamespace(host="192.168.1.2", port=port))
+    assert len(children) == 1
+    assert children[0].options["stdin"] == subprocess.DEVNULL
+    assert "-i" not in children[0].command
+    assert f"127.0.0.1:{port}:8080" in children[0].command
+    assert len(stopped) == 1
+    output = capsys.readouterr().out
+    assert "LEKIWI_WORKSPACE ready" in output
+    assert "LEKIWI_WORKSPACE stopped" in output
+    command = next(line for line in output.splitlines() if line.startswith("ssh -N "))
+    assert shlex.split(command) == ["ssh", "-N", "-o", "ExitOnForwardFailure=yes",
+        "-o", "ServerAliveInterval=30", "-L", f"127.0.0.1:{port}:127.0.0.1:{port}",
+        "classroom-user@192.168.1.2"]
+    assert "사용자명@" not in output
+
+
+def test_workspace_cli_has_no_password_option(monkeypatch, capsys):
+    import tools.remote_classroom.main as remote
+    import tools.web_classroom.main as workspace
+    calls = []
+    monkeypatch.setattr(workspace, "run_workspace", calls.append)
+    remote.main(["workspace", "--host", "192.168.1.2"])
+    assert len(calls) == 1
+    assert not hasattr(calls[0], "password_stdin")
+    with pytest.raises(SystemExit) as failure:
+        remote.main(["workspace", "--host", "192.168.1.2", "--password-stdin"])
+    assert failure.value.code == 2
+    assert len(calls) == 1

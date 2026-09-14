@@ -1,4 +1,5 @@
 bind-addr: 0.0.0.0:8080
-auth: password
+# 호스트에는 127.0.0.1로만 공개하며, 원격 접속은 SSH 인증을 거칩니다.
+auth: none
 disable-telemetry: true
 disable-update-check: true

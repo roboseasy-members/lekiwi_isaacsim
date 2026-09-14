@@ -297,7 +297,6 @@ def main(argv=None):
     workspace = commands.add_parser("workspace", help="데스크탑: 브라우저 코드 편집기와 실습 실행 연결")
     workspace.add_argument("--host", required=True, type=address)
     workspace.add_argument("--port", type=int, default=8080)
-    workspace.add_argument("--password-stdin", action="store_true", help="자동 검사: 비밀번호를 표준 입력으로 전달")
     commands.add_parser("setup-editor", help="데스크탑: 브라우저 편집기 이미지 빌드")
     server = commands.add_parser("serve", help="데스크탑: 장별 헤드리스 실습 실행")
     server.add_argument("--host", required=True, type=address)
