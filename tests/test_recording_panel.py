@@ -10,28 +10,49 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'isaac_sim'))
 from recording_panel import RecordingPanel
 
 
-class Model:
-    def __init__(self, value):
-        self.as_int = value
-        self.as_bool = bool(value)
-
-    def set_value(self, value):
-        self.as_int = value
-        self.as_bool = bool(value)
+@pytest.mark.parametrize('override', [None, '', 'Pick up the red cube'])
+def test_student_task_description_is_used_unless_explicitly_overridden(tmp_path, monkeypatch, override):
+    # 렌더러와 파일 생성만 대체하고 실제 학생 코드의 설정 읽기를 실행합니다.
+    settings = NS(set=lambda *a: None, get=lambda *a: False)
+    annotator = NS(attach=lambda *a: None)
+    rep = NS(orchestrator=NS(set_capture_on_play=lambda *a: None),
+             create=NS(render_product=lambda *a: NS(path='/test')),
+             AnnotatorRegistry=NS(get_annotator=lambda *a: annotator))
+    bindings = NS(_isaacsim_core_nodes=NS(acquire_interface=lambda: None))
+    for name, module in {
+        'omni': NS(replicator=NS(core=rep)), 'omni.replicator': NS(core=rep),
+        'omni.replicator.core': rep, 'carb': NS(settings=NS(get_settings=lambda: settings)),
+        'carb.settings': NS(get_settings=lambda: settings),
+        'isaacsim.core.nodes.bindings': bindings,
+    }.items():
+        monkeypatch.setitem(sys.modules, name, module)
+    globals_ = RecordingPanel.__init__.__globals__
+    monkeypatch.setitem(globals_, 'Path', lambda *_: tmp_path)
+    monkeypatch.setitem(globals_, 'task_description', '리더암을 좌우로 움직이기')
+    if override is None:
+        monkeypatch.delenv('LEKIWI_RECORD_TASK', raising=False)
+    else:
+        monkeypatch.setenv('LEKIWI_RECORD_TASK', override)
+    cameras = {name: {'camera_path': '/test'} for name in ('front', 'wrist')}
+    config = {'cameras': {name: {'resolution': [2, 2]} for name in cameras}}
+    p = RecordingPanel(cameras, config, 'test', {})
+    assert p.task_text == (override or '리더암을 좌우로 움직이기')
 
 
 def panel(tmp_path, seconds):
     p = RecordingPanel.__new__(RecordingPanel)
-    p.duration_seconds = 30
+    p.duration_seconds = seconds
+    p.task_text = "Move forward and stop"
+    p.task_succeeded = False
+    p.discard_deadline = 0.0
+    p.last_status = None
+    p.warmup_time = None
+    p.warmup_frames = 0
     p.playing = True
     p.resume_frames = 0
-    p.duration = NS(model=Model(seconds))
-    p.task = NS(model=NS(get_item_value_model=lambda: Model(0)))
-    p.success = NS(model=Model(False))
-    for name in ('status', 'detail', 'output', 'record', 'stop', 'save', 'discard'):
-        setattr(p, name, NS())
     p.mode, p.error = 'READY', ''
-    p.writer = p.pending = p.last_saved = None
+    p.interruption = ''
+    p.writer = p.pending = p.last_saved = p.capture = None
     p.waiting = deque()
     p.directory, p.metadata, p.requests = tmp_path, {}, []
     p.snapshot = lambda world: ({}, {})
@@ -41,24 +62,24 @@ def panel(tmp_path, seconds):
 @pytest.mark.parametrize('seconds', [0, 30, 120, 300])
 def test_start_captures_setting_and_locks_input(tmp_path, seconds):
     p = panel(tmp_path, seconds)
+    p.task_text = "빨간 큐브를 빨간 바구니에 넣기"
     p.requests = ['record']
     p.before_step(NS(current_time=0, is_playing=lambda: True), [0]*9, [0]*9, [0]*7)
     assert p.mode == 'RECORDING'
     assert p.duration_seconds == seconds
-    assert not p.duration.enabled
     assert p.writer.metadata['max_duration_seconds'] == seconds
-    p.duration.model.set_value(1)
+    assert p.writer.metadata['task'] == "빨간 큐브를 빨간 바구니에 넣기"
     assert p.duration_seconds == seconds  # 기록 중 모델 값이 바뀌어도 현재 기록의 상한은 유지한다.
     p.requests = ['stop']
     p.before_step(NS(current_time=0, is_playing=lambda: True), [0]*9, [0]*9, [0]*7)
     p.writer.stop_future.result(timeout=2)
     p.finish_if_drained()
-    assert p.mode == 'UNSAVED' and not p.duration.enabled
+    assert p.mode == 'UNSAVED'
     p.requests = ['discard']
     p.before_step(NS(current_time=0, is_playing=lambda: True), [0]*9, [0]*9, [0]*7)
     p.writer.operation_future.result(timeout=2)
     p.poll_io(); p.refresh()
-    assert p.mode == 'DISCARDED' and p.duration.enabled
+    assert p.mode == 'DISCARDED'
 
 
 @pytest.mark.parametrize('seconds,count,expected', [
@@ -82,7 +103,7 @@ def test_configured_boundary_stops_without_saving(tmp_path, seconds, count, expe
     assert p.mode == expected
     assert not writer.stopped  # 마지막 영상이 도착하기 전에는 파일을 닫지 않는다.
     assert len(p.waiting) == 1
-    assert ('no limit' if seconds == 0 else f'{seconds} s max') in p.status.text
+    assert p.last_status[0] == expected
 
 
 def test_snapshot_does_not_change_timeline_and_uses_capture_time(tmp_path):
@@ -209,9 +230,11 @@ def test_camera_failure_does_not_block_discard_or_overwrite_original_error(tmp_p
 def test_ready_clears_camera_warmup_message(tmp_path):
     p = panel(tmp_path, 30)
     p.mode, p.error = 'WARMING UP', 'front: waiting for RGB'
-    p.before_step(NS(current_time=0, is_playing=lambda: True), [], [], [])
+    p.snapshot = lambda world: ({}, stamps(world.current_time))
+    for i in range(6):
+        p.before_step(NS(current_time=i/30, is_playing=lambda: True), [], [], [])
     assert p.mode == 'READY' and p.error == ''
-    assert 'waiting for RGB' not in p.detail.text
+    assert p.last_status[2] == ''
 
 
 def test_paused_preview_does_not_query_camera_clock(tmp_path):
@@ -220,7 +243,7 @@ def test_paused_preview_does_not_query_camera_clock(tmp_path):
         raise AssertionError('No camera clock lookup while paused')
     p.snapshot = forbidden
     p.before_step(NS(current_time=2, is_playing=lambda: False), [], [], [])
-    assert p.mode == 'READY' and not p.record.enabled
+    assert p.mode == 'READY' and not p.playing
     assert p.error == ''
 
 
@@ -241,3 +264,125 @@ def test_resume_waits_for_fresh_render_clock_samples(tmp_path):
     assert snapshots == []
     p.before_step(NS(current_time=.1, is_playing=lambda: True), [], [], [])
     assert snapshots == [.1]
+
+
+def test_keyboard_save_requires_unsaved_and_records_outcome(tmp_path):
+    p = panel(tmp_path, 30)
+    p.handle_key("F9")
+    assert p.requests == []
+    p.mode = "UNSAVED"
+    p.handle_key("F9")
+    assert p.requests == ["save"] and p.task_succeeded
+    p.requests.clear()
+    p.handle_key("F7")
+    assert p.requests == ["save"] and not p.task_succeeded
+
+
+def test_discard_requires_two_deliberate_presses(tmp_path, monkeypatch):
+    p = panel(tmp_path, 30)
+    p.mode = "UNSAVED"
+    p.handle_key("F10")
+    assert p.requests == []
+    p.handle_key("F10")
+    assert p.requests == ["discard"]
+    p.requests.clear()
+    p.discard_deadline = 0.0
+    p.handle_key("F10")
+    p.discard_deadline = 0.0  # 기한이 지난 첫 입력은 폐기를 승인하지 않습니다.
+    p.handle_key("F10")
+    assert p.requests == []
+
+
+def test_warmup_restarts_after_missing_camera_frame(tmp_path):
+    p = panel(tmp_path, 30)
+    p.mode = "WARMING UP"
+    p.snapshot = lambda world: ({}, stamps(world.current_time))
+    for i in [0, 1, 2, 4, 5, 6, 7, 8]:
+        p.before_step(NS(current_time=i/30, is_playing=lambda: True), [], [], [])
+    assert p.mode == "WARMING UP" and p.warmup_frames == 5
+    p.before_step(NS(current_time=9/30, is_playing=lambda: True), [], [], [])
+    assert p.mode == "READY"
+
+
+def test_zero_delay_rgb_is_kept_until_next_state_is_known(tmp_path):
+    p = panel(tmp_path, 30)
+    p.mode, p.writer = "RECORDING", Writer()
+    p.snapshot = lambda world: ({"front": "at_t", "wrist": "at_t"}, stamps(world.current_time))
+    p.before_step(NS(current_time=2.0, is_playing=lambda: True), [1]*9, [2]*9, [0]*7)
+    assert p.writer.count == 0
+    p.after_step(NS(current_time=2+1/30), [3]*9)
+    assert p.writer.count == 1 and not p.waiting
+    row, images = p.writer.rows[0]
+    assert row["simulation_time"] == row["cameras"]["front"]["simulation_time"] == 2.0
+    assert row["next_observation.state"] == [3]*9
+    assert row["action"] == [2]*9 and images["front"] == "at_t"
+
+
+def test_connection_loss_finishes_existing_frames_and_blocks_success(tmp_path):
+    p = queued_panel(tmp_path)
+    p.requests = ['record']
+    p.interrupt('Leader input lost')
+    assert p.mode == 'FINISHING' and not p.requests and p.pending is None
+    assert len(p.waiting) == 2 and not p.writer.stopped
+    p.accept_capture({'front': 'first'}, stamps(2.0))
+    p.accept_capture({'front': 'second'}, stamps(2+1/30))
+    assert p.mode == 'UNSAVED' and p.writer.count == 2 and p.writer.stopped
+    p.handle_key('F9')
+    assert p.requests == []
+    p.handle_key('F7')
+    assert p.requests == ['save'] and not p.task_succeeded
+    p.writer.save = lambda success: setattr(p.writer, 'success', success)
+    p.before_step(NS(current_time=2.1, is_playing=lambda: True), [0]*9, [0]*9, [0]*7)
+    assert p.mode == 'SAVING' and p.writer.success is False
+    assert p.writer.count == 2 and p.pending is None
+
+
+def test_remote_recording_does_not_start_until_control_is_ready(tmp_path):
+    p = panel(tmp_path, 30)
+    p.requests = ['record']
+    p.before_step(NS(current_time=0, is_playing=lambda: True), [0]*9, [0]*9, [0]*7,
+                  control_ready=False)
+    assert p.mode == 'READY' and p.writer is None and not p.requests
+
+
+def test_connection_loss_does_not_change_an_already_completed_take(tmp_path):
+    p = panel(tmp_path, 30)
+    p.mode, p.task_succeeded = 'UNSAVED', True
+    p.interrupt('Video connection changed')
+    assert p.mode == 'UNSAVED' and not p.interruption and p.task_succeeded
+
+
+def test_interrupted_real_recording_saves_only_completed_frames(tmp_path):
+    import numpy as np
+    from episode_data import validate_episode
+    p = panel(tmp_path, 30)
+    p.metadata = {'camera_config': {'cameras': {
+        name: {'resolution': [16, 16]} for name in ('front', 'wrist')}},
+        'source': 'so101_leader_keyboard', 'course_layout': None}
+    p.snapshot = lambda world: (
+        {n: np.zeros((16, 16, 3), dtype=np.uint8) for n in ('front', 'wrist')},
+        stamps(world.current_time))
+    world = NS(current_time=2.0, is_playing=lambda: True)
+    p.handle_key('F5')
+    p.before_step(world, [0]*9, [.1]*9, [0, 0, .04, 1, 0, 0, 0])
+    try:
+        for i in range(3):
+            if i:
+                p.before_step(world, [i/100]*9, [.1]*9, [0, 0, .04, 1, 0, 0, 0])
+            world.current_time = 2+(i+1)/30
+            p.after_step(world, [(i+1)/100]*9)
+        p.interrupt('Leader input lost')
+        p.before_step(world, [.03]*9, [0]*9, [0, 0, .04, 1, 0, 0, 0], control_ready=False)
+        p.writer.stop_future.result(timeout=2)
+        p.finish_if_drained()
+        assert p.mode == 'UNSAVED' and p.writer.count == 3 and p.pending is None
+        p.handle_key('F7')
+        p.before_step(world, [.03]*9, [0]*9, [0, 0, .04, 1, 0, 0, 0])
+        p.writer.operation_future.result(timeout=2)
+        p.poll_io()
+        manifest, rows = validate_episode(p.last_saved)
+        assert p.mode == 'SAVED'
+        assert manifest['complete'] and manifest['success'] is False and manifest['frames'] == 3
+        assert len(rows) == 3 and rows[-1]['next_simulation_time'] == pytest.approx(2.1)
+    finally:
+        p.writer.close()

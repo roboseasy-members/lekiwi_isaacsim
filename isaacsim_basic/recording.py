@@ -47,7 +47,6 @@ def main(test=False):
     app = SimulationApp({"headless": test, "width": 1280, "height": 720})
     try:
         import omni.usd
-        import omni.ui as ui
         import omni.kit.app
         from pxr import Usd, UsdGeom, UsdPhysics
         from isaacsim.core.api import World
@@ -224,27 +223,18 @@ def main(test=False):
             print("BASIC_RECORDING_TEST result=PASS", flush=True)
             return
 
-        window = ui.Window("Lesson 5 - Data Recording", width=540, height=550, style={"font_size": 16})
-        with window.frame:
-            with ui.VStack(spacing=8):
-                ui.Label("Single-joint episode | simulation only", height=26)
-                ui.Label("1. Record > 2. Save episode > 3. Replay saved", height=24)
-                with ui.HStack(height=36):
-                    record_button = ui.Button("1. Record (3 s)", clicked_fn=lambda: requests.append("record"))
-                    save_button = ui.Button("2. Save episode", clicked_fn=lambda: requests.append("save"))
-                with ui.HStack(height=36):
-                    replay_button = ui.Button("3. Replay saved", clicked_fn=lambda: requests.append("replay"))
-                    discard_button = ui.Button("Discard unsaved", clicked_fn=lambda: requests.append("discard"))
-                reset_button = ui.Button("Reset model (keep saved episodes)", height=32,
-                                         clicked_fn=lambda: requests.append("reset"))
-                ui.Label("Save or discard unsaved frames before Reset. Saved files are preserved.", height=44, word_wrap=True)
-                status = ui.Label("READY", height=26)
-                sample = ui.Label("60 Hz simulation time / rad", height=26)
-                detail = ui.Label("", height=42, word_wrap=True)
-                output = ui.Label(str(directory), height=64, word_wrap=True)
-                ui.Label("JSON state/action only | RGB not recorded", height=24)
-        # 3·4편의 조작 창과 같은 위치에서 기록 실습을 시작한다.
-        window.deferred_dock_in("Stage", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
+        import carb.input
+        import omni.appwindow
+        inputs = carb.input.acquire_input_interface()
+        keyboard = omni.appwindow.get_default_app_window().get_keyboard()
+        def on_key(event, *_):
+            if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+                action = {"F5": "record", "F7": "save", "F9": "replay", "F8": "reset"}.get(event.input.name)
+                if action:
+                    requests.append(action)
+            return True
+        subscription = inputs.subscribe_to_keyboard_events(keyboard, on_key)
+        last_mode = None
         print(f"BASIC_RECORDING ready directory={directory}", flush=True)
         while app.is_running():
             while requests:
@@ -267,19 +257,10 @@ def main(test=False):
                 if not active and mode != "PREPARING" and world.is_playing():
                     world.pause()
                 app.update()
-            record_button.enabled = mode in {"READY", "SAVED", "REPLAYED", "DISCARDED"}
-            save_button.enabled = mode == "UNSAVED"
-            replay_button.enabled = mode in {"READY", "SAVED", "REPLAYED"} and saved is not None
-            reset_button.enabled = can_reset_model(mode)
-            discard_button.enabled = mode in {"RECORDING", "UNSAVED", "ERROR"}
-            status.text = f"{mode} | frames: {index}/{FRAME_COUNT}"
-            sample.text = f"actual: {angle():+.4f} rad | simulation: {index/FPS:.3f} s"
-            detail.text = ("Preparing scene. Please wait." if mode == "PREPARING"
-                           else "Preparation failed. Discard unsaved and try again." if mode == "ERROR"
-                           else f"Replay max error: {max(errors):.6f} rad" if mode == "REPLAYED"
-                           else "UNSAVED: click Save episode to keep this recording." if mode == "UNSAVED"
-                           else "Save before closing. Unsaved frames will be discarded.")
-            output.text = str(saved or directory)
+            if mode != last_mode:
+                print(f"BASIC_RECORDING state={mode} frames={index} output={saved or directory}", flush=True)
+                last_mode = mode
+        inputs.unsubscribe_to_keyboard_events(keyboard, subscription)
         world.pause()
     finally:
         app.close()

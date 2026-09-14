@@ -25,6 +25,8 @@ tools/**
 !tools/export_dataset.py
 !tools/dataset_manager/
 !tools/dataset_manager/**
+!tools/act/
+!tools/act/**
 !README.md
 !docs/
 docs/**
@@ -35,6 +37,8 @@ docs/**
 !docs/so101-teleop.md
 !docs/collection-course.md
 !docs/robot-cameras.md
+!docs/remote-classroom.md
+!docs/browser-classroom.md
 # Final exclusions also apply inside otherwise allowed asset/course folders.
 **/__pycache__/
 **/*.py[cod]

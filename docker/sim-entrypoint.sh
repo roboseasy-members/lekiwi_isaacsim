@@ -3,6 +3,7 @@ set -euo pipefail
 
 readonly sim_dir=/opt/lekiwi/isaac_sim
 readonly checked=/opt/lekiwi/docker/run-checked.sh
+readonly -a sim_python=(/isaac-sim/python.sh "$sim_dir/sim_launcher.py")
 command_name="${1:-keyboard}"
 if (($#)); then shift; fi
 
@@ -13,27 +14,27 @@ fi
 mkdir -p "${HOME}" "${XDG_CACHE_HOME:-${HOME}/.cache}" /data/captures
 
 case "$command_name" in
-    camera-test) exec "$checked" 'LEKIWI_CAMERA_TEST result=PASS' /isaac-sim/python.sh "$sim_dir/camera_smoke_test.py" "$@" ;;
-    recording-test) exec "$checked" 'BASIC_RECORDING_TEST result=PASS' /isaac-sim/python.sh /opt/lekiwi/isaacsim_basic/recording.py --test "$@" ;;
-    basic) exec /isaac-sim/python.sh /opt/lekiwi/isaacsim_basic/run.py "$@" ;;
-    basic-test) exec "$checked" 'ISAACSIM_BASIC_TEST result=PASS' /isaac-sim/python.sh /opt/lekiwi/isaacsim_basic/smoke_test.py "$@" ;;
-    keyboard) exec /isaac-sim/python.sh "$sim_dir/keyboard_drive.py" "$@" ;;
-    course) exec /isaac-sim/python.sh "$sim_dir/course_demo.py" "$@" ;;
-    course-test) exec "$checked" 'LEKIWI_COURSE_TEST result=PASS' /isaac-sim/python.sh "$sim_dir/course_smoke_test.py" "$@" ;;
+    camera-test) exec "$checked" 'LEKIWI_CAMERA_TEST result=PASS' "${sim_python[@]}" "$sim_dir/camera_smoke_test.py" "$@" ;;
+    recording-test) exec "$checked" 'BASIC_RECORDING_TEST result=PASS' "${sim_python[@]}" /opt/lekiwi/isaacsim_basic/recording.py --test "$@" ;;
+    basic) exec "${sim_python[@]}" /opt/lekiwi/isaacsim_basic/run.py "$@" ;;
+    basic-test) exec "$checked" 'ISAACSIM_BASIC_TEST result=PASS' "${sim_python[@]}" /opt/lekiwi/isaacsim_basic/smoke_test.py "$@" ;;
+    keyboard) exec "${sim_python[@]}" "$sim_dir/keyboard_drive.py" "$@" ;;
+    course) exec "${sim_python[@]}" "$sim_dir/course_demo.py" "$@" ;;
+    course-test) exec "$checked" 'LEKIWI_COURSE_TEST result=PASS' "${sim_python[@]}" "$sim_dir/course_smoke_test.py" "$@" ;;
     validate-assets) exec "$checked" 'LEKIWI_VALIDATE result=PASS' /isaac-sim/python.sh "$sim_dir/validate_asset.py" "$@" ;;
-    validate-usd) exec "$checked" 'LEKIWI_USD_VALIDATE result=PASS' /isaac-sim/python.sh "$sim_dir/validate_usd.py" "$@" ;;
-    physics-test) exec "$checked" 'LEKIWI_PHYSICS_SMOKE result=PASS' /isaac-sim/python.sh "$sim_dir/physics_smoke_test.py" "$@" ;;
-    arm-test) exec "$checked" 'SO101_ARM_TEST result=PASS' /isaac-sim/python.sh "$sim_dir/arm_smoke_test.py" "$@" ;;
-    gripper-test) exec "$checked" 'LEKIWI_GRIP_TEST result=PASS' /isaac-sim/python.sh "$sim_dir/gripper_smoke_test.py" "$@" ;;
+    validate-usd) exec "$checked" 'LEKIWI_USD_VALIDATE result=PASS' "${sim_python[@]}" "$sim_dir/validate_usd.py" "$@" ;;
+    physics-test) exec "$checked" 'LEKIWI_PHYSICS_SMOKE result=PASS' "${sim_python[@]}" "$sim_dir/physics_smoke_test.py" "$@" ;;
+    arm-test) exec "$checked" 'SO101_ARM_TEST result=PASS' "${sim_python[@]}" "$sim_dir/arm_smoke_test.py" "$@" ;;
+    gripper-test) exec "$checked" 'LEKIWI_GRIP_TEST result=PASS' "${sim_python[@]}" "$sim_dir/gripper_smoke_test.py" "$@" ;;
     build-assets)
         # Build into a fresh output directory; never overwrite shipped assets.
         build_dir="$(mktemp -d /data/asset-build.XXXXXXXX)"
         cp -a "$sim_dir/assets/lekiwi_soarm/." "$build_dir/"
         export LEKIWI_ASSET_DIR="$build_dir"
         /isaac-sim/python.sh "$sim_dir/build_urdf.py"
-        "$checked" 'LEKIWI_USD_BUILD result=PASS' /isaac-sim/python.sh "$sim_dir/build_usd.py"
+        "$checked" 'LEKIWI_USD_BUILD result=PASS' "${sim_python[@]}" "$sim_dir/build_usd.py"
         export LEKIWI_USD="$build_dir/usd/lekiwi_soarm.usd"
-        "$checked" 'LEKIWI_USD_VALIDATE result=PASS' /isaac-sim/python.sh "$sim_dir/validate_usd.py"
+        "$checked" 'LEKIWI_USD_VALIDATE result=PASS' "${sim_python[@]}" "$sim_dir/validate_usd.py"
         echo "Generated bundle: $build_dir"
         ;;
     *) echo "Unknown simulation command: $command_name" >&2; exit 2 ;;

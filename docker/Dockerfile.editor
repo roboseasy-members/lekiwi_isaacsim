@@ -1,0 +1,12 @@
+# 편집기는 CPU만 사용하며 Isaac Sim과 독립적으로 유지합니다.
+FROM ghcr.io/coder/code-server:4.137.0
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends python3 \
+    && rm -rf /var/lib/apt/lists/*
+COPY tools/web_classroom/lesson.py /usr/local/bin/lesson
+COPY tools/web_classroom/editor_entrypoint.py /opt/lekiwi-editor/entrypoint.py
+COPY tools/web_classroom/editor.yaml tools/web_classroom/lekiwi.code-workspace /opt/lekiwi-editor/
+RUN chmod 755 /usr/local/bin/lesson
+USER 1000:1000
+WORKDIR /workspace/isaacsim_basic
+ENTRYPOINT ["python3", "/opt/lekiwi-editor/entrypoint.py"]

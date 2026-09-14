@@ -1,177 +1,350 @@
-# 6편 · LeKiwi 영상·명령 수집과 LeRobot 데이터셋 만들기
+# 6장 · 환경을 직접 구성하고 LeKiwi 데이터 수집하기
 
-**목표:** 전방·손목 RGB와 실제 관절값·베이스 속도, 적용 명령을 한 에피소드로 기록하고 검사를 통과한 기록을 로컬 LeRobot 데이터셋으로 변환합니다.
-Isaac Sim 5.1.0 / LeRobot 0.6.1 Docker 기준, 키보드 기록·변환은 예상 90~120분입니다.
-4편에서 준비한 리더로 시연을 수집하는 선택 실습은 30~60분을 추가로 잡습니다.
+로봇 자산을 배치하고 큐브·열린 바구니·관찰 카메라를 직접 만든 뒤, 실제 시연 데이터 수집으로 이어갑니다.
+**1~5절은 마우스로 구성·관찰·저장하고, 마지막 6절에서 같은 구성 요소의 코드와 기록·변환·학습을 다룹니다.**
+앞부분은 큐브 하나·바구니 하나로 구성 원리를 익히는 실습입니다. 전체 도로·색상별 코스와
+전방·손목 카메라가 있는 데이터 수집 환경은 마지막 절의 준비된 프로그램으로 엽니다.
 
-5편은 한 관절 JSON으로 에피소드 개념을 배웠습니다. 이번에는 **LeKiwi + SO101과 두 카메라**를 사용합니다.
-앞부분은 실물 없이 키보드로 짧게 주행하면서 수집 경로를 검증합니다. 실제 리더는 뒷부분의 선택 실습에서만 연결합니다.
-이 장에서 만드는 것은 데이터셋이며 학습·정책 실행은 다음 단계입니다.
+## 1. 공통 바닥을 열고 로봇 자산 배치하기
 
-## 1. 실행과 화면 확인
+마우스 실습용 빈 편집기를 사용 중이면 그대로 이어갑니다. 앞 장의 코드 예제가 열려 있으면 결과를 저장하고 종료합니다.
+원격 수업은 `lesson stop`, 데스크탑은 Isaac Sim 창을 닫습니다. 이후 아래에서 본인 환경의 **한 가지 명령만** 실행합니다.
+이 명령은 편집 화면만 열며, 실습 객체는 이후 메뉴로 직접 만듭니다.
 
-기본 뷰포트는 **좌측 Perspective / 우측 Front Camera**입니다.
-Stage 옆 기록 창의 FRONT / WRIST 미리보기는 저장되는 두 카메라 영상입니다.
-`C`로 좌측 시점을 바꾸어도 우측 전방 카메라와 수집 카메라는 유지됩니다.
-
-[전체 설치 안내](../README.md)를 마친 뒤 저장소 최상위에서 실행합니다.
-열려 있는 Isaac Sim은 창을 닫고 종료가 끝난 후 진행합니다.
+원격 수업 — 브라우저 터미널:
 
 ```bash
-export LEKIWI_DOCKER_SUDO=1  # Docker에 sudo가 필요한 PC에서만
-export ACCEPT_EULA=Y       # NVIDIA 라이선스를 읽고 동의한 경우
-./lekiwi setup all
-./lekiwi record
+lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_empty_stage.py
 ```
 
-`record`는 실제 USB를 열지 않습니다. 팔은 기본 자세를 유지하고 베이스는 키보드로 움직입니다.
-`Lesson 6 - LeKiwi Recording`이 **Stage 옆 탭**으로 열립니다. `WARMING UP`에서 `READY`로 바뀔 때까지 기다립니다.
-조작키 설명은 같은 영역의 `LeKiwi + SO101 Physical Drive` 탭에서 확인합니다.
-창이 작아 아래쪽 경로가 보이지 않으면 패널 안을 스크롤하거나 Stage와 Property 사이의 경계를 아래로 드래그합니다.
-
-![기록 창과 두 카메라 미리보기](images/01-ready.png)
-
-- FRONT / WRIST는 서로 다른 카메라의 실제 RGB입니다. C로 Viewport 시점을 바꾸어도 수집 카메라는 바뀌지 않습니다.
-- 기본 설정은 각 640×480 RGB입니다. 실제 크기는 카메라 설정의 `resolution`을 따릅니다.
-- 팔 관절 6개와 베이스 속도 3개를 관측하고, 팔 목표 6개와 베이스 속도 명령 3개를 기록합니다.
-- 기록 시간은 **30 Hz 시뮬레이션 시간**입니다. PC의 처리 속도가 느리면 3초 분량을 수집하는 데 실제로는 더 오래 걸릴 수 있습니다.
-
-### 카메라를 먼저 살펴보기
-
-전방에 도로와 물체가 보이는지 확인합니다. 손목 화면이 팔 부품에 가려지면 그 상태도 기록에 그대로 들어갑니다.
-현재 카메라 장착은 3·4편과 같은 **SOARM base 기준 도면 TF**입니다. X·Z 치수는 반영했으며 Y·방향·실제 고정 링크 등의 최종 실물 확인 전까지 `calibrated=false`입니다.
-본격적인 집기 시연을 쌓기 전에 [3편의 렌즈 중심·촬영 방향 확인](../03_robot_cameras/README.md)을 따라 현재 장착과 여러 팔 자세에서의 시야를 확인합니다.
-이번 짧은 주행 실습에서는 가림을 관찰하고, 도면 기반 장착값과 보정 여부가 manifest에 남는 것을 확인합니다.
-
-새로 저장하는 에피소드의 `manifest.json` 안 `camera_config`에는 적용된 장착값과 `measurement`가 함께 남습니다.
-보정 전 에피소드는 이전 설정을 그대로 보존합니다. 카메라 설정이 다른 에피소드는 같은 변환 묶음에 섞지 않습니다.
-기록 패널의 실제 화면 5장은 도면 TF를 적용한 실행에서 다시 촬영했습니다. 시작 화면의 기본 제한은 30초이며, 기록 예시는 0(시간 제한 없음)으로 바꾼 뒤 40프레임에서 수동 종료했습니다.
-
-## 2. 한 번 기록하기
-
-첫 과제는 `Move forward and stop`입니다. 과제 선택은 기록 전에만 가능합니다.
-첫 저장·변환 확인에는 **1~3초 제한 또는 짧은 수동 종료**로 충분합니다. 아래 120초·300초는 설정 예시입니다.
-
-1. **Max seconds (0 = no limit)**에 최대 수집 시간을 초 단위 정수로 입력한 뒤 **1. Record**를 누릅니다. 기본값은 `30`이고, `120`은 2분, `300`은 5분입니다. `0`은 시간 제한 없이 직접 종료할 때까지 수집합니다.
-2. Viewport의 빈 하늘 부분을 클릭해 입력 포커스를 옮깁니다.
-3. **1**로 기본 속도를 선택하고 **W를 짧게 누른 뒤 놓습니다.**
-4. 로봇이 멈추는 것을 관찰하며 몇 프레임 더 기록합니다.
-5. **2. Stop recording**을 누릅니다.
-
-![기록 중 프레임과 두 RGB 확인](images/02-recording.png)
-
-`RECORDING`의 프레임 수가 늘어나야 합니다. 키보드를 놓은 뒤의 정지 명령도 데이터에 포함됩니다.
-팔이 기본 자세를 유지하는 키보드 실습은 집기 시연이 아닙니다. 이 기록을 집기 학습 데이터라고 표시하지 않습니다.
-
-**Stop recording은 파일 수집만 멈춥니다. 로봇 주행 정지 버튼이 아닙니다.** 이동키를 먼저 모두 놓습니다.
-Space는 베이스 정지에만 반응하고 시뮬레이션 재생은 유지합니다. 파일 수집을 끝내려면 기록 패널의 Stop recording을 사용합니다.
-실제 리더 조작의 정지·비활성화 절차는 4편을 따릅니다.
-
-![기록 종료 후 저장 전 상태](images/03-unsaved.png)
-
-설정한 시간은 **시뮬레이션 시간** 기준이며, 30 Hz에서 `설정 초 × 30`프레임의 관측을 모으면 새 수집을 끝내고, 마지막 영상과 파일 쓰기를 기다리는 `FINISHING`을 거쳐 `UNSAVED`로 전환합니다. 자동 저장하지 않으므로 성공 여부를 확인한 뒤 Save episode를 누릅니다. `0`이면 자동 종료하지 않으며 **Stop recording**으로 끝냅니다. 양수로 설정해도 언제든 먼저 종료할 수 있습니다.
-
-시간 설정은 기록 전에만 변경할 수 있고, 같은 실행에서는 다음 에피소드에도 유지됩니다. 프로그램을 다시 실행하면 기본값 30초로 시작합니다. 선택한 값은 원본 `manifest.json`의 `max_duration_seconds`에 남으며 `0`은 무제한을 뜻합니다. 오래 수집할수록 두 카메라의 PNG 파일과 디스크 사용량도 늘어납니다.
-
-## 3. 성공 여부와 저장·버리기
-
-이번 과제의 성공 기준은 **앞으로 이동한 뒤 정지했고, 필요한 영상과 명령이 기록되었는가**입니다.
-조건을 확인했을 때만 `Task succeeded`를 체크하고 **3. Save episode**를 누릅니다.
-체크하지 않은 연습 기록도 저장할 수 있으며 `success=false`로 남습니다. 체크는 자동 성공 판정이 아닙니다.
-
-![저장 완료와 에피소드 경로](images/04-saved.png)
-
-저장 시 모든 프레임의 시간 대응, 두 PNG의 크기·색상 형식·SHA256을 검사합니다.
-검사 중에는 **SAVING**이 표시되며 화면과 시뮬레이션은 계속 갱신됩니다.
-검사가 끝난 뒤에만 완료 manifest를 기록하고 `.partial`을 제거합니다. **SAVED를 확인한 뒤 종료합니다.**
-긴 기록은 검사에도 시간이 걸립니다. 제작 PC의 5분 분량(9,000프레임) 검사에는 약2분20초가 걸렸습니다. PC에 따라 달라지며, 미리보기가 갱신되고 `SAVING`이면 완료를 기다립니다. 드문 화면 지연이 남을 수 있으며 상세 수치는 [검증 기록](SOURCES.md)을 참고합니다.
-화면과 터미널의 `LEKIWI_RECORD saved=...` 경로를 기록지에 적습니다.
-
-잘못된 기록은 **Discard unsaved**로 버리고 다시 시작합니다.
-파일 쓰기가 끝나는 것을 기다려 **DISCARDING → DISCARDED**로 바뀝니다.
-이 버튼은 이번 미저장 기록만 지우며 이미 저장된 에피소드에는 영향을 주지 않습니다.
-
-![미저장 기록 버리기](images/05-discarded.png)
-
-**새 Record는 로봇이 지금 있는 위치에서 시작합니다.** 코스·큐브·로봇을 자동 초기화하지 않습니다.
-새 큐브 배치로 반복하려면 저장 또는 폐기가 완료된 뒤, Stage 옆 조작 탭의 **Reset scene / randomize cubes**를 누릅니다.
-가상 로봇은 시작 자세, 큐브는 같은 색상 라인 안에서 새 위치·방향으로 배치됩니다. 바구니·도로와 저장된 에피소드는 유지됩니다.
-다음 Record의 `course_layout`에는 새 배치가 기록되고, 새 `data/scenes/course.*/layout.json`도 저장됩니다.
-녹화·마무리·미저장·저장·폐기 중에는 리셋이 차단됩니다. teleop 사용 시 Reset 후 **R**로 다시 활성화합니다.
-
-![다음 에피소드를 위한 랜덤 리셋](images/07-reset.png)
-
-정확히 동일한 과거 배치를 재현하려면 아래처럼 저장한 layout.json으로 새 실행을 시작합니다.
+데스크탑 직접 실행 — 저장소 루트 터미널:
 
 ```bash
-# 실제 저장 경로로 XXXXXXXX를 바꿉니다.
-LEKIWI_COURSE_LAYOUT=/data/scenes/course.XXXXXXXX/layout.json ./lekiwi record
+./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-미저장 상태에서 창을 닫으면 `.partial` 디렉터리가 남습니다. 완료 기록으로 취급하지 않으며 변환에서도 제외합니다.
-Pause·Stop 또는 타임라인 초기화로 기록 시간에 틈이 생기면 `ERROR`로 전환합니다.
-이전 프레임을 복사하거나 시간을 다시 붙여 정상 데이터처럼 저장하지 않습니다. 미저장 기록을 버리고 Play 후 새로 기록합니다.
+원격으로 새 실행을 시작했다면 `lesson status`가 READY가 될 때까지 기다린 뒤 WebRTC에서 같은 서버 주소로 다시 Connect합니다.
+영상 창을 클릭한 상태에서 마우스와 키보드를 조작합니다. 이후 코드 예제를 재실행할 때도 같은 순서로 접속합니다.
 
-## 4. 파일과 한 프레임 읽기
+일반 Isaac Sim 설치에서는 앱을 직접 엽니다. 이전 실습이 실행 중이면 저장을 마치고 종료한 뒤 시작합니다.
+
+`File > Open`으로 1장의 `base_scene.usda`를 열고 `File > Save As`로 `my_lekiwi_scene.usda`를 만듭니다.
+World·PhysicsScene·Light·Ground가 있어야 합니다. 공통 바닥 파일이 없으면 [1장](../01_object_physics/README.md) 1~2절을 먼저 마칩니다.
+
+1. Stage의 빈 곳에서 `Create > Xform`을 선택하고 이름을 `LeKiwi`로 바꿉니다. 최종 경로는 `/LeKiwi`입니다. World 아래에 생겼다면 루트로 옮겨 경로를 맞춥니다.
+2. LeKiwi의 Property에서 `Add > Reference`를 선택하고 로봇 USD를 지정합니다.
+3. Docker 안의 경로는 `/opt/lekiwi/isaac_sim/assets/lekiwi_soarm/usd/lekiwi_soarm.usd`입니다. 일반 설치에서는 저장소 안의 같은 파일을 선택합니다.
+4. LeKiwi의 Translate를 `(0,0,0.055)` m, Rotate=0, Scale=1로 입력합니다.
+5. 로봇 형상·관절이 나타나는지 확인합니다. 제공된 로봇 자산은 형상·물리·관절을 포함합니다. 같은 강체·관절을 다시 추가하지 않습니다.
+
+로봇 자산은 부품이 묶인 USD를 재사용합니다. 복잡한 로봇 외형을 큐브로 다시 모델링하는 과정은 이 실습 범위가 아닙니다.
+참조한 자산 파일 자체를 덮어쓰지 않고, 자신이 조립한 장면을 별도 USD로 저장합니다.
+
+## 2. 바닥과 큐브 만들기
+
+설정은 Stop 상태에서 바꿉니다. Ground의 Size=1, Scale=`(7.4,7.4,0.1)`, Translate=`(0,0,-0.071)`로 맞춥니다.
+바닥 윗면 높이는 `-0.021 m`이며 Collider만 있습니다.
+
+1. World 아래에 `Create > Shape > Cube`로 `PracticeCube`를 만듭니다.
+2. Size=`0.04`, Scale=`(1,1,1)`, Rotate=`(0,0,0)`, Translate=`(0.7,0.35,0.001)`을 입력합니다.
+3. `Add > Physics > Rigid Body`, `Collider`, `Mass`를 추가합니다. 질량은 `0.035` kg, Disable Gravity는 해제합니다.
+
+![Shape Cube를 추가하는 메뉴](images/manual-create-cube.png)
+
+사진은 기존 바구니 장면의 메뉴 위치입니다. 이번 실습의 값은 위 표기를 따릅니다.
+
+## 3. 바닥과 네 벽으로 열린 바구니 만들기
+
+1. World 아래 `Create > Xform`으로 `Basket`을 만듭니다. Translate=`(1.2,0,-0.021)`, Rotate=0, Scale=1로 둡니다.
+2. Basket 아래 `Create > Shape > Cube`로 다섯 객체를 만들고 아래 이름과 값을 입력합니다.
+3. 모두 Size=1, Rotate=0입니다. Translate는 **Basket 기준 로컬 위치**이며 각 객체에 Collider만 추가합니다.
+
+| 이름 | Translate (m) | Scale |
+|---|---|---|
+| Bottom | `(0,0,0.0075)` | `(0.44,0.44,0.015)` |
+| Left | `(0,0.2125,0.09)` | `(0.41,0.015,0.18)` |
+| Right | `(0,-0.2125,0.09)` | `(0.41,0.015,0.18)` |
+| Front | `(0.2125,0,0.09)` | `(0.015,0.44,0.18)` |
+| Back | `(-0.2125,0,0.09)` | `(0.015,0.44,0.18)` |
+
+4. Viewport의 표시 메뉴에서 `Show By Type > Physics > Colliders > Selected`로 선택한 벽과 바닥의 접촉 형상을 확인합니다.
+5. 입구가 비어 있는지 확인합니다. 바구니 전체를 덮는 하나의 Collider는 만들지 않습니다.
+
+![바닥과 네 벽의 Collider가 분리된 바구니 예시](images/manual-basket-colliders.png)
+
+이 사진은 기존 바구니 실습의 형상 확인 화면입니다. 본인이 만든 다섯 객체도 입구를 막지 않아야 합니다.
+
+Stage에서 World를 선택하고 낙하를 확인할 큐브를 하나 더 만듭니다. 경로는 `/World/DropCube`, Size=0.04, Scale=1, Rotate=0,
+월드 Translate=`(1.2,0,0.4)`로 두고 Rigid Body·Collider·Mass=0.035를 추가합니다.
+Play로 큐브가 바구니 안에 안착하는지 보고 Stop합니다. 이 확인에서는 로봇을 조작하지 않습니다.
+
+## 4. 관찰 카메라 추가하기
+
+1. Viewport를 Perspective로 두고 마우스로 바구니와 큐브가 함께 보이는 시점을 잡습니다.
+2. Viewport 위쪽 카메라 메뉴의 `Camera > Create from View`를 선택합니다.
+3. Stage에서 새 카메라 이름을 `OverviewCamera`로 바꾸고, 카메라 선택 메뉴에서 이 카메라를 선택합니다.
+4. Camera 타입의 객체를 클릭해 Property의 Focal Length·Aperture·Clipping을 확인합니다.
+5. Focal Length를 현재 값의 두 배로 바꿔 보이는 범위를 비교한 뒤 원래 값으로 복원합니다.
+
+현재 시점으로 Camera를 만드는 메뉴는 [NVIDIA 5.1 카메라 안내](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/robot_setup_tutorials/tutorial_gui_camera_sensors.html)에 설명되어 있습니다.
+
+![Camera 타입에서 확인하는 렌즈 속성](images/manual-camera-properties.png)
+
+사진은 전방 카메라의 속성 위치입니다. 여기서는 직접 만든 OverviewCamera의 값을 기록합니다.
+이 카메라는 장면을 관찰하는 고정 카메라입니다. 데이터 수집에 사용하는 전방·손목 카메라는 다음 코드 절에서 별도로 확인합니다.
+
+## 5. 저장하고 직접 만든 환경 정리하기
+
+Stop 상태에서 `File > Save`로 `my_lekiwi_scene.usda`를 저장합니다. Docker 수업에서는 `/data/isaacsim_basic/` 아래를 사용합니다.
+원본 로봇 자산 파일은 덮어쓰지 않습니다. `File > Open`으로 본인의 장면을 다시 열어 로봇·큐브·바구니·카메라를 확인합니다.
+
+[기록지](worksheet.md)에 장면 경로, 바구니 Collider 화면, 낙하 결과, 카메라 화면을 남깁니다.
+바구니 입구를 하나의 충돌 형상이 막으면 큐브가 들어갈 수 없는 이유를 설명합니다.
+**이 USD에는 장면이 저장됩니다. 사람의 시연이나 시간별 RGB·명령 데이터는 아직 기록하지 않았습니다.**
+
+## 6. 마지막: 같은 작업을 코드로 구현하기
+
+먼저 직접 만든 구성 요소가 어떤 코드에 대응하는지 확인합니다. 이어 준비된 기록 환경에서 시연·저장·변환을 진행합니다.
+**현재 기록기는 앞에서 저장한 임의 USD를 여는 방식이 아닙니다.** 전체 코스·두 카메라·초기 배치 정보가 연결된 환경을 사용합니다.
+앞의 간단한 제작 장면과 실제 수집 환경의 차이를 구분해 기록합니다.
+
+| 구성·작업 | 화면으로 하는 일 | 코드에서 같은 역할 |
+|---|---|---|
+| 로봇 | Xform에 제공 USD를 Reference로 추가 | `keyboard_drive.py`의 `WheeledRobot(... usd_path=...)` |
+| 바닥·큐브·바구니 | Shape 생성, Transform·Rigid Body·Collider 설정 | `collection_course.py`의 `build_course()`·`_build_basket()` |
+| 도로·색상별 배치 | 객체를 배치하고 색상 지정 | `color_course.py`의 `build_color_geometry()`와 배치 생성 |
+| 카메라 | Camera 생성·부모·렌즈 속성 설정 | `robot_cameras.py`의 `attach_cameras()` |
+| 시연 | 준비된 기록 환경에서 주행·기록 키 조작 | 입력 처리와 `RecordingPanel` |
+| RGB·상태·명령의 시간 연결 | 기록 상태와 로그 확인 | `before_step()`·`after_step()`·`accept_capture()` |
+| LeRobot 변환·업로드·ACT | 브라우저 터미널에서 학생 스크립트 실행 | 03~07번 학생 파일 |
+
+
+기록 구현은 [01_lekiwi_recording.py](experiments/01_lekiwi_recording.py)에 있습니다.
+이 파일은 프로젝트 로봇 자산·EpisodeWorker·데이터 형식을 사용하므로 저장소 전체가 필요합니다.
+직접 만든 USD를 저장하고 빈 편집 화면을 종료한 다음 아래로 이어갑니다.
+
+### 코드 실행과 수정 순서
+
+설치는 0장에서 마쳤다고 가정합니다. 아래 명령 중 본인 환경의 한 가지만 사용합니다.
+
+원격 수업 — 브라우저 터미널:
+
+```bash
+lesson run 6
+```
+
+데스크탑 직접 실행 — 저장소 루트 터미널:
+
+```bash
+./lekiwi basic --chapter 6
+```
+
+1. 이 절에 연결된 Python 파일을 열고, 앞에서 클릭했던 속성에 해당하는 줄을 찾습니다.
+2. 기본 실행 결과를 직접 만든 환경의 결과와 비교합니다.
+3. 실행을 종료한 뒤 지정된 기본 줄에 `#`를 붙이고 비교할 줄의 `#`를 지웁니다. 들여쓰기는 유지합니다.
+4. 파일을 저장하고 같은 명령으로 다시 실행합니다. 화면에서 값을 바꾸는 실험과 구분해 기록합니다.
+
+원격 수업은 코드 수정 후 `lesson stop` → `lesson run 6`로 재실행합니다.
+학생 파일은 호스트에서 저장하면 다음 실행에 반영되며, 코드만 수정할 때 Docker 이미지 재빌드는 필요 없습니다.
+아래 `./lekiwi ...` 예시는 데스크탑 터미널용입니다. 원격 수업에서는 위 `lesson` 명령을 사용합니다.
+
+### 6.1. 기록 환경 실행과 기본값 수정
+
+`./lekiwi record`도 같은 기록 코드를 사용합니다. 처음에는 실물 리더 없이 키보드로 짧은 직진·정지를 기록합니다.
+좌측 Perspective / 우측 front 화면이 열립니다. 별도 기록 탭은 없습니다.
+터미널에서 `LEKIWI_RECORD state=READY`까지 기다립니다.
+
+![전용 탭 없는 LeKiwi 기록 화면](images/09-code-first.png)
+
+
+**먼저 완성된 기록 환경을 화면에서 확인합니다. 아직 F5를 누르지 않습니다.**
+
+1. Stage의 LeKiwi를 펼쳐 로봇 링크·관절을 봅니다.
+2. CollectionCourse에서 큐브·바구니를 찾고, 앞서 직접 만든 형상·질량·Collider와 비교합니다.
+3. Stage 검색에서 Camera 타입을 찾아 전방·손목 카메라의 부모를 확인합니다.
+4. Viewport 카메라 메뉴에서 두 시점을 각각 확인합니다. 앞의 OverviewCamera와 역할이 다릅니다.
+
+현재 환경에서는 관찰만 합니다. 기록 도중 객체 위치·카메라 설정을 바꾸지 않습니다.
+
+`RecordingPanel`은 이전 코드와의 호환을 위한 클래스 이름이며 UI 창을 만들지 않습니다.
+생성자에서 다음 부분을 찾아 기본 30초 줄 대신 120초 또는 0 줄을 활성화합니다.
+
+```python
+self.duration_seconds = 30
+# self.duration_seconds = 120
+# self.duration_seconds = 0
+```
+
+0은 무제한이며 F6으로 끝냅니다. 시간은 시뮬레이션 시간 기준입니다.
+파일 수정 없이 실행별 값을 지정하려면 다음처럼 합니다. 환경변수 값이 코드 기본값보다 우선합니다.
+
+```bash
+LEKIWI_RECORD_SECONDS=120 ./lekiwi record
+```
+
+파일 상단의 `task_description`은 **이번 시연에서 수행할 작업 설명**입니다. 기본 줄을 주석 처리하고 집기 과제 줄을 해제합니다.
+
+```python
+# task_description = "Move forward and stop"
+task_description = "빨간 큐브를 빨간 바구니에 넣기"
+```
+
+설명은 에피소드의 `manifest.json` 안에 `task`로 저장되고, LeRobot 변환 시에도 같은 `task`로 전달됩니다.
+같은 의미의 시연에는 일관된 설명을 사용합니다. 설명을 바꾸면 저장할 작업 이름이 바뀌며, 로봇이 자동으로 그 작업을 수행하는 것은 아닙니다.
+`LEKIWI_RECORD_TASK` 환경변수에 비어 있지 않은 값을 지정하면 파일의 기본 설명보다 우선합니다.
+지정하지 않거나 비우면 코드의 `task_description`을 사용합니다.
+
+[브라우저 편집기 연결](../../docs/browser-classroom.md)을 마쳤다면 이 파일을 수정하고 `Ctrl+S`로 저장합니다.
+이미 실습이 켜져 있으면 기록의 저장·폐기를 마치고 `lesson stop` 후 **`lesson run 6`**으로 재실행합니다.
+지금은 키보드만 사용하는 기록 검사입니다. 실제 리더 시연은 6.6절에서 `lesson run 6 --teleop`과 노트북 리더 프로그램을 연결합니다.
+
+### 6.2. 기록·저장·폐기
+
+Viewport를 클릭한 상태에서 한 번씩 누릅니다. 파일 작업은 키 콜백이 아닌 주 반복문에서 처리합니다.
+
+| 키 | 동작·조건 |
+|---|---|
+| F5 | READY / SAVED / DISCARDED에서 새 기록 시작 |
+| F6 | 수집 종료 요청. 마지막 영상·파일 쓰기가 끝나면 UNSAVED |
+| F7 | UNSAVED 기록을 실패·연습(success=false)으로 저장 |
+| F9 | 통신 중단 없이 마친 UNSAVED 기록을 성공(success=true)으로 저장 |
+| F10 두 번 | 3초 안에 두 번 눌러 이번 미저장 기록 폐기 |
+| F8 | 저장·폐기 완료 후 로봇 초기화·라인별 큐브 재배치 |
+| SPACE | 로봇 주행·가상 팔 추종 정지. 파일 수집은 별도로 F6 |
+
+화면 왼쪽 위의 상태 표시에서 수집 여부와 시간을 확인합니다.
+
+![수집 중 표시와 에피소드 시간](images/10-recording-status.png)
+
+위 화면은 리더를 연결하지 않고 상태 표시를 검사한 예시입니다. `ARM Stopped`에서도 기록은 가능하며, 실제 시연에서는 팔 추종 상태도 함께 확인합니다.
+
+| 화면 표시 | 뜻 |
+|---|---|
+| `READY` | F5로 새 기록을 시작할 수 있음 |
+| 빨간 `REC / RECORDING` | 수집 중. 현재 에피소드 시간 / 최대 시간과 프레임 수 표시 |
+| `FINISHING` | 마지막 영상과 파일 쓰기를 기다리는 중 |
+| `STOPPED / NOT SAVED` | F6으로 수집을 끝냈지만 아직 저장하지 않음 |
+| `SAVING` → `SAVED` | 검증·저장 진행 → 저장 완료 |
+| `RECORDING ERROR` | 오류 확인 후 F10을 두 번 눌러 해당 기록 폐기 |
+
+시간은 **수집한 프레임 수 ÷ 30 FPS인 시뮬레이션 시간**입니다. 실행이 느리면 실제 대기 시간과 다를 수 있습니다.
+시간 제한이 0이면 `NO LIMIT`로 표시됩니다. 리더 입력 사용 시 `ARM Following leader` 또는
+`ARM Stopped - R to resume`도 함께 표시합니다. Space로 팔을 멈춘 경우 수집 종료는 별도로 F6을 누릅니다.
+원격 입력·영상 연결이 끊긴 경우에는 아래 절차에 따라 기록이 자동 중단됩니다.
+상태 표시는 Viewport UI에만 그려지며 저장하는 front/wrist 영상에는 포함되지 않습니다.
+
+1. READY를 확인하고 F5를 누릅니다.
+2. 짧게 W로 전진한 뒤 이동키를 모두 놓고 SPACE로 정지합니다.
+3. F6을 누릅니다. FINISHING 동안 마지막 RGB와 파일 쓰기를 기다립니다.
+4. UNSAVED에서 결과를 검토하고 F7 또는 F9를 누릅니다.
+5. `SAVING → SAVED`와 `LEKIWI_RECORD saved=... frames=...`를 확인합니다.
+
+성공 표시는 자동 판정이 아닙니다. 실제 과제를 완료했을 때만 F9를 사용합니다.
+F10은 이미 저장된 에피소드를 지우지 않습니다. 기록 중 Pause/Stop은 시간 연결 오류가 되므로 해당 take를 폐기하고 새로 시작합니다.
+F8은 미저장·기록·저장 진행 중에 차단됩니다. 완료 후 재배치하고 리더 사용 시 R을 다시 누릅니다.
+
+#### 기록 중 연결이 끊기면
+
+짧은 원격 입력 끊김은 [4장의 복구 절차](../04_teleoperation/README.md#47-실습-중-늦어지거나-끊기면)에 따라 자동 복구를 기다립니다.
+**팔 추종이 돌아와도 중단된 기록은 자동으로 이어 붙이지 않습니다.**
+원격 리더 입력이 0.5초 넘게 끊기거나 영상 연결 종료를 감지하면 새 프레임 수집을 중지합니다.
+이미 수집한 프레임의 영상·파일 쓰기를 마친 뒤 `STOPPED / NOT SAVED`로 바뀝니다.
+`Connection interrupted - recording stopped`가 나오면 다음 순서로 진행합니다.
+
+![통신 단절로 기록을 중지하고 저장 또는 폐기를 기다리는 실제 화면](images/15-network-recording-interrupted.png)
+
+위 화면은 핫스팟 서버에서 시험 입력으로 수집하다 연결을 끊어 확인한 결과입니다.
+21프레임에서 중단됐으며, 팔의 자동 복구와 기록의 저장·재시작은 별도로 처리합니다.
+
+1. 이동키를 놓고 리더를 멈춘 뒤 `FINISHING`이 끝날 때까지 기다립니다.
+2. 기록을 남기려면 **F7**로 연습 저장하고 `SAVED`를 확인합니다. 사용하지 않을 기록은 **F10을 두 번** 눌러 폐기합니다.
+3. 팔 추종과 베이스 조작이 정상인지 확인합니다. `ARM Stopped`이면 자세를 확인하고 **R**을 누릅니다.
+4. **F5**로 새 에피소드를 시작하고 빨간 `REC`와 프레임 증가를 확인합니다.
+
+통신 때문에 중단된 기록에는 F9 성공 저장을 사용할 수 없습니다. 팔이 자동 복구돼도 먼저 F7 저장 또는 F10 폐기를 마쳐야 새 기록을 시작할 수 있습니다.
+원격 리더 실습에서는 팔 추종이 활성화된 뒤 F5를 누릅니다. 저장할 프레임이 없거나 `RECORDING ERROR`이면 F10 두 번으로 해당 기록을 폐기합니다.
+`NOT SAVED`는 최종 저장 전이므로 서버 실습을 종료하지 마세요. 영상 연결 종료를 감지하기까지는 지연이 있을 수 있습니다.
+
+![원격 수집 중 REC와 프레임 확인](images/11-remote-recording.png)
+
+![원격 수집 종료 후 아직 저장되지 않은 상태](images/12-remote-unsaved.png)
+
+![F7 연습 저장 후 SAVED 확인](images/13-remote-saved.png)
+
+위 사진은 실제 원격 수집에서 **REC → NOT SAVED → SAVED**를 확인한 예시입니다.
+해당 기록은 30초 제한으로 종료한 것이며, 새 통신 복구 기능의 화면 검증 사진은 아닙니다.
+
+### 6.3. 원본 파일과 시간 순서
 
 ```text
-data/recordings/lekiwi.<실행별 ID>/
-  episode.<ID>/
+/data/recordings/lekiwi.XXXXXXXX/
+  episode.XXXXXXXX/
     manifest.json
     frames.jsonl
-    images/front/000000.png ...
-    images/wrist/000000.png ...
-  episode.<다른 ID>.partial/   미완료 기록, 변환에서 제외
+    images/front/
+    images/wrist/
 ```
 
-컨테이너의 `/data/recordings/...`는 호스트 저장소의 `data/recordings/...`와 같은 결과입니다.
-교재와 코드는 이미지에 포함되지만 기록 파일은 Git·Docker 빌드에서 제외됩니다.
+정확한 파일·카메라 경로는 manifest에 기록됩니다. `.partial`은 미완료이며 완성 데이터로 쓰지 않습니다.
+한 프레임은 관측 상태 t, 두 RGB t, action t, 후속 상태 t+1/30초를 담습니다.
+팔 6개 관절은 rad, 베이스 명령은 m/s·rad/s이며 순서는 manifest의 feature 설명을 따릅니다.
+카메라 장착·보정값, 초기 코스, 작업 설명, 성공 여부도 manifest에 남깁니다.
 
-| 필드 | 의미 |
-|---|---|
-| `frame_index`, `timestamp` | 에피소드 내 순번과 시각, 첫 프레임은 0 |
-| `simulation_time` | 관측을 읽은 시뮬레이션 시각 t |
-| `observation.state` | 실제 팔 관절 6개 + 실제 베이스 속도 vx·vy·wz |
-| `action` | 관측 후 적용한 팔 목표 6개 + 베이스 속도 명령 vx·vy·wz |
-| `next_observation.state` | 1/30초 물리 실행 후 실제 상태 |
-| `next_simulation_time` | t + 1/30초 |
-| `cameras.front`, `cameras.wrist` | t에서 동기 캡처한 RGB 시각·render reference·상대 경로·SHA256 |
-| `base_pose` | 관측 시 베이스의 world 위치 xyz와 쿼터니언 wxyz, 진단용 |
+PNG 저장은 백그라운드에서 수행합니다. 저장이 밀리거나 RGB 프레임이 빠지면 ERROR로 중단합니다.
+프레임을 조용히 생략한 데이터셋을 만들지 않습니다. 터미널 오류와 저장 공간을 확인한 뒤 새로 수집합니다.
 
-팔 순서는 `shoulder_pan, shoulder_lift, elbow_flex, wrist_flex, wrist_roll, gripper`입니다.
-팔 관절은 **rad**, 베이스 평행이동은 **m/s**, 회전 속도는 **rad/s**입니다.
-베이스 vx·vy는 로봇의 수평 base 축 기준이며 화면 방향과 다를 수 있습니다.
-목표값과 실제값은 다를 수 있습니다. 접촉·추종 지연이 있기 때문입니다.
+### 6.4. 영상이 만들어지는 코드
 
-```text
-RGB_front(t), RGB_wrist(t), 실제 상태(t)
-                    ↓
-             적용 명령 action(t)
-                    ↓ 1/30초 물리 실행
-               실제 상태(t+dt)
+```python
+product = rep.create.render_product(camera_path, resolution)
+rgb = rep.AnnotatorRegistry.get_annotator("rgb")
+rgb.attach([product.path])
+rgba = np.asarray(rgb.get_data())
 ```
 
-두 카메라는 시뮬레이션을 계속 재생하면서 렌더링합니다. 미리보기와 기록 때문에 Play/Pause를 반복하지 않습니다.
-영상이 몇 프레임 늦게 도착할 수 있으므로 관측·적용 명령·다음 상태를 잠시 보관합니다.
-Isaac Sim의 `ReferenceTime`을 `get_sim_time_at_time()`으로 실제 물리 시각으로 변환한 뒤, 같은 시각의 기록에 두 RGB를 연결합니다.
-두 카메라의 render reference가 같아야 하며 누락된 영상을 현재 시각으로 덮어쓰거나 반복해서 저장하지 않습니다.
+실제 파일은 front·wrist 각각에 Render Product와 RGB annotator를 연결합니다.
+`get_data()`의 결과는 최신 도착 영상입니다. **현재 물리 스텝과 같은 시각이라고 가정하면 안 됩니다.**
 
-**Stop recording** 후에는 마지막 영상이 도착할 때까지 `FINISHING`이 잠깐 표시됩니다.
-`UNSAVED`는 마지막 영상의 파일 쓰기까지 끝난 상태입니다. 성공 여부를 확인하고 저장합니다. 이 동안에도 물리는 계속 진행하므로 먼저 이동키를 놓습니다.
-기록 중 타임라인의 Pause를 직접 누르면 해당 기록은 `ERROR`가 되고 자동으로 재생하지 않습니다.
-**Discard unsaved**로 미완료 기록을 버린 뒤 Play를 누르고 새로 기록합니다.
-일시정지 중에는 마지막 미리보기를 유지하며 새 카메라 시각을 조회하지 않습니다. 재개 직후에는 몇 프레임 준비를 기다립니다.
+`snapshot()`은 ReferenceTime을 카메라의 실제 시뮬레이션 촬영 시각으로 바꾸고 두 카메라의 시각이 같은지 검사합니다.
+`before_step()`은 상태·명령을 보관하고, `after_step()`은 다음 상태를 연결합니다.
+`accept_capture()`가 늦게 도착한 RGB를 원래 촬영 시각의 상태·명령에 연결합니다.
+이 교재의 기록 실행은 렌더 완료를 기다리는 동기 설정을 사용합니다. 명령 전 t의 영상을 잠시 보관하고, 물리 스텝 후 t+dt 상태와 합쳐 저장합니다.
+지연 영상도 촬영 시각으로 검사합니다. 매 프레임 타임라인 Pause/Play를 반복하지 않습니다.
 
-이미지는 화질 손실 없는 PNG로 저장하며 파일 처리는 별도로 수행합니다.
-저장 장치가 밀려 대기 중인 프레임이 4개를 넘으면 해당 기록을 ERROR로 중단합니다. 프레임을 조용히 버리거나 무제한으로 메모리에 쌓지 않습니다.
-이때 미완료 기록을 버리고 저장 공간·장치 처리 속도를 확인한 뒤 새로 수집합니다.
+다음 읽기 과제: `world.current_time`으로 모든 영상 시각을 덮어쓰면 왜 학습 데이터가 잘못될 수 있는지 설명합니다.
+시간 검사는 삭제하지 말고 의미를 읽습니다.
 
-manifest에는 과제, 성공 표시, 입력 방식, 카메라 장착·보정 여부, 초기 코스 배치, feature 순서와 단위가 포함됩니다.
+### 6.5. LeRobot 데이터셋으로 변환하기
 
-## 5. LeRobot 데이터셋으로 변환하기
+[브라우저 VS Code 수업](../../docs/browser-classroom.md#7-python-파일을-수정하고-데이터-변환검사)에서는 변환 설정도 Python 파일에서 수정합니다.
+먼저 저장을 완료하고, 브라우저의 새 터미널에서 다음을 실행합니다.
+
+```bash
+cd /workspace/isaacsim_basic/06_lekiwi_dataset/experiments
+python3 02_dataset_list.py
+```
+
+[03_convert_dataset.py](experiments/03_convert_dataset.py) 상단의 `episode_ids`에 목록의 실제 `id`를 넣고,
+`dataset_name`을 새 이름으로 정합니다. `success_only = False`는 선택한 연습·성공 기록 모두, `True`는 F9 성공 기록만 변환합니다.
+`Ctrl+S`로 저장한 뒤 같은 터미널에서 실행합니다.
+
+```bash
+python3 03_convert_dataset.py
+```
+
+`LEKIWI_DATASET_JOB result=PASS`와 프레임·에피소드 수를 확인합니다. 변환 결과는 탐색기의 **LeRobot 데이터셋**에서 읽습니다.
+[04_inspect_dataset.py](experiments/04_inspect_dataset.py)의 `dataset_name`을 같은 이름으로 저장하고 `python3 04_inspect_dataset.py`로 재검사합니다.
+
+![브라우저에서 설정 수정 후 실제 데이터 변환·검사 완료](images/11-browser-dataset.png)
+
+2026-09-12 실제 확인 화면입니다. 전날 수집한 **1개 에피소드·422프레임·14.07초**의 연습 기록을 변환했고, 검사 파일도 통과했습니다.
+화면의 에피소드 ID와 데이터셋 이름은 이 검증의 예시이며, 학생은 자신의 목록과 새 이름을 사용합니다.
+
+긴 작업은 `lesson dataset status` / `lesson dataset logs`로 확인합니다. 브라우저 터미널의 Ctrl+C는 대기만 끝내며 서버 변환은 계속됩니다.
+다음은 **서버 호스트 터미널**에서 같은 변환을 하는 방법입니다. 브라우저에서 이미 변환했다면 중복 실행하지 않습니다.
 
 필요한 기록을 저장한 뒤 Isaac Sim을 닫고 종료를 기다립니다.
-아래 `lekiwi.XXXXXXXX`를 **기록 패널에 나온 실행 폴더**로 바꾸고 출력 폴더는 아직 없는 새 이름을 사용합니다.
+아래 `lekiwi.XXXXXXXX`를 **터미널의 LEKIWI_RECORD directory에 나온 실행 폴더**로 바꾸고 출력 폴더는 아직 없는 새 이름을 사용합니다.
 
 ```bash
 ./lekiwi export-dataset \
@@ -186,9 +359,9 @@ manifest에는 과제, 성공 표시, 입력 방식, 카메라 장착·보정 �
 
 ![변환 후 실제 검사 결과](images/06-export.png)
 
-이 터미널 이미지는 앞서 검증한 **2개 에피소드·19프레임**의 별도 변환 예시입니다. 위에서 새로 촬영한 40프레임 기록의 변환 결과는 아닙니다.
+이 터미널 이미지는 앞서 검증한 **2개 에피소드·19프레임**의 과거 변환 예시이며, 위 브라우저 변환 결과와 별개입니다.
 
-변환은 LeRobot 이미지에서 수행합니다. 호스트에 LeRobot을 설치하지 않고 GitHub/Hugging Face 업로드도 수행하지 않습니다.
+변환은 LeRobot 이미지에서 수행하므로 호스트에 LeRobot을 별도 설치하지 않습니다.
 PNG를 두 카메라 영상으로 인코딩하고 상태·행동은 Parquet, 에피소드·feature 정보는 meta 아래에 저장합니다.
 
 ```text
@@ -208,48 +381,117 @@ data/datasets/lekiwi_lesson6_01/
 이는 **파일 검증**이며, 로봇을 움직여 같은 동작을 재현하는 물리 재생이나 정책 성능 검증은 아닙니다.
 원본 JSON에는 후속 상태·카메라 시각도 남기고, LeRobot 학습 feature에는 관측 상태·두 RGB·행동을 전달합니다.
 
-## 6. 실제 리더를 사용하는 선택 실습
-
-[4편의 준비·보정·활성화 절차](../04_teleoperation/README.md)를 먼저 완료합니다.
-전원 차단 수단, 리더 지지와 작업 공간을 확인하고 한 단계씩 진행합니다.
-시뮬레이터와 기존 리더 세션이 종료된 뒤 본인 장치 경로를 넣습니다.
+검사한 데이터를 선택적으로 Hugging Face에 올리려면 [05_upload_dataset.py](experiments/05_upload_dataset.py)의
+`dataset_name`, `repo_id`, `private`를 수정하고 브라우저 VS Code 터미널에서 실행합니다.
+기본값 `private = False`는 공개 업로드입니다. 비공개가 필요하면 `True`로 바꿉니다.
 
 ```bash
-./lekiwi teleop \
-  --port /dev/serial/by-id/usb-본인_SO101_장치 \
-  --id so101_leader \
-  --scene random \
-  --record
+python3 05_upload_dataset.py
 ```
 
-기존 안전 확인·보정 절차는 그대로 수행합니다. 기록 옵션이 리더를 자동 활성화하지 않습니다.
-리더 준비와 가상 로봇 화면을 확인한 뒤 Viewport에서 R을 눌러 활성화합니다.
-조작이 정상임을 확인한 뒤 과제를 선택하고 Record를 누릅니다.
+실행할 때 쓰기 토큰을 숨김 입력합니다. 토큰은 파일·명령행·로그에 저장하지 않습니다.
+학습용 `data/`, `meta/`, `videos/`와 자동 생성한 `README.md` 카드를 업로드하고 로컬 경로가 든 `recording_report.json`은 제외합니다.
+`repo_id`에는 새 저장소 이름을 사용합니다. 기존 데이터·버전 태그가 있으면 중단합니다.
+모든 학습 파일·카드와 LeRobot이 읽을 `v3.0` 태그를 확인한 뒤 `LEKIWI_DATASET_JOB result=PASS`를 출력합니다.
+로컬 학습만 진행한다면 이 단계는 건너뜁니다.
 
-기록되는 action은 리더 USB 원시값이 아니라 **방향·오프셋·관절 한계·속도 제한을 거쳐 가상 로봇에 실제 적용한 목표**입니다.
-리더 입력이 만료되면 기존 watchdog이 팔 목표를 유지하고 베이스를 정지시킵니다.
-통신 장애나 Pause로 중단된 시연은 성공으로 표시하지 말고 버린 뒤 원인을 확인합니다.
 
-키보드 실습은 `source=keyboard_home_hold`, 리더 실습은 `source=so101_leader_keyboard`로 구분합니다.
-실제 follower나 실제 LeKiwi 본체를 이동시키는 기능은 이 실습에 포함되지 않습니다.
-이번 교재의 실물 연결 검증 범위는 [출처·검증 기록](SOURCES.md)을 확인합니다.
+### 6.6. 리더 시연과 로컬 학습으로 연결
 
-## 7. 문제 확인과 완료 기준
+[4편](../04_teleoperation/README.md)의 장비 준비·보정을 끝낸 뒤 현재 기록을 저장하고 실습을 종료합니다.
+실물 장비의 안전 확인은 한 단계씩 수행합니다.
 
-| 증상 | 확인 |
+**원격 수업:** `01_lekiwi_recording.py`의 기록 길이·작업 설명을 저장한 뒤 브라우저 터미널에서 실행합니다.
+
+```bash
+lesson stop
+lesson run 6 --teleop
+```
+
+접속 문구를 정하고 READY를 확인합니다. 노트북에서는 [리더 연결 절차](../../docs/remote-classroom.md#5-실제-리더암-연결)의
+`./lekiwi remote leader`에 같은 서버 Tailscale 주소·접속 문구·본인 USB 경로·기존 리더 ID를 사용합니다.
+같은 리더 송신기가 아직 실행 중이라면 중복 실행하지 않고 같은 접속 문구를 사용합니다.
+WebRTC에서 같은 서버 주소로 다시 Connect하고 팔·집게·베이스의 추종을 확인합니다.
+
+**데스크탑 직접 실행:** 본인 USB 경로로 다음을 실행합니다.
+
+```bash
+LEKIWI_RECORD_SECONDS=120 ./lekiwi teleop \
+  --port /dev/serial/by-id/usb-본인_SO101_장치 \
+  --id so101_leader --scene random --record
+```
+
+기록 옵션이 리더를 자동 활성화하지 않습니다. R 활성화 뒤 같은 F5/F6/F7/F9 키를 사용합니다.
+리더 시연을 충분히 모으고 변환이 PASS인 로컬 데이터셋으로 학습합니다. Hugging Face 업로드는 선택 단계입니다.
+리더 시연을 새로 취득했다면 **6.5절로 돌아가 새 에피소드 ID를 선택하고 새 이름으로 변환·검사**한 뒤 6.7절로 진행합니다.
+학습·추론 명령은 [프로젝트 README](../../README.md)와 [로컬 데이터 관리](../../docs/dataset-manager.md)를 따릅니다.
+짧은 저장 검사를 통과했다는 사실과 충분한 학습 데이터·정책 성능을 구분합니다.
+
+### 6.7. ACT 학습 스크립트
+
+[06_train_act.py](experiments/06_train_act.py) 상단에서 다음 값을 수정하고 저장합니다.
+`dataset_name`은 6.5절에서 검사에 통과한 실제 이름으로 맞춥니다. 아래 이름은 예시이며 `run_name`은 기존에 없는 새 이름을 사용합니다.
+
+```python
+dataset_name = 'lekiwi_lesson6_01'
+repo_id = None
+run_name = 'act_lesson6_01'
+steps = 1000
+batch_size = 4
+```
+
+공개 업로드 데이터를 쓰려면 `dataset_name=None`, `repo_id='계정명/데이터셋명'`으로 바꿉니다.
+실행 검사만 할 때는 `steps=1`, `batch_size=1`, `pretrained_backbone=False`를 사용합니다.
+본 학습에서는 `pretrained_backbone=True`로 시작하며 첫 다운로드에 인터넷 연결이 필요합니다.
+GPU·드라이버·CUDA 환경은 학습할 PC에 맞게 준비합니다.
+아래는 **브라우저 편집기 터미널**에서 실행합니다. 새 터미널을 열었어도 같은 폴더로 이동합니다.
+
+```bash
+cd /workspace/isaacsim_basic/06_lekiwi_dataset/experiments
+lesson stop
+python3 06_train_act.py
+```
+
+다른 터미널의 `lesson train logs`에서 손실과 진행 상황을 확인합니다.
+`lesson train status`로 상태를 조회하고, 서버 학습을 중단하려면 `lesson train stop`을 사용합니다.
+Ctrl+C는 대기만 끝냅니다. 새 시도에는 새 `run_name`을 사용하며, 기존 결과를 지우지 않습니다.
+**완료 기준:** `LEKIWI_TRAIN_JOB result=PASS`와 `lesson train status`의 `SUCCEEDED`를 확인합니다.
+실패·중단 상태이면 `lesson train logs`를 확인하고 추론으로 넘어가지 않습니다.
+모델은 **ACT 학습 결과**의 `<run_name>/train/checkpoints/last/pretrained_model`에 저장됩니다.
+
+### 6.8. ACT 추론 스크립트
+
+[07_infer_act.py](experiments/07_infer_act.py)의 `run_name`을 학습 때와 같은 이름으로 저장합니다.
+`checkpoint='last'`는 마지막 저장 모델, `seconds=30`은 시작 후 최대 시뮬레이션 시간입니다.
+
+```bash
+cd /workspace/isaacsim_basic/06_lekiwi_dataset/experiments
+python3 07_infer_act.py
+lesson status
+```
+
+READY가 되면 WebRTC 화면에 연결해 **R 시작 / Space 정지 / F8 초기화**를 사용합니다.
+연결이 끊기거나 장면이 초기화되면 추론은 정지하며, R을 다시 눌러 시작합니다.
+모델과 함께 저장한 정규화 통계·두 카메라·상태 및 행동 순서를 재사용합니다.
+종료는 `lesson stop`, 오류 확인은 `lesson logs`입니다.
+
+추론 상태는 `lesson logs`의 `LEKIWI_ACT_INFERENCE` 뒤에서 확인합니다.
+
+| 표시 | 다음 행동 |
 |---|---|
-| READY가 되지 않음 | 두 카메라 초기화·GPU 렌더링 로그, 같은 앱 중복 실행 여부 |
-| 손목 영상에 팔만 보임 | 3편의 부모 링크·렌즈 중심·정면, 실측 TF 보정 필요 여부 |
-| RGB 시간 불일치 | 미저장 기록 버리기, 타임라인 Play 후 새로 기록; 오래된 프레임 재사용 금지 |
-| Record 후 팔이 안 움직임 | 키보드 모드는 기본 자세 유지. 리더 모드라면 4편의 준비·R 활성화 확인 |
-| Stop recording 후 주행 지속 | 수집 종료와 주행 정지는 별개. 이동키 모두 해제 |
-| 변환할 에피소드가 없음 | Save 완료 여부, `.partial`, `--success-only` 선택 |
-| 출력 폴더가 이미 있음 | 새 출력 이름 사용; 원본과 이전 데이터셋을 덮어쓰지 않음 |
+| RUNNING | 모델 입력·출력을 처리 중입니다. `seconds`는 실제 대기 시간이 아닌 시뮬레이션 시간입니다 |
+| FINISHED | 지정한 분량을 마쳤습니다. 같은 장면에서 다시 실행하려면 R |
+| STOPPED | Space·일시정지·영상 연결 종료 등으로 멈췄습니다. 영상과 자세를 확인하고 Play 상태에서 R |
+| READY: 초기화 완료 | F8로 장면을 초기화했습니다. 새 배치를 확인한 뒤 R |
+| ERROR | 로그의 원인을 확인합니다. 같은 오류가 계속되면 강사에게 알립니다 |
 
-- 2개의 짧은 에피소드를 저장하고 성공/연습 표시를 구분합니다.
-- 새 기록을 버린 뒤 이전 저장 파일이 유지되는지 확인합니다.
-- 한 프레임의 상태·명령·두 카메라 시각을 설명합니다.
-- LeRobot 변환 결과의 프레임 수와 영상 두 개의 디코딩 검사를 확인합니다.
-- 최종 검증 전 카메라 장착과 단순 주행 기록을 집기 학습용 완성 시연으로 혼동하지 않습니다.
+영상이 끊기면 같은 서버 주소로 다시 Connect하고 R을 누릅니다. Play나 영상 재접속만으로 추론을 재개하지 않습니다.
 
-결과는 [실습 기록지](worksheet.md)에 정리합니다.
+2026-09-13 리허설에서는 실제 취득·변환한 900프레임으로 ACT 학습 1회와 모델 저장을 확인했습니다.
+그 모델의 시뮬레이션 추론, 지정 시간 종료, Space·일시정지·F8·영상 재접속 후 R 재시작도 확인했습니다.
+상세 범위는 [ACT 실행 리허설 기록](../../docs/act-rehearsal-20260913.md)을 참고하세요.
+짧은 연습 기록이나 실행 검사 모델로 실제 과제 성공을 기대하지 않습니다.
+
+완료 기준: [기록지](worksheet.md)에 수집 시간·프레임 수·성공 여부·저장 경로·변환 결과를 남깁니다.
+
+[공식 자료](SOURCES.md) · [전체 목차](../README.md)

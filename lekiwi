@@ -10,6 +10,8 @@ export LEKIWI_DATA_DIR="${LEKIWI_DATA_DIR:-${project_dir}/data}"
 fail() { echo "ERROR: $*" >&2; exit 1; }
 usage() {
     echo 'Usage: ./lekiwi COMMAND [ARGS]'
+    echo '  classroom                 로컬 창으로 1~6장 실습 선택'
+    echo '  remote COMMAND [ARGS]     같은 LAN의 화면·리더암 연결 (remote --help)'
     echo '  install [--check|--verify] 학생 PC 준비 / 읽기 전용 검사 / GPU 실습 검사'
     echo '  doctor                    Check Docker access, GPU and bundled assets'
     echo '  config                    Validate/render Docker Compose configuration'
@@ -19,8 +21,8 @@ usage() {
     echo '  record                    Open LeKiwi RGB/action recording (no USB)'
     echo '  export-dataset ARGS       Convert saved recordings to a local LeRobot dataset'
     echo '  dataset-ui                브라우저에서 로컬 시연 선택·변환·데이터셋 검사'
-    echo '  dataset COMMAND [ARGS]    list / export / inspect'
-    echo '  basic [--lesson NAME]     Open the physics/joint classroom (no USB)'
+    echo '  dataset COMMAND [ARGS]    list / export / inspect / upload'
+    echo '  basic [--chapter 1..6 | --script PATH | --experiment 1..6]  학생 Python 파일 실행'
     echo '  test-recording            Check classroom recording/replay (no USB)'
     echo '  test-basic                Check classroom physics inside Docker (no USB)'
     echo '  scene [--seed N|--layout FILE] [--start-count N --middle-count N]  Open collection course'
@@ -38,6 +40,7 @@ usage() {
     echo '  build-assets              Rebuild assets into a new data/asset-build.* folder'
     echo '  check-ml                  Check LeRobot imports and CUDA'
     echo '  train act|groot [ARGS]     Forward training arguments to lerobot-train'
+    echo '  act train|infer [ARGS]     수업용 ACT 학습 / 저장한 ACT로 Isaac Sim 추론'
     echo '  status                    Show this project’s containers'
     echo '  stop                      Stop only this project’s simulation container'
     echo 'Recording: record / teleop --record. Local export: export-dataset. Hardware validation and policy evaluation remain separate.'
@@ -45,6 +48,16 @@ usage() {
 
 command_name="${1:-help}"
 if (($#)); then shift; fi
+if [[ "$command_name" == remote ]]; then
+    exec /usr/bin/python3 -B -u "$project_dir/tools/remote_classroom/main.py" "$@"
+fi
+if [[ "$command_name" == classroom ]]; then
+    (($# == 0)) || fail 'classroom takes no arguments.'
+    exec /usr/bin/python3 -B "$project_dir/tools/classroom/main.py"
+fi
+if [[ "$command_name" == act ]]; then
+    exec /usr/bin/python3 -B -u "$project_dir/tools/act/launch.py" "$@"
+fi
 case "$command_name" in
     help|-h|--help) usage; exit 0 ;;
     install|doctor|config|setup|pull|sim|record|export-dataset|dataset-ui|dataset|basic|test-basic|test-recording|scene|calibrate|teleop|validate|validate-usd|test-physics|test-arm|test-gripper|test-scene|test-cameras|build-assets|check-ml|train|status|stop) ;;
@@ -61,8 +74,12 @@ docker_cmd=(docker)
 if [[ "${LEKIWI_DOCKER_SUDO:-0}" == 1 ]]; then
     # Preserve only the values used by Compose, including the login user's IDs.
     # Do not run this entire launcher as root or inherit an arbitrary root HOME.
-    sudo -v || fail 'Could not obtain Docker sudo access.'
-    docker_cmd=(sudo --preserve-env=LEKIWI_UID,LEKIWI_GID,LEKIWI_DATA_DIR,LEKIWI_SIM_IMAGE,LEKIWI_LEROBOT_IMAGE,ACCEPT_EULA,DISPLAY,LEKIWI_XAUTH_FILE,LEKIWI_LEADER_PORT,LEKIWI_LEADER_GID,LEKIWI_TELEOP_STATE,LEKIWI_TELEOP_SESSION,LEKIWI_ARM_SIGNS,LEKIWI_ARM_OFFSETS_DEG,LEKIWI_ARM_MAX_SPEED,LEKIWI_COURSE_LAYOUT,LEKIWI_CAMERA_CONFIG,LEKIWI_RECORDING docker)
+    if [[ -n "${LEKIWI_CLASSROOM_SESSION:-}" ]]; then
+        sudo -n -v || fail 'Run sudo -v in the launcher terminal, then retry.'
+    else
+        sudo -v || fail 'Could not obtain Docker sudo access.'
+    fi
+    docker_cmd=(sudo --preserve-env=LEKIWI_UID,LEKIWI_GID,LEKIWI_DATA_DIR,LEKIWI_SIM_IMAGE,LEKIWI_LEROBOT_IMAGE,ACCEPT_EULA,DISPLAY,LEKIWI_XAUTH_FILE,LEKIWI_LEADER_PORT,LEKIWI_LEADER_GID,LEKIWI_TELEOP_STATE,LEKIWI_TELEOP_SESSION,LEKIWI_TELEOP_REMOTE,LEKIWI_ARM_SIGNS,LEKIWI_ARM_OFFSETS_DEG,LEKIWI_ARM_MAX_SPEED,LEKIWI_COURSE_LAYOUT,LEKIWI_CAMERA_CONFIG,LEKIWI_RECORDING,LEKIWI_RECORD_SECONDS,LEKIWI_RECORD_TASK,LEKIWI_POLICY_DIR,LEKIWI_POLICY_SECONDS,LEKIWI_DISPLAY_MODE,LEKIWI_STREAM_HOST docker)
 fi
 compose=("${docker_cmd[@]}" compose --project-directory "$project_dir"
     --project-name "$project_name" -f "$project_dir/compose.yaml")
@@ -96,6 +113,10 @@ if [[ "$command_name" == stop ]]; then
         || fail "No simulation container named $container_name"
     [[ "$owner" == "${project_name}|${project_dir}|sim" ]] \
         || fail "Container $container_name is not owned by this project checkout."
+    if [[ -n "${LEKIWI_CLASSROOM_SESSION:-}" ]]; then
+        run_owner="$("${docker_cmd[@]}" inspect --format '{{index .Config.Labels "lekiwi.classroom.session"}}' "$container_name")"
+        [[ "$run_owner" == "$LEKIWI_CLASSROOM_SESSION" ]] || fail 'This container was not started by this classroom session.'
+    fi
     exec "${docker_cmd[@]}" stop --time 30 "$container_name"
 fi
 
@@ -143,17 +164,34 @@ if [[ "$command_name" == dataset-ui || "$command_name" == dataset ]]; then
         manager_args=(serve)
         manager_run=(-T --publish 127.0.0.1:8765:8765)
     else
-        case "${1:-}" in list|export|inspect|-h|--help) ;; *) fail 'Use dataset list|export|inspect.' ;; esac
+        case "${1:-}" in list|export|inspect|upload|-h|--help) ;; *) fail 'Use dataset list|export|inspect|upload.' ;; esac
         manager_args=("$@")
         manager_run=(-T)
     fi
+    manager_offline=1
+    manager_secret_fd=''
+    if [[ "${manager_args[0]}" == upload ]]; then
+        [[ -n "${LEKIWI_CLASSROOM_SESSION:-}" ]] \
+            || fail 'Hugging Face upload is run with python3 05_upload_dataset.py in the browser VS Code terminal.'
+        # 토큰을 다른 준비 명령이 읽지 않도록 전용 익명 FD에 보관하고 원래 stdin을 닫습니다.
+        exec 10<&0
+        exec </dev/null
+        manager_secret_fd=10
+        manager_offline=0
+    fi
     ensure_image lerobot
-    if [[ "$command_name" == dataset-ui ]]; then
+    if [[ "$command_name" == dataset-ui || -n "${LEKIWI_CLASSROOM_SESSION:-}" ]]; then
         # compose run -T may detach on Ctrl+C; explicitly stop only this launch.
         manager_run_id="${BASHPID}-${RANDOM}-${RANDOM}"
         manager_container="${project_name}-dataset-ui-${manager_run_id}"
+        manager_pid=''
         stop_manager() {
             local owner
+            # wait 중에는 trap이 즉시 실행됩니다. 이 실행의 Compose 클라이언트도 남기지 않습니다.
+            if [[ -n "$manager_pid" ]] && kill -0 "$manager_pid" 2>/dev/null; then
+                kill -TERM "$manager_pid" 2>/dev/null || true
+                wait "$manager_pid" 2>/dev/null || true
+            fi
             owner="$("${docker_cmd[@]}" inspect --format '{{index .Config.Labels "lekiwi.dataset-manager.run"}}' "$manager_container" 2>/dev/null)" || return 0
             if [[ "$owner" == "$manager_run_id" ]]; then
                 "${docker_cmd[@]}" stop --time 10 "$manager_container" >/dev/null 2>&1 || true
@@ -162,16 +200,31 @@ if [[ "$command_name" == dataset-ui || "$command_name" == dataset ]]; then
         trap stop_manager EXIT
         trap 'exit 130' INT
         trap 'exit 143' TERM
-        "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE=1 \
-            --name "$manager_container" --label "lekiwi.dataset-manager.run=$manager_run_id" lerobot \
-            python /opt/lekiwi/tools/dataset_manager/cli.py serve
+        if [[ -n "$manager_secret_fd" ]]; then
+            "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" \
+                -e HF_HUB_DISABLE_IMPLICIT_TOKEN=1 -e HF_HUB_DISABLE_TELEMETRY=1 \
+                --name "$manager_container" --label "lekiwi.dataset-manager.run=$manager_run_id" lerobot \
+                python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}" <&10 &
+            exec 10<&-
+        else
+            "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" \
+                --name "$manager_container" --label "lekiwi.dataset-manager.run=$manager_run_id" lerobot \
+                python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}" &
+        fi
+        manager_pid=$!
+        wait "$manager_pid"
         exit "$?"
     fi
-    exec "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE=1 lerobot \
+    if [[ -n "$manager_secret_fd" ]]; then
+        exec "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" \
+            -e HF_HUB_DISABLE_IMPLICIT_TOKEN=1 -e HF_HUB_DISABLE_TELEMETRY=1 lerobot \
+            python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}" <&10
+    fi
+    exec "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" lerobot \
         python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}"
 fi
 if [[ "$command_name" == record ]]; then
-    (($# == 0)) || fail 'record takes no arguments; select a task in the recording panel.'
+    (($# == 0)) || fail 'record takes no arguments; set LEKIWI_RECORD_SECONDS and LEKIWI_RECORD_TASK before running.'
     export LEKIWI_RECORDING=1
     export LEKIWI_COURSE_LAYOUT="${LEKIWI_COURSE_LAYOUT:-random}"
 fi
@@ -283,6 +336,10 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 if [[ "$command_name" == sim || "$command_name" == record || "$command_name" == teleop || "$command_name" == scene || "$command_name" == basic ]]; then
+  if [[ "${LEKIWI_DISPLAY_MODE:-local}" == webrtc ]]; then
+    [[ -n "${LEKIWI_STREAM_HOST:-}" ]] || fail 'Set LEKIWI_STREAM_HOST to the desktop IPv4 address.'
+    compose+=(-f "$project_dir/docker/compose.stream.yaml")
+  else
     command -v xauth >/dev/null || fail 'Install xauth on the host for GUI authentication.'
     [[ "${DISPLAY:-}" =~ ^:([0-9]+)(\.[0-9]+)?$ ]] \
         || fail 'Set DISPLAY to a local X11/XWayland display, such as :0 or :1.'
@@ -303,8 +360,10 @@ if [[ "$command_name" == sim || "$command_name" == record || "$command_name" == 
         | xauth -f "$LEKIWI_XAUTH_FILE" nmerge -
     [[ -s "$LEKIWI_XAUTH_FILE" ]] || fail 'No X11 cookie was found for this display.'
     compose+=(-f "$project_dir/docker/compose.gui.yaml")
+  fi
 fi
 
+compose+=(-f "$project_dir/docker/compose.basic.yaml")
 ensure_image sim
 if [[ "$command_name" == teleop ]]; then
     # Fresh directory prevents replaying a sample from an earlier run.
@@ -328,4 +387,8 @@ if [[ "$command_name" == teleop ]]; then
     wait -n "${teleop_children[@]}" || result=$?
     exit "$result"
 fi
-"${compose[@]}" run --rm --no-deps -T --name "${project_name}-sim" sim "$sim_command" "$@"
+classroom_args=()
+if [[ -n "${LEKIWI_CLASSROOM_SESSION:-}" ]]; then
+    classroom_args=(--label "lekiwi.classroom.session=$LEKIWI_CLASSROOM_SESSION")
+fi
+"${compose[@]}" run --rm --no-deps -T --name "${project_name}-sim" "${classroom_args[@]}" sim "$sim_command" "$@"

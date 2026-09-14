@@ -202,5 +202,29 @@
         "label": "command 상태로 전진 또는 STOP과 물리 PLAYING을 확인합니다."
       }
     ]
+  },
+  {
+    "name": "07-code-first",
+    "title": "4장 · 관절 명령을 적용한 실제 모형",
+    "marks": [
+      {
+        "box": [
+          422,
+          172,
+          136,
+          230
+        ],
+        "label": "ArticulationAction으로 +30도 목표를 전달한 결과입니다."
+      },
+      {
+        "box": [
+          75,
+          74,
+          335,
+          117
+        ],
+        "label": "Viewport를 클릭한 뒤 학생 파일의 J/L/K 키 입력을 사용합니다."
+      }
+    ]
   }
 ]

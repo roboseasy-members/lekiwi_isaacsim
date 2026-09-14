@@ -54,6 +54,7 @@ class SplitView:
         main = get_active_viewport_window()
         if main is None:
             raise RuntimeError("Perspective viewport is not available")
+        self.main_window = main
         self.main = main.viewport_api
         self.main.camera_path = "/OmniverseKit_Persp"
         self.front = create_viewport_window("LeKiwi Front Camera", width=640, height=480,

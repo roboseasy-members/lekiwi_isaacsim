@@ -5,7 +5,7 @@ import tempfile
 
 from pxr import Gf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
 
-LESSONS = ("blank", "drop", "mass", "friction", "bounce", "basket", "joints")
+LESSONS = ("blank", "experiment", "drop", "mass", "friction", "bounce", "basket", "joints")
 
 
 def box(stage, path, position, size, color, *, collision=True, mass=None, angle=0):
@@ -38,11 +38,16 @@ def bind(prim, mat):
     UsdShade.MaterialBindingAPI.Apply(prim).Bind(mat, materialPurpose="physics")
 
 
-def create_stage(path, lesson="blank"):
+def create_stage(path, lesson="blank", experiment=None):
     if lesson not in LESSONS:
         raise ValueError(f"Unknown lesson: {lesson}")
     if Path(path).exists():
         raise FileExistsError(path)
+    if lesson == "experiment":
+        experiment = experiment or {"gravity_enabled": False, "collision_enabled": False}
+        if any(type(experiment.get(key)) is not bool for key in ("gravity_enabled", "collision_enabled")):
+            raise ValueError("Gravity and collision settings must be True or False")
+    settings = experiment or {}
     stage = Usd.Stage.CreateNew(str(path))
     UsdGeom.SetStageMetersPerUnit(stage, 1.0)
     UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
@@ -52,12 +57,20 @@ def create_stage(path, lesson="blank"):
     stage.SetDefaultPrim(world.GetPrim())
     scene = UsdPhysics.Scene.Define(stage, "/World/PhysicsScene")
     scene.CreateGravityDirectionAttr(Gf.Vec3f(0, 0, -1))
-    scene.CreateGravityMagnitudeAttr(9.81)
+    scene.CreateGravityMagnitudeAttr(settings.get("gravity_m_s2", 9.81))
     UsdLux.DomeLight.Define(stage, "/World/Light").CreateIntensityAttr(800)
     floor = box(stage, "/World/Ground", (0, 0, -.05), (6, 4, .1), (.18, .21, .25))
     bind(floor, material(stage, "Ground"))
 
-    if lesson == "drop":
+    if lesson == "experiment":
+        from pxr import PhysxSchema
+        cube = box(stage, "/World/PracticeCube", (0, 0, .7), (.1,)*3,
+                   (.2, .6, .95), mass=.1)
+        # 모든 조건에서 동적 강체를 유지하고 중력과 접촉만 독립적으로 바꾼다.
+        PhysxSchema.PhysxRigidBodyAPI.Apply(cube).CreateDisableGravityAttr(
+            not experiment["gravity_enabled"])
+        UsdPhysics.CollisionAPI(cube).CreateCollisionEnabledAttr(experiment["collision_enabled"])
+    elif lesson == "drop":
         for name, x, color, collision, mass in (
             ("VisualOnly", -.5, (.9, .2, .2), False, None),
             ("RigidOnly", 0, (.95, .6, .1), False, .1),
@@ -66,11 +79,12 @@ def create_stage(path, lesson="blank"):
             box(stage, "/World/" + name, (x, 0, .7), (.1,)*3,
                 color, collision=collision, mass=mass)
     elif lesson == "mass":
-        for name, x, mass in (("Light", -.3, .1), ("Heavy", .3, 1.0)):
-            box(stage, "/World/" + name, (x, 0, 1), (.1,)*3, (.2, .6, .95), mass=mass)
+        for name, x, mass, color in (("CubeLight", -.3, settings.get("light_mass_kg", .1), (.95, .5, .1)),
+                                     ("CubeHeavy", .3, settings.get("heavy_mass_kg", 1.0), (.1, .65, .95))):
+            box(stage, "/World/" + name, (x, 0, 1), (.1,)*3, color, mass=mass)
     elif lesson == "friction":
-        for name, y, mu, color in (("Low", -.4, .05, (.95, .5, .1)),
-                                    ("High", .4, .8, (.1, .65, .95))):
+        for name, y, mu, color in (("Low", -.4, settings.get("low_friction", .05), (.95, .5, .1)),
+                                    ("High", .4, settings.get("high_friction", .8), (.1, .65, .95))):
             mat = material(stage, name, friction=mu)
             ramp = box(stage, f"/World/Ramp{name}", (0, y, .4),
                        (1.6, .5, .06), (.4, .45, .5), angle=15)
@@ -85,8 +99,8 @@ def create_stage(path, lesson="blank"):
             bind(ramp, mat)
             bind(cube, mat)
     elif lesson == "bounce":
-        for name, x, restitution, color in (("Low", -.5, 0.0, (.95, .5, .1)),
-                                            ("High", .5, .8, (.1, .65, .95))):
+        for name, x, restitution, color in (("Low", -.5, settings.get("low_restitution", 0.0), (.95, .5, .1)),
+                                            ("High", .5, settings.get("high_restitution", .8), (.1, .65, .95))):
             mat = material(stage, name, restitution=restitution)
             pad = box(stage, f"/World/Pad{name}", (x, 0, .05), (.7, .7, .1), (.4, .45, .5))
             sphere = UsdGeom.Sphere.Define(stage, f"/World/Ball{name}")
@@ -145,7 +159,7 @@ def create_stage(path, lesson="blank"):
     return stage
 
 
-def new_exercise(parent, lesson):
+def new_exercise(parent, lesson, experiment=None):
     """Fresh writable copy each launch; never overwrite an earlier exercise."""
     if lesson not in LESSONS:
         raise ValueError(f"Unknown lesson: {lesson}")
@@ -153,5 +167,5 @@ def new_exercise(parent, lesson):
     parent.mkdir(parents=True, exist_ok=True)
     directory = Path(tempfile.mkdtemp(prefix=f"{lesson}.", dir=parent))
     path = directory / "scene.usda"
-    create_stage(path, lesson)
+    create_stage(path, lesson, experiment)
     return path

@@ -103,7 +103,8 @@ def export_selected(episodes, name, success_only=False):
         args = [sys.executable, str(script), '--input', tmp, '--output', str(dest), '--repo-id', repo_id]
         if success_only:
             args.append('--success-only')
-        result = subprocess.run(args, capture_output=True, text=True)
+        # 진행 단계와 오류는 stderr로 보내고 CLI의 stdout은 완료 JSON으로 유지합니다.
+        result = subprocess.run(args, stdout=sys.stderr, stderr=sys.stderr, text=True)
         if result.returncode:
             raise UserError('변환 실패: 원본 검사·카메라 설정 일치 여부·디스크 공간을 확인하세요. 미완성 출력은 보존되며 재시도에는 새 이름이 필요합니다.')
     report = read_json(dest / 'recording_report.json')
@@ -161,3 +162,129 @@ def inspect_dataset(name):
     report = validate_dataset(root)
     return {'name': name, 'path': str(root), 'repo_id': report['repo_id'],
             'frames': report['frames'], 'episodes': report['episodes']}
+
+
+def build_dataset_card(info, report, repo_id):
+    """Describe validated training data without publishing the local source report."""
+    successes = sum(source.get('success') is True for source in report.get('sources', []))
+    unmarked = sum(source.get('success') is False for source in report.get('sources', []))
+    unknown = report['episodes'] - successes - unmarked
+    # Match LeRobot's card metadata: only training parquet files form the table.
+    # Metadata parquet files have different schemas and must not be mixed in.
+    return f'''---
+tags:
+- LeRobot
+- lekiwi
+- isaac-sim
+task_categories:
+- robotics
+configs:
+- config_name: default
+  data_files:
+  - split: train
+    path: data/*/*.parquet
+---
+
+# {repo_id.split('/')[-1]}
+
+Isaac Sim의 LeKiwi 시연을 LeRobot {info['codebase_version']} 형식으로 변환한 데이터셋입니다.
+
+[Visualize Dataset에서 열기](https://huggingface.co/spaces/lerobot/visualize_dataset?path={repo_id})
+
+## 수집 내용
+
+- {report['episodes']}개 에피소드, {report['frames']} 프레임, {info['fps']} FPS
+- 전체 길이: {report['frames'] / info['fps']:.2f}초
+- 성공 표시: {successes}개 / 성공으로 표시하지 않은 에피소드: {unmarked}개 / 표시 정보 없음: {unknown}개
+- 전방·손목 RGB 영상과 9차원 상태·행동을 포함합니다.
+- 팔 관절·그리퍼는 rad, 베이스 평면 속도는 m/s, 회전 속도는 rad/s입니다.
+
+성공 표시는 수집자가 저장할 때 지정한 값입니다. 성공으로 표시하지 않은 에피소드를 성공 시연으로 간주하지 않습니다.
+데이터셋 라이선스는 아직 지정하지 않았습니다.
+
+## 데이터 구조
+
+`data/`에는 프레임별 수치, `videos/`에는 카메라 영상, `meta/`에는 에피소드·작업·통계 정보가 있습니다.
+영상 해상도와 상태·행동의 각 차원 이름은 아래와 같습니다.
+
+```json
+{json.dumps(info, ensure_ascii=False, indent=2)}
+```
+'''
+
+
+def upload_dataset(name, repo_id, private, token, api_factory=None):
+    """Validate a dataset, then upload its training files and generated Hub card."""
+    if not isinstance(repo_id, str) or not re.fullmatch(
+            r'[A-Za-z0-9][A-Za-z0-9._-]{0,95}/[A-Za-z0-9][A-Za-z0-9._-]{0,95}', repo_id):
+        raise UserError('Hugging Face 저장소는 계정명/데이터셋명 형식으로 적으세요.')
+    if type(private) is not bool:
+        raise UserError('공개 범위는 True 또는 False로 설정하세요.')
+    if not isinstance(token, str) or not 16 <= len(token) <= 512 or not re.fullmatch(r'hf_[A-Za-z0-9_-]+', token):
+        raise UserError('Hugging Face 쓰기 토큰 형식을 확인하세요.')
+    root = dataset_path(name)
+    if any(path.is_symlink() for path in root.rglob('*')):
+        raise UserError('데이터셋 안의 심볼릭 링크를 사용할 수 없습니다.')
+    report = validate_dataset(root)
+    dataset_info = read_json(root / 'meta/info.json')
+    version = dataset_info.get('codebase_version')
+    if version != 'v3.0':
+        raise UserError('LeRobot v3.0 데이터셋만 업로드할 수 있습니다.')
+    expected_files = {path.relative_to(root).as_posix()
+                      for folder in ('data', 'meta', 'videos')
+                      for path in (root / folder).rglob('*') if path.is_file()}
+    card = build_dataset_card(dataset_info, report, repo_id).encode('utf-8')
+    try:
+        if api_factory is None:
+            from huggingface_hub import HfApi
+            api_factory = HfApi
+        # HfApi에 직접 전달한 토큰은 hf auth login과 달리 디스크에 저장되지 않습니다.
+        api = api_factory(token=token)
+        api.whoami()
+        api.create_repo(repo_id=repo_id, repo_type='dataset', private=private, exist_ok=True)
+        info = api.repo_info(repo_id=repo_id, repo_type='dataset')
+        actual_private = getattr(info, 'private', None)
+        if actual_private is None and isinstance(info, dict):
+            actual_private = info.get('private')
+        if actual_private is not private:
+            requested = '비공개' if private else '공개'
+            raise UserError(f'기존 저장소의 공개 범위가 요청한 {requested} 설정과 다릅니다.')
+        parent_commit = info.get('sha') if isinstance(info, dict) else info.sha
+        existing = set(api.list_repo_files(repo_id=repo_id, repo_type='dataset', revision=parent_commit))
+        refs = api.list_repo_refs(repo_id=repo_id, repo_type='dataset')
+        if (existing - {'.gitattributes', 'README.md', '.gitignore'} or
+                any(ref.name == version for ref in refs.branches + refs.tags)):
+            raise UserError('이미 데이터나 버전 태그가 있는 저장소입니다. 새 저장소 이름을 사용하세요.')
+        commit = api.upload_folder(
+            folder_path=str(root), repo_id=repo_id, repo_type='dataset',
+            allow_patterns=['data/**', 'meta/**', 'videos/**'],
+            parent_commit=parent_commit,
+            commit_message='Upload validated LeKiwi LeRobot dataset')
+        commit_id = str(commit.oid)
+        files = set(api.list_repo_files(repo_id=repo_id, repo_type='dataset', revision=commit_id))
+        if not expected_files.issubset(files):
+            raise UserError('업로드 뒤 학습 파일 일부가 누락됐습니다. 서버의 작업 로그를 확인하세요.')
+        commit = api.upload_file(
+            path_or_fileobj=card, path_in_repo='README.md',
+            repo_id=repo_id, repo_type='dataset', parent_commit=commit_id,
+            commit_message='Add LeKiwi dataset card and viewer configuration')
+        commit_id = str(commit.oid)
+        files = set(api.list_repo_files(repo_id=repo_id, repo_type='dataset', revision=commit_id))
+        if not (expected_files | {'README.md'}).issubset(files):
+            raise UserError('업로드 뒤 데이터셋 카드 또는 학습 파일이 누락됐습니다.')
+        # LeRobot의 기본 Hub 로더는 main 대신 데이터 형식 버전 태그를 찾습니다.
+        api.create_tag(repo_id=repo_id, repo_type='dataset', tag=version, revision=commit_id)
+        tagged = api.repo_info(repo_id=repo_id, repo_type='dataset', revision=version)
+        if tagged.sha != commit_id:
+            raise UserError('LeRobot 버전 태그가 이번 업로드를 가리키지 않습니다.')
+    except UserError:
+        raise
+    except Exception as exc:
+        status = getattr(getattr(exc, 'response', None), 'status_code', None)
+        if status in (401, 403):
+            raise UserError('Hugging Face 인증 또는 저장소 쓰기 권한을 확인하세요.') from None
+        raise UserError('Hugging Face 업로드에 실패했습니다. 네트워크와 저장소 이름을 확인하세요.') from None
+    return {'name': name, 'repo_id': repo_id, 'private': private,
+            'frames': report['frames'], 'episodes': report['episodes'],
+            'url': f'https://huggingface.co/datasets/{repo_id}',
+            'commit': commit_id, 'revision': version}

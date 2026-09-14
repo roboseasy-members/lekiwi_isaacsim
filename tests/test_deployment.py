@@ -124,6 +124,7 @@ def test_compose_is_portable_and_keeps_data_outside_images(tmp_path):
     config = json.loads(result.stdout)
     assert set(config["services"]) == {"sim", "lerobot"}
     assert config["services"]["sim"]["group_add"] == ["1234"]
+    assert config["services"]["sim"]["environment"]["LEKIWI_RECORD_TASK"] == os.environ.get("LEKIWI_RECORD_TASK", "")
     for service_name, service in config["services"].items():
         assert service["user"] == f"{os.getuid()}:{os.getgid()}"
         assert service["platform"] == "linux/amd64"
@@ -160,7 +161,9 @@ if args[0] == "info" and os.environ.get("DENY_DOCKER"):
 if args[0] == "ps" and os.environ.get("SIM_RUNNING"):
     print("existing-container")
 if args[0] == "inspect":
-    if os.environ.get("MANAGER_OWNED"):
+    if "lekiwi.classroom.session" in " ".join(args):
+        print(os.environ.get("CLASSROOM_OWNER", "another-session"))
+    elif os.environ.get("MANAGER_OWNED"):
         entries = [json.loads(line) for line in open(os.environ["DOCKER_CALL_LOG"])]
         launched = next(call for call in entries if "--label" in call)
         print(launched[launched.index("--label") + 1].split("=", 1)[1])
@@ -180,6 +183,34 @@ if "config" in args and "--images" in args:
     env.pop("LEKIWI_DOCKER_SUDO", None)
     env.pop("LEKIWI_PROJECT_NAME", None)
     return env, log
+
+
+def test_remote_input_mode_reaches_compose_when_docker_uses_sudo(tmp_path):
+    if shutil.which("docker") is None:
+        pytest.skip("Docker CLI is needed to parse Compose (no daemon required)")
+    # sudo 권한을 얻지 않고 환경 변수 허용 목록만 재현합니다.
+    executable = tmp_path / "bin/sudo"
+    executable.parent.mkdir()
+    executable.write_text(f"#!{sys.executable}\n" + '''
+import os, sys
+args = sys.argv[1:]
+if args == ["-v"]:
+    sys.exit(0)
+assert args[0].startswith("--preserve-env=") and args[1] == "docker"
+env = {"PATH": os.environ["PATH"], "HOME": os.environ["HOME"]}
+for name in args[0].split("=", 1)[1].split(","):
+    if name in os.environ:
+        env[name] = os.environ[name]
+os.execvpe(args[1], args[1:], env)
+''')
+    executable.chmod(0o755)
+    env = dict(os.environ, PATH=f"{executable.parent}:/usr/bin:/bin",
+               HOME=str(tmp_path), LEKIWI_DOCKER_SUDO="1", LEKIWI_TELEOP_REMOTE="1")
+    env.pop("LEKIWI_CLASSROOM_SESSION", None)
+    result = run("bash", str(ROOT / "lekiwi"), "config", "--format", "json", env=env)
+    assert result.returncode == 0, result.stderr
+    config = json.loads(result.stdout)
+    assert config["services"]["sim"]["environment"]["LEKIWI_TELEOP_REMOTE"] == "1"
 
 
 def calls(log):
@@ -342,12 +373,37 @@ def test_dataset_ui_cleans_only_its_labeled_container_on_exit(fake_docker, exit_
     assert calls(log)[-1] == ['stop', '--time', '10', name]
 
 
-@pytest.mark.parametrize('args', [('hf', 'login'), ('dataset', 'upload'), ('dataset', 'download'), ('dataset', 'plan-upload')])
+@pytest.mark.parametrize('args', [('hf', 'login'), ('dataset', 'download'), ('dataset', 'plan-upload')])
 def test_removed_hub_commands_cannot_run(fake_docker, args):
     env, log = fake_docker
     result = run('bash', str(ROOT/'lekiwi'), *args, env=env)
     assert result.returncode != 0
     assert not log.exists() or not any('run' in call for call in calls(log))
+
+
+def test_dataset_upload_is_only_available_through_hidden_browser_prompt(fake_docker):
+    env, log = fake_docker
+    result = run('bash', str(ROOT / 'lekiwi'), 'dataset', 'upload', '--name', 'sample',
+                 '--repo-id', 'student/lekiwi-data', '--private', env=env,
+                 input='hf_test_token_123456789\n')
+    assert result.returncode != 0
+    assert '05_upload_dataset.py' in result.stderr
+    assert not any('run' in call for call in calls(log))
+
+
+def test_dataset_upload_enables_network_and_keeps_token_out_of_argv(fake_docker):
+    env, log = fake_docker
+    secret = 'hf_test_token_123456789'
+    result = run('bash', str(ROOT / 'lekiwi'), 'dataset', 'upload', '--name', 'sample',
+                 '--repo-id', 'student/lekiwi-data', '--private',
+                 env=dict(env, LEKIWI_CLASSROOM_SESSION='upload-test'), input=secret + '\n')
+    assert result.returncode == 0, result.stderr
+    command = next(call for call in calls(log) if 'run' in call)
+    assert command[-6:] == ['upload', '--name', 'sample', '--repo-id',
+                            'student/lekiwi-data', '--private']
+    assert 'HF_HUB_OFFLINE=0' in command
+    assert 'HF_HUB_DISABLE_IMPLICIT_TOKEN=1' in command
+    assert secret not in log.read_text()
 
 
 def test_local_dataset_inspection_forwards_arguments_offline(fake_docker):
@@ -356,3 +412,42 @@ def test_local_dataset_inspection_forwards_arguments_offline(fake_docker):
     assert result.returncode == 0, result.stderr
     assert calls(log)[-1][-3:] == ['inspect','--name','example']
     assert 'HF_HUB_OFFLINE=1' in calls(log)[-1]
+
+
+@pytest.mark.parametrize('owned', ['1', ''])
+def test_browser_dataset_job_uses_existing_cli_and_owns_cleanup(fake_docker, owned):
+    env, log = fake_docker
+    result = run('bash', str(ROOT / 'lekiwi'), 'dataset', 'inspect', '--name', 'example',
+                 env=dict(env, LEKIWI_CLASSROOM_SESSION='browser-job-test', MANAGER_OWNED=owned))
+    assert result.returncode == 0, result.stderr
+    command = next(call for call in calls(log) if 'run' in call)
+    assert command[-3:] == ['inspect', '--name', 'example']
+    assert '--publish' not in command and 'HF_HUB_OFFLINE=1' in command
+    stops = [call for call in calls(log) if call[0] == 'stop']
+    assert len(stops) == bool(owned)
+    if owned:
+        assert stops[0][-1] == command[command.index('--name') + 1]
+
+
+@pytest.mark.parametrize('owner,allowed', [('this-session', True), ('other-session', False)])
+def test_classroom_stop_requires_same_launch_token(fake_docker, owner, allowed):
+    env, log = fake_docker
+    result = run('bash', str(ROOT / 'lekiwi'), 'stop', env=dict(env,
+        LEKIWI_CLASSROOM_SESSION='this-session', CLASSROOM_OWNER=owner))
+    assert (result.returncode == 0) == allowed
+    assert any(c[0] == 'stop' for c in calls(log)) == allowed
+
+
+def test_basic_mounts_only_editable_experiment_folder_read_only():
+    if shutil.which('docker') is None:
+        pytest.skip('Docker CLI needed for Compose parsing')
+    result = run('docker', 'compose', '-f', str(ROOT / 'compose.yaml'), '-f',
+        str(ROOT / 'docker/compose.basic.yaml'), 'config', '--format', 'json')
+    assert result.returncode == 0, result.stderr
+    mounts = json.loads(result.stdout)['services']['sim']['volumes']
+    scripts = [v for v in mounts if v['target'].endswith('/experiments')]
+    assert len(scripts) == 6
+    for mount in scripts:
+        assert mount['read_only'] is True
+        assert Path(mount['source']).is_relative_to(ROOT / 'isaacsim_basic')
+        assert Path(mount['source']).is_dir()

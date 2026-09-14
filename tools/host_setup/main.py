@@ -144,7 +144,7 @@ def docker_command():
 
 
 def install_host(info):
-    helpers = [p for p in ('ca-certificates', 'curl', 'gnupg', 'xauth', 'util-linux')
+    helpers = [p for p in ('ca-certificates', 'curl', 'gnupg', 'xauth', 'util-linux', 'python3-tk', 'xdg-utils')
                if query(['dpkg-query', '-W', '-f=${db:Status-Status}', p]) != 'installed']
     if helpers or not info['docker'] or not info['toolkit']:
         confirm('부족한 PC 준비 패키지와 Docker/NVIDIA Container Toolkit을 설치합니다.\n'

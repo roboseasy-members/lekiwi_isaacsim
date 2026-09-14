@@ -236,6 +236,18 @@ def test_gui_delay_does_not_bypass_real_stop_conditions(kind):
     assert control.armed
 
 
+def test_remote_wait_does_not_extend_local_usb_watchdog():
+    local, remote = ArmTeleop("test"), ArmTeleop("test", remote=True)
+    assert local.timeout == .25 and remote.timeout == .5
+    for control in (local, remote):
+        control.update(sample(), 10, control.targets, arm=True)
+        control.update(sample(), 10.3, control.targets)
+    assert not local.armed
+    assert remote.armed
+    remote.update(sample(), 10.501, remote.targets)
+    assert not remote.armed
+
+
 @pytest.mark.parametrize("now", [9.9, math.nan, math.inf])
 def test_invalid_control_clock_still_disarms(now):
     control = ArmTeleop("test")
