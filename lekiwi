@@ -11,7 +11,6 @@ fail() { echo "ERROR: $*" >&2; exit 1; }
 usage() {
     echo 'Usage: ./lekiwi COMMAND [ARGS]'
     echo '  classroom                 로컬 창으로 1~6장 실습 선택'
-    echo '  remote COMMAND [ARGS]     같은 LAN의 화면·리더암 연결 (remote --help)'
     echo '  install [--check|--verify] 학생 PC 준비 / 읽기 전용 검사 / GPU 실습 검사'
     echo '  doctor                    Check Docker access, GPU and bundled assets'
     echo '  config                    Validate/render Docker Compose configuration'
@@ -49,8 +48,11 @@ usage() {
 command_name="${1:-help}"
 if (($#)); then shift; fi
 if [[ "$command_name" == remote ]]; then
-    exec /usr/bin/python3 -B -u "$project_dir/tools/remote_classroom/main.py" "$@"
+    fail '이 브랜치는 노트북 한 대 수업용입니다. 원격 수업은 feature/remote_classroom 브랜치를 사용하세요.'
 fi
+# 이전 원격 수업의 환경 변수가 남아 있어도 이 수업은 로컬 창으로 실행합니다.
+export LEKIWI_DISPLAY_MODE=local
+unset LEKIWI_STREAM_HOST
 if [[ "$command_name" == classroom ]]; then
     (($# == 0)) || fail 'classroom takes no arguments.'
     exec /usr/bin/python3 -B "$project_dir/tools/classroom/main.py"
@@ -171,16 +173,20 @@ if [[ "$command_name" == dataset-ui || "$command_name" == dataset ]]; then
     manager_offline=1
     manager_secret_fd=''
     if [[ "${manager_args[0]}" == upload ]]; then
-        [[ -n "${LEKIWI_CLASSROOM_SESSION:-}" ]] \
-            || fail 'Hugging Face upload is run with python3 05_upload_dataset.py in the browser VS Code terminal.'
-        # 토큰을 다른 준비 명령이 읽지 않도록 전용 익명 FD에 보관하고 원래 stdin을 닫습니다.
-        exec 10<&0
-        exec </dev/null
-        manager_secret_fd=10
+        if [[ -n "${LEKIWI_CLASSROOM_SESSION:-}" ]]; then
+            # 기존 자동 실행 호출은 전용 익명 FD로 토큰을 전달합니다.
+            exec 10<&0
+            exec </dev/null
+            manager_secret_fd=10
+        else
+            [[ -t 0 && -t 1 ]] || fail '업로드는 노트북의 대화형 터미널에서 실행하세요. 토큰은 숨김 입력합니다.'
+            # Docker 준비 후 컨테이너 터미널에서 getpass로 입력합니다.
+            manager_run=()
+        fi
         manager_offline=0
     fi
     ensure_image lerobot
-    if [[ "$command_name" == dataset-ui || -n "${LEKIWI_CLASSROOM_SESSION:-}" ]]; then
+    if [[ "${manager_args[0]}" != upload || -n "${LEKIWI_CLASSROOM_SESSION:-}" ]]; then
         # compose run -T may detach on Ctrl+C; explicitly stop only this launch.
         manager_run_id="${BASHPID}-${RANDOM}-${RANDOM}"
         manager_container="${project_name}-dataset-ui-${manager_run_id}"
@@ -220,7 +226,8 @@ if [[ "$command_name" == dataset-ui || "$command_name" == dataset ]]; then
             -e HF_HUB_DISABLE_IMPLICIT_TOKEN=1 -e HF_HUB_DISABLE_TELEMETRY=1 lerobot \
             python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}" <&10
     fi
-    exec "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" lerobot \
+    exec "${compose[@]}" run --rm --no-deps "${manager_run[@]}" -e HF_HUB_OFFLINE="$manager_offline" \
+        -e HF_HUB_DISABLE_IMPLICIT_TOKEN=1 -e HF_HUB_DISABLE_TELEMETRY=1 lerobot \
         python /opt/lekiwi/tools/dataset_manager/cli.py "${manager_args[@]}"
 fi
 if [[ "$command_name" == record ]]; then

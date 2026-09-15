@@ -1,25 +1,14 @@
 # LeKiwi Isaac Sim · 설치부터 로컬 데이터 수집까지
 
-**원격 수업을 처음 시작한다면 [0장 환경 설정](isaacsim_basic/00_env_setting/README.md)을 먼저 읽으세요.** 저장소 받기부터 두 컴퓨터 연결, 영상·Play 확인까지 0장 순서대로 진행합니다. 현재 수업 리허설 브랜치는 `develop`입니다.
-이 README는 프로젝트 개요와 설치·실행의 상세 참고 문서입니다. 0장에서 설치 안내 링크를 열었다면 해당 준비를 마친 뒤 다시 0장으로 돌아와 이어갑니다.
+**처음 시작한다면 [0장 환경 설정](isaacsim_basic/00_env_setting/README.md)을 먼저 읽으세요.** 현재 수업 브랜치는 `develop`입니다.
+학생마다 **Ubuntu NVIDIA GPU 노트북 한 대**로 코드 편집·Isaac Sim 화면·키보드·USB 리더암·데이터 수집·학습을 진행합니다.
+이 README는 전체 기능을 찾아보는 참고 문서입니다.
 
-`develop`에는 0장 환경 설정, 1~6장 마우스·코드 실습과 원격 실습 기능이 통합되어 있습니다. 실제 수업 순서로 리허설을 마친 뒤 `main`에 반영합니다.
-교육 흐름은 **환경 설정 → 기초 교육 → teleop → 로컬 데이터 수집·변환 → 로컬 학습 → 추론**입니다.
-데이터셋은 로컬에서 사용하거나, 브라우저의 별도 스크립트로 Hugging Face에 공개 업로드할 수 있습니다.
-
-실제 SO101 리더암과 키보드로 **Isaac Sim 안의 LeKiwi 베이스와 SOARM**을 조작합니다.
-실제 follower나 실제 LeKiwi 본체를 움직이는 기능은 없습니다.
-로봇 URDF·USD·mesh와 교재는 저장소에 포함되며, Isaac Sim·LeRobot은 Docker 안에서 실행합니다.
-
-학생별 데스크탑과 Ubuntu 노트북을 서로 다른 망에서 연결할 때는
-[0장 Tailscale 설정](isaacsim_basic/00_env_setting/README.md)을 따릅니다. 같은 LAN에서 접속하는 방법도 [원격 실습 안내](docs/remote-classroom.md)에 있습니다. 데스크탑이 시뮬레이션을 실행하고
-노트북이 화면 수신·USB 리더암 입력을 담당합니다. 이 기능은 `develop`에서 제공하며,
-아래의 한 PC 설치·실습 절차와 노트북 설치 절차를 구분합니다.
-
-노트북에서 직접 코드를 바꾸며 수업할 때는 [브라우저 편집기 안내](docs/browser-classroom.md)를 사용합니다.
-데스크탑의 `./lekiwi remote workspace --host 데스크탑IP`로 편집기를 켜고,
-학생은 각 장 README를 읽고 WebRTC 화면에서 객체를 직접 만들며 실습합니다.
-장 마지막의 코드 실습에서는 브라우저에서 Python을 저장한 뒤 `lesson run 1` / `lesson stop`으로 실행·종료합니다.
+수업 흐름은 **환경 설정 → 화면에서 직접 제작 → 같은 작업을 코드로 구현 → 리더암 조작 → 데이터 수집·변환 → ACT 학습 → 추론**입니다.
+데이터셋 업로드는 선택 사항이며, 로컬 변환본으로 바로 학습할 수 있습니다.
+리더암도 이 노트북의 USB에 연결합니다. 실제 SO101 리더의 관절을 읽어 **화면 속 LeKiwi와 팔**을 조작하며 실제 follower를 움직이지 않습니다.
+로봇 자산·교재는 저장소에 포함되고 Isaac Sim·LeRobot은 Docker에서 실행합니다.
+원격 접속 준비는 이 수업 절차에서 제외했습니다. 원격 수업 최종본은 `feature/remote_classroom`에 보관합니다.
 
 | 단계 | 이번 저장소에서 진행할 범위 |
 |---|---|
@@ -126,20 +115,19 @@ export ACCEPT_EULA=Y
 [교재 전체 목차](isaacsim_basic/README.md)를 순서대로 따라갑니다.
 각 장 README에서 **마우스로 객체 생성 → 속성 변경·Play 관찰 → 저장·정리 → 마지막에 코드 구현** 순서로 진행합니다.
 스크린샷과 입력값이 같은 본문에 있으며, 기본 Stage·Property·Viewport를 사용합니다.
-데스크탑의 첫 실습은 빈 편집 화면으로 시작합니다.
+노트북의 첫 실습은 빈 편집 화면으로 시작합니다.
 
 ```bash
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-원격 수업에서는 0장의 접속 확인 후 1장 README의 빈 편집 화면 실행 명령을 사용합니다.
 마지막 코드 절에서 `experiments/*.py`를 읽고 실행·수정합니다. 객체·물리·관절·카메라 설정 줄에는 한국어 설명과 단위가 있습니다.
-코드 실습 실행은 `./lekiwi basic --chapter 1`부터 `--chapter 6`, 원격은 `lesson run 1`부터 `lesson run 6`입니다.
+코드 실습은 같은 노트북에서 `./lekiwi basic --chapter 1`부터 `--chapter 6`으로 실행합니다.
 학생 파일을 저장한 뒤 재실행하면 반영되며, 코드 수정만으로 이미지 재빌드가 필요하지 않습니다.
 
 | 편 | 내용 |
 |---|---|
-| 0 | 학생별 Tailscale 설정·브라우저와 영상 접속·Play 확인·결과 제출·공용 데스크탑 반납 |
+| 0 | 노트북 환경 준비·로컬 편집기·Isaac Sim 창·Play/Stop 확인 |
 | 1 | 객체·색상·중력·접촉·질량·마찰·반발 |
 | 2 | 관절 축·제한·Drive 목표와 응답 |
 | 3 | Camera API·화각·LeKiwi front/wrist TF |
@@ -312,46 +300,33 @@ LIMIT는 관절 한계, STOP은 입력 누락/만료 등에 의한 비활성 상
 
 ## 9. ACT 학습과 Isaac Sim 추론
 
-브라우저 수업에서는 6장의 `06_train_act.py`, `07_infer_act.py`를 사용합니다.
-학습은 1회 실행·모델 저장까지, 추론은 Isaac Sim에서 시작·정지·재시작까지 확인했습니다.
-검증 데이터와 범위는 [ACT 실행 리허설 기록](docs/act-rehearsal-20260913.md)에 있습니다.
-GPU·드라이버·CUDA 준비와 실제 과제 성공률 평가는 별도입니다.
+시뮬레이션과 리더 세션을 정상 종료한 뒤 **같은 노트북**에서 진행합니다.
+[6장](isaacsim_basic/06_lekiwi_dataset/README.md#67-act-학습-스크립트)의 `06_train_act.py`에서 실제 데이터셋 이름과 새 `run_name`을 저장합니다.
+실행 검사에는 `steps=1`, `batch_size=1`, `pretrained_backbone=False`를 사용합니다. 충분한 시연으로 학습하는 과정과 구분합니다.
 
-현재 실습을 종료한 뒤 학습 설정 파일에서 데이터셋 이름, 새 `run_name`, 학습 횟수와 배치 크기를 수정합니다.
-처음 실행 검사에는 `steps=1`, `batch_size=1`, `pretrained_backbone=False`를 사용합니다.
-본 학습 기본값은 `pretrained_backbone=True`이며 최초 ResNet18 가중치 다운로드가 필요합니다.
-아래는 **브라우저 편집기 터미널**에서 실행합니다. 앞에서 변환한 데이터셋의 실제 이름을 설정 파일에 입력합니다.
+저장소 루트에서 실행합니다.
 
 ```bash
-cd /workspace/isaacsim_basic/06_lekiwi_dataset/experiments
-lesson stop
-python3 06_train_act.py
-lesson train status
-lesson train logs
+python3 isaacsim_basic/06_lekiwi_dataset/experiments/06_train_act.py
 ```
 
-학습 결과는 `data/outputs/<run_name>/`에 저장됩니다. 기존 이름은 덮어쓰지 않습니다.
-`train/checkpoints/last/pretrained_model`에 ACT와 정규화 통계,
-`lekiwi_policy.json`에 상태·행동 순서, 단위와 카메라 설정을 함께 보관합니다.
-브라우저의 **ACT 학습 결과**에서도 파일을 확인할 수 있습니다.
-터미널 Ctrl+C는 대기만 끝냅니다. 서버 학습도 멈추려면 `lesson train stop`을 사용합니다.
+진행·손실은 같은 터미널에서 확인하고, `LEKIWI_ACT_TRAIN result=PASS`와 체크포인트 생성을 확인합니다.
+결과는 `data/outputs/<run_name>/`이며 `train/checkpoints/last/pretrained_model`에 모델·정규화 통계,
+`lekiwi_policy.json`에 상태·행동·단위·카메라 설정을 저장합니다. 기존 이름은 덮어쓰지 않습니다.
+Ctrl+C로 이번 학습을 종료합니다. 첫 본 학습에서 `pretrained_backbone=True`를 사용하면 가중치 다운로드가 필요합니다.
 
 추론은 `07_infer_act.py`의 `run_name`을 같은 값으로 저장하고 실행합니다.
-`lesson status`가 READY이면 WebRTC 화면에 연결해 **R 시작 / Space 정지 / F8 장면 초기화**를 사용합니다.
-`seconds`는 R을 누른 뒤 실행할 최대 시뮬레이션 시간입니다. 종료는 `lesson stop`입니다.
 
 ```bash
-python3 07_infer_act.py
-lesson status
-lesson logs
+python3 isaacsim_basic/06_lekiwi_dataset/experiments/07_infer_act.py
 ```
 
-학습과 같은 front/wrist RGB, 6개 절대 관절각(rad), base_link 속도(m/s·rad/s)를 사용합니다.
-모델 계산 중에는 물리 시간을 멈추고 화면·정지 키를 처리합니다.
-일시정지·장면 초기화·화면 연결 끊김·응답 오류 때는 추론을 해제하고, 다음 R에서 행동 큐를 초기화합니다.
-이 기능은 Isaac Sim 가상 로봇 전용입니다. 실행 검사 모델의 동작 확인은 과제 성공률 평가와 구분합니다.
+노트북에 열린 Isaac Sim 창에서 **R 시작 / Space 정지 / F8 초기화**를 사용합니다.
+종료는 창 닫기 또는 실행 터미널의 Ctrl+C입니다. 모델 로그 경로는 실행 터미널에 표시됩니다.
+학습 때의 두 카메라·6개 관절각(rad)·베이스 속도(m/s·rad/s)를 재사용합니다.
+학습은 짧은 실행 여부까지, 추론은 실제 수업 리허설에서 시작·정지·재시작을 확인합니다. 실행 검사 모델의 과제 성공률은 보장하지 않습니다.
 
-서버 터미널에서 직접 실행할 수도 있습니다.
+설정 파일 대신 같은 노트북에서 인자를 직접 지정할 수도 있습니다.
 
 ```bash
 ./lekiwi act train --dataset-name basket_01 --run-name act_basket_01 --steps 1000 --batch-size 4
@@ -384,7 +359,14 @@ sudo를 사용하는 긴 세션에서는 인증 만료로 기존 터미널의 �
 
 ## 업데이트와 브랜치
 
-현재 원격 수업 리허설은 통합 브랜치인 `develop`을 사용합니다. `test`는 별도 사전 점검용 브랜치로 유지합니다.
+| 브랜치 | 용도 |
+|---|---|
+| `develop` | 노트북 한 대 수업·현재 리허설 |
+| `feature/local_classroom` | 이번 로컬 수업 전환 작업 |
+| `feature/remote_classroom` | 원격 수업 최종본 보관 (`b5dd9e6`, 자동 인증 포함) |
+| `test` | 사전 환경 점검용 |
+| `main` | 전체 리허설 후 반영할 안정 버전 |
+
 `main`은 리허설을 마친 수업 내용을 반영하는 안정 버전입니다. 본 수업 배포 브랜치는 강사가 별도 안내합니다.
 
 나중에 업데이트할 때는 장비·시뮬레이터를 정상 종료하고 저장소에서 실행합니다.
@@ -401,11 +383,10 @@ git branch --show-current
 git pull --ff-only origin develop
 ```
 
-**데스크탑:** 라이선스에 동의한 터미널에서 `export ACCEPT_EULA=Y`와 필요한 `LEKIWI_DOCKER_SUDO=1`을 설정하고,
-`./lekiwi setup all`과 `./lekiwi remote setup-editor`로 이미지를 갱신합니다.
-**리더암 노트북:** 같은 브랜치의 코드를 갱신한 뒤 `./lekiwi remote setup-client`로 CPU 리더 이미지만 갱신합니다.
-학생 Python 수정은 다음 실행에 반영됩니다. 공통 실행기·컨테이너 의존성 변경은 이미지 재빌드와 편집기 재시작이 필요합니다.
-매 실행마다 빌드하지는 않습니다.
+노트북 터미널에 라이선스 동의 `export ACCEPT_EULA=Y`와 필요한 `export LEKIWI_DOCKER_SUDO=1`을 설정합니다.
+이번 전환처럼 공통 실행기·컨테이너 코드가 바뀌었으면 `./lekiwi setup all`로 이미지를 갱신합니다.
+학생 Python만 수정했다면 저장 후 다시 실행하면 반영됩니다. 매 실행마다 빌드하지는 않습니다.
+브라우저 편집기·영상 송출·리더 전용 원격 이미지를 준비하는 단계는 없습니다.
 현재 프로젝트 이미지는 공개 레지스트리에 배포하지 않았으며 각 PC에서 빌드합니다.
 
 ## 참고 자료와 검증 범위
@@ -415,7 +396,7 @@ git pull --ff-only origin develop
 개발 PC에서 리더 추종·연속 수집·데이터 변환·로컬 관리 화면을 확인했고,
 손가락 충돌 형상 개선 후 실물 리더로 가상 큐브를 집는 조작에서 사용자가 개선을 확인했습니다.
 900프레임 데이터의 ACT 학습 1회·모델 재로딩·시뮬레이션 추론을 확인했습니다.
-새 PC의 드라이버 설치, 15쌍 동시 수업, 충분한 학습 뒤의 과제 성공률은 별도 검증 대상입니다.
+새 PC의 드라이버 설치, 대여 노트북 15대 동시 수업, 충분한 학습 뒤의 과제 성공률은 별도 검증 대상입니다.
 [교육 실습 검증 기록](isaacsim_basic/VALIDATION.md)
 
 ## 배치 저장과 재현

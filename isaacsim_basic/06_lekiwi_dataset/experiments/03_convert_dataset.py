@@ -1,6 +1,8 @@
-"""설정을 저장하고 브라우저 터미널에서 python3 03_convert_dataset.py로 실행합니다."""
-import shutil
+"""설정을 저장하고 노트북 터미널에서 python3 03_convert_dataset.py로 실행합니다."""
+from pathlib import Path
 import subprocess
+
+launcher = Path(__file__).resolve().parents[3] / "lekiwi"
 
 # 1. 02_dataset_list.py의 출력에서 변환할 에피소드 id를 복사합니다.
 # 여러 에피소드를 묶으려면 쉼표로 구분하여 한 줄씩 추가합니다.
@@ -16,9 +18,7 @@ success_only = False
 
 
 def main():
-    # 변환 자체는 서버의 LeRobot 컨테이너에서 실행합니다.
-    if shutil.which('lesson') is None:
-        raise SystemExit('이 파일은 브라우저 VS Code의 터미널에서 실행하세요.')
+    # 변환 자체는 같은 노트북의 LeRobot 컨테이너에서 실행합니다.
     # 아직 에피소드를 선택하지 않았으면 원본이나 출력 폴더를 건드리지 않습니다.
     if not isinstance(episode_ids, list) or not episode_ids:
         raise SystemExit('02_dataset_list.py로 목록을 확인하고 이 파일의 episode_ids를 채운 뒤 저장하세요.')
@@ -27,7 +27,7 @@ def main():
     if not isinstance(dataset_name, str) or type(success_only) is not bool:
         raise SystemExit('dataset_name은 문자열, success_only는 True 또는 False로 설정하세요.')
     # 위에서 수정한 설정을 실행기에 전달합니다. 학생이 터미널 인자를 작성할 필요는 없습니다.
-    command = ['lesson', 'dataset', 'export', '--name', dataset_name]
+    command = [str(launcher), 'dataset', 'export', '--name', dataset_name]
     for episode_id in episode_ids:
         command += ['--episode', episode_id]
     if success_only:
@@ -42,4 +42,4 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        raise SystemExit('화면 대기를 종료했습니다. 서버 작업은 lesson dataset status로 확인하세요.')
+        raise SystemExit('작업을 중단했습니다. 터미널의 오류와 ./lekiwi status를 확인하세요.')

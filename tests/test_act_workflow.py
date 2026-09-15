@@ -147,12 +147,11 @@ print('finite loss')
 
 
 @pytest.mark.parametrize('filename', ['06_train_act.py', '07_infer_act.py'])
-def test_student_python_settings_reach_lesson(monkeypatch, filename):
+def test_student_python_settings_reach_local_launcher(monkeypatch, filename):
     script = ROOT / 'isaacsim_basic/06_lekiwi_dataset/experiments' / filename
     module = runpy.run_path(str(script), run_name='student_test')
     settings = module['main'].__globals__
     settings['run_name'] = 'act_changed'
-    monkeypatch.setattr(settings['shutil'], 'which', lambda _: '/usr/local/bin/lesson')
     calls = []
     def run(command):
         calls.append(command)
@@ -161,6 +160,7 @@ def test_student_python_settings_reach_lesson(monkeypatch, filename):
     with pytest.raises(SystemExit) as exc:
         module['main']()
     assert exc.value.code == 0
+    assert calls[0][:3] == [str(ROOT / 'lekiwi'), 'act', 'train' if filename.startswith('06') else 'infer']
     assert calls[0][calls[0].index('--run-name') + 1] == 'act_changed'
     with pytest.raises(ValueError, match='python3'):
         selection({'script': str(script)}, ROOT)

@@ -212,7 +212,6 @@ def student_script(name):
 def test_student_conversion_uses_saved_python_settings_without_cli_arguments(monkeypatch):
     student = student_script('03_convert_dataset.py')
     settings = student['main'].__globals__
-    monkeypatch.setattr(settings['shutil'], 'which', lambda _: '/usr/local/bin/lesson')
     calls = []
     def run(command):
         calls.append(command)
@@ -226,7 +225,7 @@ def test_student_conversion_uses_saved_python_settings_without_cli_arguments(mon
     with pytest.raises(SystemExit) as result:
         student['main']()
     assert result.value.code == 0
-    assert calls == [['lesson', 'dataset', 'export', '--name', 'student_pickup',
+    assert calls == [[str(settings['launcher']), 'dataset', 'export', '--name', 'student_pickup',
                      '--episode', 'lekiwi.one/episode.first', '--episode', 'lekiwi.two/episode.second',
                      '--success-only']]
 
@@ -235,12 +234,8 @@ def test_student_conversion_uses_saved_python_settings_without_cli_arguments(mon
 def test_student_scripts_forward_errors_and_do_not_start_gpu(monkeypatch, file, action):
     student = student_script(file)
     settings = student['main'].__globals__
-    monkeypatch.setattr(settings['shutil'], 'which', lambda _: None)
-    with pytest.raises(SystemExit, match='브라우저'):
-        student['main']()
-    monkeypatch.setattr(settings['shutil'], 'which', lambda _: '/usr/local/bin/lesson')
     def run(command):
-        assert command[:3] == ['lesson', 'dataset', action]
+        assert command[:3] == [str(settings['launcher']), 'dataset', action]
         return type('Result', (), {'returncode': 1})()
     monkeypatch.setattr(settings['subprocess'], 'run', run)
     with pytest.raises(SystemExit) as result:
@@ -255,10 +250,9 @@ def test_student_dataset_script_is_not_started_as_isaac_scene():
                   Path(__file__).resolve().parents[1])
 
 
-def test_student_upload_uses_saved_settings_and_prompts_in_lesson(monkeypatch):
+def test_student_upload_uses_saved_settings_and_local_launcher(monkeypatch):
     student = student_script('05_upload_dataset.py')
     settings = student['main'].__globals__
-    monkeypatch.setattr(settings['shutil'], 'which', lambda _: '/usr/local/bin/lesson')
     calls = []
     monkeypatch.setattr(settings['subprocess'], 'run',
                         lambda command: calls.append(command) or type('Result', (), {'returncode': 0})())
@@ -268,5 +262,5 @@ def test_student_upload_uses_saved_settings_and_prompts_in_lesson(monkeypatch):
     with pytest.raises(SystemExit) as result:
         student['main']()
     assert result.value.code == 0
-    assert calls == [['lesson', 'dataset', 'upload', '--name', 'sample', '--repo-id',
+    assert calls == [[str(settings['launcher']), 'dataset', 'upload', '--name', 'sample', '--repo-id',
                       'student/lekiwi-data', '--private']]

@@ -9,34 +9,16 @@
 
 ## 1. 빈 편집 화면과 기본 도구 익히기
 
-0장을 마쳤다면 **본 노트북에서 열어 둔 브라우저 편집기의 터미널**을 계속 사용합니다.
-`coder@…:/workspace/isaacsim_basic$`처럼 표시되면 맞는 터미널입니다. 여기서는 `lesson` 명령을 사용합니다.
-`./lekiwi basic`을 입력해 `No such file or directory`가 나왔다면 아래 명령으로 진행합니다.
-`./lekiwi`는 서버의 프로젝트 폴더에서 쓰는 명령으로, 브라우저 편집기에서는 사용하지 않습니다.
-
-이미 빈 편집 화면이 열려 있다면 아래 실행 명령은 건너뛰고 화면 설명부터 읽습니다.
-0장의 확인용 실습이 아직 열려 있으면 먼저 종료합니다. 저장할 작업이 있다면 종료 전에 저장합니다.
+마우스 실습용 빈 편집기를 사용 중이면 그대로 이어갑니다. 앞 장의 코드 예제가 열려 있으면 결과를 저장하고 Isaac Sim 창을 닫습니다.
+아래 명령은 **같은 노트북의 저장소 최상위 폴더(`lekiwi` 파일이 있는 곳)**에서 실행합니다.
+이 명령은 편집 화면만 열며, 실습 객체는 이후 메뉴로 직접 만듭니다.
 
 ```bash
-lesson stop
-lesson status
+./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-`STOPPED`를 확인한 뒤 **빈 장면**을 엽니다. 0장 마지막에서 이미 종료했다면 여기부터 실행합니다.
-
-```bash
-lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_empty_stage.py
-```
-
-실행 상태를 확인합니다.
-
-```bash
-lesson status
-```
-
-`STARTING`이면 기다렸다가 `lesson status`를 다시 입력합니다. 출력은 자동으로 갱신되지 않습니다.
-`READY`가 되면 본 노트북의 **WebRTC 클라이언트에서 0장과 같은 서버 Tailscale 주소로 다시 Connect**합니다.
-영상 창을 클릭한 상태에서 마우스와 키보드를 조작합니다. 이후 코드 예제를 재실행할 때도 같은 순서로 접속합니다.
+Isaac Sim 창이 열리고 로딩이 끝나면 Viewport를 클릭해 조작합니다. 처음 실행은 캐시 준비로 시간이 걸릴 수 있습니다.
+명령을 중복 실행하지 말고, 오류가 나면 실행 터미널의 마지막 오류를 확인합니다.
 
 이 명령은 빈 편집 화면을 여는 준비입니다. 파일을 열거나 수정할 필요는 없습니다. 바닥·물체·물리 장면은 아래에서 마우스로 만듭니다.
 
@@ -232,7 +214,7 @@ Restitution은 부딪친 뒤 튀어 오르는 정도에 영향을 주는 반발�
 ## 8. 마지막: 같은 작업을 코드로 구현하기
 
 지금까지 마우스로 만들고 관찰한 내용을 코드로 연결합니다. 먼저 직접 만든 USD를 저장합니다.
-원격 수업은 브라우저 터미널에서 `lesson stop`, 데스크탑은 Isaac Sim 창을 닫아 현재 실행을 종료합니다.
+Isaac Sim 창을 닫아 현재 실행을 종료합니다.
 
 각 예제의 `build_scene()`은 새 장면에 객체를 만듭니다. 화면에서 저장한 USD가 Python 소스를 자동으로 바꾸지는 않습니다.
 
@@ -246,15 +228,9 @@ Restitution은 부딪친 뒤 튀어 오르는 정도에 영향을 주는 반발�
 
 ### 코드 실행과 수정 순서
 
-설치는 0장에서 마쳤다고 가정합니다. 아래 명령 중 본인 환경의 한 가지만 사용합니다.
+설치는 0장에서 마쳤다고 가정합니다. 다음 명령을 저장소 루트에서 실행합니다.
 
-원격 수업 — 브라우저 터미널:
-
-```bash
-lesson run 1
-```
-
-데스크탑 직접 실행 — 저장소 루트 터미널:
+같은 노트북의 저장소 루트 터미널:
 
 ```bash
 ./lekiwi basic --chapter 1
@@ -265,9 +241,8 @@ lesson run 1
 3. 실행을 종료한 뒤 지정된 기본 줄에 `#`를 붙이고 비교할 줄의 `#`를 지웁니다. 들여쓰기는 유지합니다.
 4. 파일을 저장하고 같은 명령으로 다시 실행합니다. 화면에서 값을 바꾸는 실험과 구분해 기록합니다.
 
-원격 수업은 코드 수정 후 `lesson stop` → `lesson run 1`로 재실행합니다.
+코드 수정 전 Isaac Sim 창을 닫고, 수정 파일을 저장한 뒤 같은 명령으로 재실행합니다.
 학생 파일은 호스트에서 저장하면 다음 실행에 반영되며, 코드만 수정할 때 Docker 이미지 재빌드는 필요 없습니다.
-아래 `./lekiwi ...` 예시는 데스크탑 터미널용입니다. 원격 수업에서는 위 `lesson` 명령을 사용합니다.
 
 ### 8.1. 중력도 충돌도 없는 기본 실행
 
@@ -393,31 +368,22 @@ UsdShade.MaterialBindingAPI.Apply(prim).Bind(mat, materialPurpose="physics")
 
 ### 8.7. 실험 파일을 골라 실행하고 비교하기
 
-| 마우스로 한 실험 | 학생 파일 | 원격 실행 | 데스크탑 실행 |
-|---|---|---|---|
-| 중력 OFF | [01_no_gravity.py](experiments/01_no_gravity.py) | `lesson run 1` | `./lekiwi basic --experiment 1` |
-| 중력 ON·충돌 없음 | [02_gravity_only.py](experiments/02_gravity_only.py) | `lesson run --experiment 2` | `./lekiwi basic --experiment 2` |
-| 중력·충돌 ON | [03_gravity_collision.py](experiments/03_gravity_collision.py) | `lesson run --experiment 3` | `./lekiwi basic --experiment 3` |
-| 질량·중력 크기 | [04_mass_gravity.py](experiments/04_mass_gravity.py) | `lesson run --experiment 4` | `./lekiwi basic --experiment 4` |
-| 마찰 | [05_friction.py](experiments/05_friction.py) | `lesson run --experiment 5` | `./lekiwi basic --experiment 5` |
-| 반발 | [06_restitution.py](experiments/06_restitution.py) | `lesson run --experiment 6` | `./lekiwi basic --experiment 6` |
+| 마우스로 한 실험 | 학생 파일 | 노트북 실행 |
+|---|---|---|
+| 중력 OFF | [01_no_gravity.py](experiments/01_no_gravity.py) | `./lekiwi basic --experiment 1` |
+| 중력 ON·충돌 없음 | [02_gravity_only.py](experiments/02_gravity_only.py) | `./lekiwi basic --experiment 2` |
+| 중력·충돌 ON | [03_gravity_collision.py](experiments/03_gravity_collision.py) | `./lekiwi basic --experiment 3` |
+| 질량·중력 크기 | [04_mass_gravity.py](experiments/04_mass_gravity.py) | `./lekiwi basic --experiment 4` |
+| 마찰 | [05_friction.py](experiments/05_friction.py) | `./lekiwi basic --experiment 5` |
+| 반발 | [06_restitution.py](experiments/06_restitution.py) | `./lekiwi basic --experiment 6` |
 
 각 실행을 종료한 뒤 다음 파일을 실행합니다. 실험 번호와 장 번호는 다릅니다.
 코드 실행은 새 장면을 만듭니다. 직접 제작 결과는 앞에서 저장한 USD를 다시 열어 비교합니다.
 객체 경로·단위·물리 조건과 관찰 결과를 비교하며, USD 파일의 모든 바이트가 같을 필요는 없습니다.
 
-바구니 보충 예제는 데스크탑에서 `./lekiwi basic --lesson basket`으로 실행합니다.
+바구니 보충 예제는 같은 노트북에서 `./lekiwi basic --lesson basket`으로 실행합니다.
 직접 만드는 과정은 6장에서 진행합니다. 바닥과 네 벽을 각각 Collider로 만들어 입구를 비워 둡니다.
 
 [기록지](worksheet.md)의 코드 구현·비교 부분까지 작성합니다.
 
-## 참고 · 데스크탑에서 직접 빈 장면 열기
-
-0장의 브라우저 편집기로 수업 중이라면 이 명령은 실행하지 않습니다.
-데스크탑에서 직접 실행할 때는 `lekiwi` 파일이 있는 **프로젝트 최상위 폴더**의 터미널에서 다음 명령을 사용합니다.
-
-```bash
-./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
-```
-
-[공식 자료와 촬영 기록](SOURCES.md) · [다음: 2장](../02_robot_joints/README.md)
+[공식 자료](SOURCES.md) · [다음: 2장](../02_robot_joints/README.md)

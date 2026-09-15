@@ -1,6 +1,7 @@
 """Local dataset CLI, shared with the classroom browser UI."""
 import argparse
 from contextlib import nullcontext
+import getpass
 import json
 from pathlib import Path
 import sys
@@ -46,8 +47,11 @@ def main():
             elif args.command == 'inspect':
                 result = core.inspect_dataset(args.name)
             elif args.command == 'upload':
-                stream = getattr(sys.stdin, 'buffer', sys.stdin)
-                raw = stream.readline(1025)
+                if sys.stdin.isatty():
+                    raw = getpass.getpass('Hugging Face 쓰기 토큰 (화면에 표시되지 않음): ')
+                else:
+                    stream = getattr(sys.stdin, 'buffer', sys.stdin)
+                    raw = stream.readline(1025)
                 if isinstance(raw, bytes):
                     raw = raw.decode('utf-8', errors='strict')
                 token = raw.rstrip('\r\n')

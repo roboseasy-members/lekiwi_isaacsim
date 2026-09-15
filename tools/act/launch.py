@@ -62,7 +62,7 @@ def run(mode, options, host=None):
         active = subprocess.check_output(dock + ['ps', '-q', '--filter',
             f'label=com.docker.compose.project={project}', '--filter', 'label=com.docker.compose.service=sim'], text=True).strip()
         if active:
-            raise RuntimeError('실행 중인 Isaac 실습을 lesson stop으로 종료한 뒤 시작하세요.')
+            raise RuntimeError('실행 중인 Isaac Sim 창을 닫고 ./lekiwi status로 종료를 확인한 뒤 시작하세요.')
         compose = dock + ['compose', '--project-directory', str(ROOT), '--project-name', project,
                          '-f', str(ROOT / 'compose.yaml')]
         image = subprocess.check_output(compose + ['config', '--images', 'lerobot'], text=True).strip()
@@ -111,6 +111,9 @@ def run(mode, options, host=None):
                        LEKIWI_COURSE_LAYOUT='random')
             if host:
                 env.update(LEKIWI_DISPLAY_MODE='webrtc', LEKIWI_STREAM_HOST=host)
+            else:
+                env.update(LEKIWI_DISPLAY_MODE='local')
+                env.pop('LEKIWI_STREAM_HOST', None)
             sim = subprocess.Popen([str(ROOT / 'lekiwi'), 'sim'], env=env, stdin=subprocess.DEVNULL)
             while sim.poll() is None:
                 if process.poll() is not None:
