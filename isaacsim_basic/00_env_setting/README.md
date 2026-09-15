@@ -4,17 +4,22 @@
 리더암 USB도 이 노트북에 연결합니다. 장비 연결과 보정은 4장 또는 6장의 리더 실습에서 합니다.
 
 처음에는 **이 README를 위에서 아래로** 따라갑니다. 저장소 맨 앞의 [README](../../README.md)는 전체 기능을 찾아보는 참고 문서입니다.
-0장의 화면·Play/Stop 확인을 마친 뒤 1장으로 넘어갑니다.
+**0장에서는 학생이 직접 교재를 받고 VS Code 설치 → GPU·Docker 준비 → 이미지 빌드 → 실행 검사를 진행합니다.**
+강사가 이미 설치·빌드한 노트북을 전제로 하지 않습니다. 화면·Play/Stop 확인까지 마친 뒤 1장으로 넘어갑니다.
+VS Code 설치 전에는 강사가 제공한 이 교재 링크를 브라우저에서 읽고 Ubuntu 터미널에서 명령을 입력합니다.
 
 | 준비물 | 용도 |
 |---|---|
 | Ubuntu 22.04/24.04 x86_64 NVIDIA GPU 노트북과 전원 어댑터 | 실습 전체 실행. 수업 중 전원 연결 |
 | 인터넷 | 저장소·Docker 이미지·필요한 모델 다운로드, 선택한 데이터셋 업로드 |
-| 노트북에 설치된 VS Code 또는 텍스트 편집기 | 교재 읽기와 Python 파일 수정 |
+| Ubuntu 로그인 계정과 sudo 사용 권한 | VS Code·드라이버·Docker 설치. 본인 노트북의 로그인 비밀번호 사용 |
+| VS Code | 이 장에서 설치하고 교재 읽기·Python 파일 수정에 사용 |
 | SO101 리더암·USB·전원 | 4·6장에서 같은 노트북에 연결 |
 
 대여 RTX 3070 노트북도 아래 실행 검사로 준비 상태를 확인합니다. GPU 이름만으로 모든 실습과 학습의 성능을 보장하지 않습니다.
 Tailscale, AnyDesk, SSH 터널, 브라우저 편집기, WebRTC 클라이언트 설치 단계는 이번 수업에 없습니다.
+최초 다운로드·빌드·재부팅 시간은 노트북과 인터넷 환경에 따라 달라집니다. 15대가 동시에 내려받으면 더 오래 걸릴 수 있으므로,
+0장 시작·완료 시간을 [기록지](worksheet.md)에 적습니다. 설치가 끝나기 전에 다음 실행 명령을 겹쳐 입력하지 않습니다.
 
 ## 1. 교재 받기
 
@@ -34,7 +39,61 @@ ls lekiwi
 `isaacsim_basic` 폴더 안에서 실행하면 `No such file or directory`가 납니다.
 새 터미널을 열었다면 방금 `pwd`에 나온 실제 폴더로 `cd`한 뒤 실행하세요.
 
-## 2. GPU·Docker 실행 환경 준비
+## 2. VS Code 설치하고 교재 열기
+
+**지금 사용하는 Ubuntu 노트북에 VS Code 앱을 설치합니다.** Docker 안이나 다른 컴퓨터에 설치하는 단계가 아닙니다.
+1절에서 사용한 터미널에서 먼저 확인합니다.
+
+```bash
+code --version
+```
+
+버전이 나오면 설치되어 있으므로 아래 설치 명령을 건너뜁니다. `code: command not found`이면 다음으로 진행합니다.
+
+### 2.1. VS Code가 없으면 설치하기
+
+Ubuntu의 Snap을 사용합니다. 아래는 [VS Code 공식 Linux 설치 안내](https://code.visualstudio.com/docs/setup/linux)의 설치 방법입니다.
+
+```bash
+snap --version
+```
+
+버전이 표시되면 설치합니다.
+
+```bash
+sudo snap install --classic code
+```
+
+`sudo` 비밀번호는 **지금 노트북의 Ubuntu 로그인 비밀번호**입니다. 입력 중 글자나 별표가 보이지 않아도 입력되고 있습니다.
+설치 완료 후 `code --version`을 다시 실행해 버전을 확인합니다. 설치가 진행 중이면 같은 명령을 반복하지 않습니다.
+
+`snap: command not found`이거나 Snap 다운로드가 차단된 경우에는 [공식 Linux 설치 안내](https://code.visualstudio.com/docs/setup/linux)의
+**Debian and Ubuntu-based distributions** 항목에 있는 `.deb` 설치 방법을 강사와 함께 사용합니다. 실패한 설치의 마지막 오류를 보여 주세요.
+VS Code가 정상 설치됐다면 두 방법을 모두 실행할 필요는 없습니다.
+
+### 2.2. 프로젝트 폴더와 교재 열기
+
+저장소 최상위 폴더에서 실행합니다. `.`은 지금 터미널이 위치한 폴더를 뜻합니다.
+
+```bash
+pwd
+ls lekiwi
+code .
+```
+
+1. 같은 노트북에 VS Code 창이 열리는지 확인합니다.
+2. 다른 폴더가 열렸다면 `File > Open Folder`에서 1절의 `pwd`에 나온 실제 `lekiwi_classroom` 폴더를 선택합니다.
+3. 왼쪽 탐색기에서 `isaacsim_basic > 00_env_setting > README.md`를 엽니다.
+4. `Ctrl+Shift+V`를 눌러 Markdown 미리보기로 교재를 읽습니다.
+5. `Terminal > New Terminal`로 VS Code 터미널을 열고 `pwd`, `ls lekiwi`로 저장소 최상위 폴더인지 확인합니다.
+
+**완료 기준:** VS Code 창에서 교재가 보이고, 터미널의 `ls lekiwi`가 실행 파일을 찾습니다.
+처음 열었던 Ubuntu 터미널을 계속 사용해도 됩니다. 다음 설치는 선택한 터미널 한 곳에서 진행합니다.
+편집기 접속 주소나 별도 비밀번호를 만들지 않습니다. Python 파일 수정은 각 장 마지막에서 합니다.
+
+## 3. GPU·Docker 준비와 이미지 빌드
+
+### 3.1. 설치할 항목 확인하기
 
 먼저 읽기 전용 검사로 현재 상태를 확인합니다.
 
@@ -43,51 +102,82 @@ ls lekiwi
 ```
 
 `check=PASS`는 준비 절차를 진행할 수 있다는 뜻입니다. Isaac Sim 창이 실행됐다는 뜻은 아닙니다.
-강사가 수업 이미지를 이미 준비했는지 확인합니다.
+터미널에 나온 GPU·OS와 설치 계획을 읽습니다. 실패하면 마지막 오류를 강사에게 보여 주고 원인부터 확인합니다.
+이미 작업하던 수업 폴더를 업데이트하는 경우에는 먼저 [업데이트 절차](../../README.md#업데이트와-브랜치)에 따라 기존 작업을 보관합니다.
 
-- **처음 설치하는 노트북:** [학생 PC 설치 안내](../../docs/student-setup.md)의 ‘처음 실행’부터 설치·필요한 재부팅·검증을 마친 뒤 이 장으로 돌아옵니다.
-- **설치를 마친 노트북:** 아래 라이선스·Docker 권한을 설정하고 `./lekiwi install --verify`로 기존 이미지의 GPU·두 카메라·짧은 기록 검사를 실행합니다.
-- **기존 수업 코드에서 업데이트한 노트북:** 작업을 보관하고 [업데이트 절차](../../README.md#업데이트와-브랜치)에 따라 이미지를 갱신한 뒤 검사합니다.
+### 3.2. 학생이 직접 설치·빌드 실행하기
 
 [NVIDIA 라이선스](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)를 읽고 동의한 경우, 실습할 터미널에 설정합니다.
 
 ```bash
 export ACCEPT_EULA=Y
 export LEKIWI_DISPLAY_MODE=local
+./lekiwi install
+```
+
+**설치 도구가 수행하는 순서**는 다음과 같습니다. 각 단계의 설치 계획을 읽고 동의할 때 `y`를 직접 입력합니다.
+
+| 단계 | 하는 일 | 학생이 확인할 것 |
+|---|---|---|
+| 드라이버 | GPU에 맞는 프로젝트 지원 드라이버를 준비 | 교체·재부팅 안내가 있는지 |
+| Docker | Docker Engine·Compose·Buildx와 NVIDIA Container Toolkit을 준비 | 필요한 설치와 Docker 재시작 확인 |
+| 이미지 빌드 | Isaac Sim·LeRobot 실행 환경을 내려받아 이미지 생성 | 빌드 로그가 진행 중인지, 오류로 끝났는지 |
+| 실행 검사 | CUDA 연산·두 카메라·짧은 기록 검사 | 마지막 `verification=PASS` |
+
+`./lekiwi install`이 내부에서 `./lekiwi setup all`을 실행하므로 **같은 빌드를 별도로 다시 실행하지 않습니다.**
+이미 준비된 항목은 확인해 재사용하며 이미지 빌드는 캐시를 사용합니다. 드라이버 정책·지원 범위는 [설치 상세 안내](../../docs/student-setup.md)를 참고합니다.
+
+전체 명령을 `sudo ./lekiwi install`로 실행하지 않습니다. 필요한 단계에서 도구가 sudo 인증을 요청합니다.
+APT·Secure Boot에서 추가 질문이 나올 수 있으므로 안내를 읽고 진행합니다. 여러 터미널에서 설치를 동시에 실행하지 않습니다.
+
+### 3.3. 재부팅 안내가 나오면 이어서 진행하기
+
+드라이버 설치 또는 운영체제 상태 때문에 재부팅을 요청하면 다음 순서로 진행합니다. 자동으로 재부팅되지는 않습니다.
+
+1. 편집 중인 파일을 저장하고 실행 중인 작업을 정상 종료합니다.
+2. Ubuntu 메뉴에서 재시작합니다. Secure Boot의 MOK 등록 화면이 나오면 강사와 안내를 확인합니다.
+3. 로그인 후 VS Code에서 같은 프로젝트 폴더를 다시 엽니다.
+4. 새 터미널을 열고 `pwd`, `ls lekiwi`로 위치를 확인합니다.
+5. 라이선스 동의 설정과 로컬 화면 설정을 다시 적용하고 설치를 이어갑니다.
+
+```bash
+export ACCEPT_EULA=Y
+export LEKIWI_DISPLAY_MODE=local
+./lekiwi install
+```
+
+저장소를 다시 clone하거나 기존 폴더를 지우지 않습니다. 재부팅 후에도 드라이버 오류가 남으면 자동 설치를 반복하지 말고
+`nvidia-smi` 결과와 마지막 오류를 강사에게 보여 주세요.
+
+### 3.4. 설치 완료 확인과 이후 Docker 권한 설정
+
+**완료 기준:** 설치 마지막에 `LEKIWI_INSTALL verification=PASS`가 표시됩니다.
+이 명령은 창 없이 GPU·카메라·짧은 기록을 검사하며 USB 리더에는 연결하지 않습니다. GUI와 Play/Stop은 다음 절에서 직접 확인합니다.
+
+설치 도구 안에서 사용한 Docker 권한 설정은 부모 터미널에 자동으로 남지 않습니다. 이후 실습 전에 확인합니다.
+
+```bash
 docker info
 ```
 
-`docker info`에 권한 오류가 나지만 `sudo docker info`는 성공하면 같은 터미널에서 다음을 한 번 설정합니다.
+권한 오류가 나면 `sudo docker info`를 확인합니다. **일반 명령은 권한 오류이고 sudo 명령은 성공하는 경우에만** 같은 터미널에서 설정합니다.
 
 ```bash
 export LEKIWI_DOCKER_SUDO=1
 ```
 
-`sudo` 비밀번호는 **지금 사용하는 노트북의 Ubuntu 로그인 비밀번호**입니다. 입력 중 문자가 보이지 않아도 입력되고 있습니다.
-프로젝트 전체를 `sudo ./lekiwi ...`로 실행하지 않습니다. 새 터미널에서는 위 `export` 설정을 다시 적용합니다.
+`sudo docker info`도 실패하면 단순 권한 문제로 판단하지 말고 오류를 강사에게 보여 줍니다.
+프로젝트 전체를 `sudo ./lekiwi ...`로 실행하지 않습니다. 새 터미널이나 재부팅 후에는 필요한 `export` 설정을 다시 적용합니다.
 
-준비된 이미지로 검사합니다. USB 리더를 열지 않는 검사입니다.
+설치가 PASS로 끝났다면 다음 GUI 확인으로 이동합니다. **이미 설치를 마친 노트북에서 나중에 검사만 다시 할 때** 아래 명령을 사용합니다.
+이미지가 없는 노트북은 `--verify`만 실행해도 이미지가 만들어지지 않으므로 먼저 `./lekiwi install`을 완료해야 합니다.
 
 ```bash
 ./lekiwi install --verify
 ```
 
-**완료 기준:** `LEKIWI_INSTALL verification=PASS`입니다. 실패하면 마지막 오류와 로그 경로를 강사에게 보여줍니다.
-여기까지 성공했다면 매번 설치하거나 이미지를 다시 빌드할 필요는 없습니다.
+실패하면 마지막 오류와 로그 경로를 강사에게 보여줍니다. 설치와 검사가 완료되면 매 실습마다 다시 빌드할 필요는 없습니다.
 호스트에 Isaac Sim·LeRobot·Conda·CUDA Toolkit을 따로 설치하는 수업이 아닙니다. 실습 의존성은 Docker 이미지에 있습니다.
-
-## 3. 같은 노트북에서 교재와 코드 열기
-
-노트북에 설치된 **VS Code**의 `File > Open Folder`에서 1절의 `lekiwi_classroom` 폴더를 엽니다.
-VS Code가 없는 대여 장비라면 강사에게 편집기 준비를 요청합니다. 다른 텍스트 편집기도 사용할 수 있습니다.
-
-1. 왼쪽 탐색기에서 `isaacsim_basic > 00_env_setting > README.md`를 엽니다.
-2. `Ctrl+Shift+V`를 눌러 Markdown 미리보기를 엽니다. 이 화면에서 교재를 읽습니다.
-3. `Terminal > New Terminal`로 터미널을 열고 `pwd`와 `ls lekiwi`로 저장소 최상위 폴더인지 확인합니다.
-4. 새 터미널이면 2절의 `export` 설정을 적용합니다. Ubuntu 터미널을 계속 사용해도 됩니다.
-
-편집기 비밀번호나 접속 주소를 설정하지 않습니다. 화면 위쪽에 `coder@...:/workspace/...`가 보이는 이전 브라우저 편집기 대신 **지금 노트북의 로컬 편집기**를 사용합니다.
-Python은 해당 장 마지막에서 수정합니다. 먼저 아래 화면 실행을 확인합니다.
 
 ## 4. Isaac Sim 화면과 Play/Stop 확인
 

@@ -31,3 +31,5 @@ Thumbs.db
 # Local ROS/RViz inspection only; never include in deployment commits.
 /.local_ros/
 /docs/legacy-rviz.md
+# 강사 개인 수업 대본은 로컬에서만 보관합니다.
+/docs/instructor-script-6h.md

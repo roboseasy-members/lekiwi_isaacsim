@@ -2,7 +2,8 @@
 
 환경 설정 → 객체 물리 → 관절 → 카메라 → 입력·조작 → 관절 기록 → LeKiwi 데이터셋 순서입니다.
 **처음 수업을 시작한다면 [0장 환경 설정](00_env_setting/README.md)부터 진행합니다.**
-학생별 Ubuntu NVIDIA GPU 노트북 한 대에서 편집기와 Isaac Sim 창·Play 조작을 확인한 뒤 1장으로 넘어갑니다. 리더암 USB도 같은 노트북에 연결합니다.
+학생별 Ubuntu NVIDIA GPU 노트북 한 대에서 VS Code 설치·GPU와 Docker 준비·이미지 빌드를 직접 진행하고,
+실행 검사와 Isaac Sim 창·Play 조작을 확인한 뒤 1장으로 넘어갑니다. 리더암 USB도 같은 노트북에 연결합니다.
 **화면에서 직접 제작 → 속성을 바꾸며 관찰 → 같은 구성을 Python으로 제작 → 두 결과 비교**로 수업합니다.
 Isaac Sim 안에 전용 Lesson 탭을 만들지 않습니다. 기본 Stage·Property·Viewport·Play/Stop을 사용합니다.
 
@@ -14,7 +15,7 @@ API 이름·Python 파일·코드 실행과 수정은 각 장의 마지막 ‘�
 
 | 장 | 본문 | 먼저 마우스로 하는 일 | 마지막 코드 실습 | 노션 ZIP |
 |---|---|---|---|---|
-| 0 | [환경 설정](00_env_setting/README.md) | 로컬 환경·편집기·창·Play 확인 | 환경 준비 단계 | [노션](00_env_setting/00_env_setting_notion.zip) |
+| 0 | [환경 설정](00_env_setting/README.md) | VS Code 설치·환경 준비·이미지 빌드·창·Play 확인 | 환경 준비 단계 | [노션](00_env_setting/00_env_setting_notion.zip) |
 | 1 | [객체와 물리](01_object_physics/README.md) | 바닥·물체 생성, 중력·충돌·질량·마찰·반발 실험 | 같은 여섯 물리 실험 구현 | [노션](01_object_physics/01_object_physics_notion.zip) |
 | 2 | [관절과 모터](02_robot_joints/README.md) | 받침·팔·관절·Drive 제작, 목표 각도 비교 | 같은 모형과 응답 구현 | [노션](02_robot_joints/02_robot_joints_notion.zip) |
 | 3 | [카메라와 시점](03_robot_cameras/README.md) | Camera 생성, 렌즈·자세·부모 변경 | 같은 카메라와 LeKiwi 좌표 이해 | [노션](03_robot_cameras/03_robot_cameras_notion.zip) |
@@ -95,6 +96,7 @@ Markdown은 GitHub 또는 편집기의 Markdown Preview에서 읽습니다. 다�
 | 6 | 키보드 수집·변환 90~120분, 리더 수집 30~60분 추가 |
 
 실물 없이 8시간 15분~10시간 15분, 리더 포함 9시간 45분~12시간 45분의 실습 시간입니다.
-휴식·질문을 포함해 2일 14~16시간 편성을 예상합니다. 최초 설치·충분한 시연 확보·학습 시간은 별도입니다.
+휴식·질문을 포함해 2일 14~16시간 편성을 예상합니다. 위 추정에는 0장 최초 설치·빌드, 충분한 시연 확보·학습 시간이 포함되지 않습니다.
+0장을 수업 중 학생이 직접 진행하므로 설치 시간을 따로 배정합니다. 총 6시간으로 진행할 때는 다운로드·재부팅 소요 시간에 따라 이후 실습 범위를 줄여야 합니다.
 
 [검증 기록](VALIDATION.md) · [프로젝트 전체 흐름](../README.md)
