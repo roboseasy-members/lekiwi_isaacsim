@@ -9,7 +9,7 @@ Isaac Sim 안에 전용 Lesson 탭을 만들지 않습니다. 기본 Stage·Prop
 
 각 장의 **README 한 문서를 처음부터 끝까지** 읽습니다. 먼저 메뉴·속성·스크린샷을 따라 실험하고 저장합니다.
 API 이름·Python 파일·코드 실행과 수정은 각 장의 마지막 ‘같은 작업을 코드로 구현하기’ 절에서 다룹니다.
-기록지도 마우스 실습 → 코드 실습 → 두 결과 비교 순서로 작성합니다.
+각 실습의 확인 사항도 본문에 있습니다. 화면에서 결과를 관찰하고 직접 만든 환경과 코드 실행 결과를 비교합니다.
 
 ## 교재 읽는 순서
 
@@ -23,7 +23,7 @@ API 이름·Python 파일·코드 실행과 수정은 각 장의 마지막 ‘�
 | 5 | [장면 저장과 움직임 기록](05_data_recording/README.md) | 관절 확인·직접 조작·USD 저장 | 본인 USD의 JSON 기록·재생 | [노션](05_data_recording/05_data_recording_notion.zip) |
 | 6 | [LeKiwi 데이터 수집](06_lekiwi_dataset/README.md) | 로봇 자산·큐브·바구니·관찰 카메라 구성 | 준비된 환경의 RGB·상태·명령 수집·변환·ACT | [노션](06_lekiwi_dataset/06_lekiwi_dataset_notion.zip) |
 
-1~6장에는 본문 README, 기록지 worksheet, 출처 SOURCES, 학생 Python, 실제 화면과 노션 ZIP이 있습니다.
+1~6장에는 본문 README, 출처 SOURCES, 학생 Python, 실제 화면과 노션 ZIP이 있습니다.
 기존 `gui.md` 링크는 통합된 본문으로 안내합니다. 별도 직접 제작 문서를 먼저 찾아갈 필요가 없습니다.
 실물 리더는 4·6장의 선택 실습에서만 필요합니다.
 
@@ -78,7 +78,7 @@ Docker의 `/data`는 호스트 `data`에 연결됩니다. 컨테이너 종료 �
 
 ## 노션 가져오기
 
-장별 ZIP을 노션 `Import > HTML`에서 가져온 뒤 **README 페이지**부터 읽습니다. 0장은 교재·기록지·출처 HTML, 1~6장은 HTML과 실제 PNG를 포함합니다.
+장별 ZIP을 노션 `Import > HTML`에서 가져온 뒤 **README 페이지**부터 읽습니다. 교재·출처 HTML과 본문에 사용한 실제 PNG를 포함합니다.
 Markdown은 GitHub 또는 편집기의 Markdown Preview에서 읽습니다. 다른 장·Python 파일은 저장소 링크로 확인합니다.
 원본 스크린샷 위에 빨간 사각형을 추가하며 실제 버튼이나 화면 내용을 합성하지 않습니다.
 
