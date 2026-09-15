@@ -17,12 +17,12 @@ WebRTC 클라이언트와 리더암 프로그램은 **노트북의 로컬 터미
 ## 1. 준비
 
 - 데스크탑: 루트 README대로 설치·카메라 검사를 완료하고 이 변경이 포함된 코드로 `./lekiwi setup sim`을 실행합니다.
-- 노트북: Ubuntu x86_64, Python 3, Docker Engine. 리더암 실습용 이미지에 GPU/CUDA가 필요하지 않습니다.
+- 노트북: Ubuntu x86_64, Python 3, OpenSSH 클라이언트, Docker Engine. 리더암 실습용 이미지에 GPU/CUDA가 필요하지 않습니다.
 - 노트북에서 선택한 데스크탑 주소에 도달할 수 있어야 합니다. Tailscale이면 양쪽 연결 상태를, 같은 LAN이면 기기 간 통신 차단 여부를 확인합니다.
 - 데스크탑의 WebRTC는 TCP 49100·UDP 47998, 리더 입력/연결 검사는 UDP 49101을 사용합니다.
 - `--share-client`를 지정한 테스트에만 HTTP 8766으로 `/client.zip` 한 파일을 제공합니다. 파일 목록과 data는 공개하지 않습니다.
 - 서로 다른 망에서는 Tailscale을 사용합니다. 같은 LAN에서는 LAN IP로 직접 연결할 수도 있습니다. 방화벽을 자동 변경하지 않습니다.
-- 학생별 데스크탑과 접속 문구를 구분합니다. 리더 입력 인증은 HMAC이며 영상 접속 자체의 로그인 기능은 아닙니다.
+- 학생별 데스크탑 주소와 서버 Ubuntu 계정을 확인합니다. 리더 입력 인증용 임시 키는 SSH로 자동 전달하며 직접 정하거나 입력하지 않습니다. 영상 연결은 WebRTC를 사용합니다.
 
 Docker에 sudo가 필요한 PC에서는 해당 터미널에서 `export LEKIWI_DOCKER_SUDO=1`을 설정합니다.
 Isaac 라이선스에 동의한 데스크탑에서 `export ACCEPT_EULA=Y`를 설정합니다.
@@ -60,11 +60,11 @@ Isaac 라이선스에 동의한 데스크탑에서 `export ACCEPT_EULA=Y`를 설
 ./lekiwi remote serve --host 192.168.0.81 --chapter 6 --teleop
 ```
 
-12자 이상의 접속 문구를 정해 숨김 입력란에 입력합니다. 명령 인자·환경 변수·로그·문서에는 기록하지 않습니다.
-노트북에서 아래 명령을 실행하고 같은 문구를 입력합니다.
+서버가 임시 인증 키를 자동 생성합니다. 노트북에서는 `--ssh-user`에 **서버에서 실습을 실행한 Ubuntu 계정**을 지정합니다.
+아래의 `student`는 예시이며, 서버 터미널의 `whoami` 출력 또는 실행기가 출력한 `--ssh-user` 값을 사용합니다.
 
 ```bash
-./lekiwi remote demo --host 192.168.0.81 --seconds 10
+./lekiwi remote demo --host 192.168.0.81 --ssh-user student --seconds 10
 ```
 
 `accepted`가 증가하고 PASS이면 가상 관절 값의 왕복 통신이 확인된 것입니다.
@@ -81,7 +81,7 @@ Git·Python이 없다면 설치한 뒤 저장소를 받습니다. 같은 이름�
 
 ```bash
 sudo apt update
-sudo apt install git python3
+sudo apt install git python3 openssh-client
 git clone --branch develop --single-branch https://github.com/SJun99/lekiwi_isaacsim.git lekiwi_classroom
 cd lekiwi_classroom
 git branch --show-current
@@ -117,20 +117,24 @@ CPU 전용 PyTorch와 LeRobot 0.6.1을 격리한 이미지입니다. 최초 다�
 ## 5. 실제 리더암 연결
 
 서버가 리더 입력을 기다리고 있어야 합니다. 브라우저 수업은 저장·종료 후 **브라우저 터미널**에서
-`lesson run 6 --teleop`을 실행하고 12자 이상의 접속 문구를 정합니다. `lesson status`의 READY를 확인한 뒤
+`lesson run 6 --teleop`을 실행합니다. 접속 문구 입력 없이 시작하며 `lesson status`의 READY를 확인한 뒤
 WebRTC로 접속합니다. 데스크탑에서 직접 실행하는 방식은 위 3절을 사용하며, 두 방식을 동시에 실행하지 않습니다.
-이미 `lesson run 6 --teleop`으로 시작한 실습이 READY라면 그 실습과 접속 문구를 그대로 사용하고 실행 명령을 반복하지 않습니다.
+이미 `lesson run 6 --teleop`으로 시작한 실습이 READY라면 실행 명령을 반복하지 않습니다.
 
 리더암이 맞는지 확인하고, 팔을 지지한 상태에서 전원을 바로 끌 수 있도록 준비합니다.
 아래 명령의 연결 확인 단계는 리더암 토크를 해제하므로 팔이 떨어지지 않도록 지지해야 합니다.
 기존 보정이 있으면 재사용 여부를 직접 선택합니다. 자동으로 토크를 켜거나 팔을 이동시키지 않습니다.
 
 ```bash
-./lekiwi remote leader --host 192.168.0.81 \
+./lekiwi remote leader --host 192.168.0.81 --ssh-user student \
   --port /dev/serial/by-id/실제_리더암_장치 --id student01
 ```
 
-접속 문구를 입력하고 보정·연결 안내를 따릅니다. 보정 후 시뮬레이션 팔의 방향을 확인하고 R로 활성화합니다.
+`--ssh-user student`의 `student`는 **서버의 Ubuntu 계정**으로 바꿉니다. 이 실습의 서버 계정이 `roboseasy`이면 `--ssh-user roboseasy`입니다.
+SSH 설정에 서버 계정이 등록되어 있으면 `--ssh-user`는 생략할 수 있습니다.
+처음 SSH로 연결할 때는 서버 키를 확인하고, 비밀번호를 물으면 **서버 Ubuntu 비밀번호**를 입력합니다.
+별도의 teleop 접속 문구를 만들거나 양쪽에 입력하는 단계는 없습니다. `LEKIWI_REMOTE auth=READY`가 나오면 임시 키 전달이 완료된 것입니다.
+이후 기존 보정의 재사용 여부와 팔 지지·전원 차단 준비를 직접 확인합니다. 보정 후 시뮬레이션 팔의 방향을 확인하고 R로 활성화합니다.
 조작할 때는 **WebRTC 영상 창을 맨 앞으로 가져와 Viewport를 클릭하고 영문 입력 상태**에서 키를 누릅니다.
 브라우저 편집기가 선택되어 있으면 R/W 등의 키가 Python 코드에 입력될 수 있습니다.
 SPACE는 정지, F8은 장면 초기화·큐브 재배치입니다. 저장하지 않은 기록이 있으면 초기화가 차단됩니다.
@@ -142,6 +146,13 @@ F5 기록 시작, F6 종료, F7 연습 저장, F9 성공 저장, F10 두 번은 
 - 데이터셋·시연·학습 결과: 데스크탑의 `data/`를 컨테이너 `/data`에 연결해 보존합니다.
 - 서버 실행 로그와 임시 입력: 데스크탑의 `data/remote/session.*/`.
 - 모두 Git에서 제외됩니다. 실제 데이터 기록은 데스크탑의 기존 시뮬레이션 시간·카메라 동기화 경로를 사용합니다.
+
+서버를 재시작하면 인증 키도 바뀝니다. 이 경우 노트북의 리더 프로그램을 `Ctrl+C`로 종료하고 같은 명령으로 다시 실행해 새 키를 받습니다.
+Wi-Fi의 짧은 단절 후 같은 서버 실행으로 돌아오는 경우에는 아래 통신 복구 절차를 사용합니다.
+`자동 인증 실패`가 나오면 서버 주소, 실습을 실행한 Ubuntu 계정, `lesson status`의 READY를 확인합니다. 인증 실패 시 USB 연결을 시작하지 않습니다.
+
+**이전 버전에서 갱신:** 서버·노트북 소스를 모두 갱신하고, 서버에서 `./lekiwi remote setup-editor`, 노트북에서 `./lekiwi remote setup-client`로 해당 이미지를 다시 빌드합니다.
+열린 실습을 저장·종료한 뒤 서버의 `remote workspace`를 재시작하고 브라우저 편집기를 새로고침합니다. Isaac Sim 이미지는 이 인증 변경만으로 다시 빌드할 필요가 없습니다.
 
 입력은 서버 요청을 받은 뒤 새로 읽으며, 서버 기준 200 ms가 지난 응답은 반영하지 않습니다.
 송신기는 50 ms마다 수신을 확인하되 요청 전체의 200 ms 한도까지 응답을 기다립니다.
@@ -169,11 +180,21 @@ F7 연습 저장 또는 F10 두 번 폐기 후 새 F5로 시작하며, 중단된
 
 아직 Git에 반영하지 않은 구현을 시험할 때 데스크탑 실행에 `--share-client`를 추가합니다.
 표시된 `/client.zip`을 노트북으로 내려받아 새 폴더에 풉니다. 기존 저장소에 덮어쓰지 않습니다.
-압축은 지정한 실행 소스와 문서만 포함하며 모터 보정·데이터·접속 문구는 포함하지 않습니다.
+압축은 지정한 실행 소스와 문서만 포함하며 모터 보정·데이터·인증 키는 포함하지 않습니다.
 압축을 풀어 실행 권한이 없다면 `bash lekiwi remote ...`로 실행할 수 있습니다.
 서버 종료 시 다운로드 서버도 종료됩니다. 이 파일은 연결 테스트용이며 전체 교재·Isaac 자산을 포함하지 않습니다.
 
 ## 구현 근거와 검증
+
+2026-09-14부터 접속 문구의 수동 입력을 제거했습니다. 서버는 실행마다 32바이트 임시 키를 생성하고 같은 Ubuntu 사용자만 접근할 수 있는 Linux 메모리 소켓으로 제공합니다.
+노트북 실행기가 SSH 인증 후 키를 받아 리더 컨테이너에 메모리 소켓으로 전달합니다. 키는 파일·명령 인자·환경 변수·로그에 기록하지 않습니다.
+기존 HMAC·일회용 요청·입력 만료·단절 복구 검사는 유지합니다. 아래 날짜별 검증 기록은 변경 전의 실험 이력입니다.
+
+같은 날 관련 자동 테스트 191개를 통과했습니다. 키 수명·다른 UID 거부·SSH 실패·문구 없는 실행·기존 통신 복구·보정 확인을 포함합니다.
+두 Ubuntu 노트북의 실제 Tailscale/SSH 연결로 키를 받아 CPU 리더 컨테이너에 전달하고, 인증된 가상 관절 표본 3개가 서버에 도착하는 것을 확인했습니다.
+이 검사는 USB를 열지 않았습니다. 수정된 서버 편집기에서 `lesson run 6 --teleop`을 비대화형으로 실행해 문구 입력 없이 STARTING → READY가 되는 것도 확인했습니다.
+실제 리더암 재연결·추종은 사용자의 팔 지지·보정 확인 뒤 별도로 진행합니다.
+편집기 재시작 중 발견한 TCP 종료 대기(TIME_WAIT) 상태도 기존 포트 검사로 처리하도록 보완했습니다. 사용 중인 다른 서버의 포트는 계속 거부합니다.
 
 [Isaac Sim 5.1 Livestream Clients](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/manual_livestream_clients.html)와
 5.1.0 Docker에 포함된 `standalone_examples/api/isaacsim.simulation_app/livestream.py`를 참고했습니다.

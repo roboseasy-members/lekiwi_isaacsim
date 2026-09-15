@@ -408,9 +408,9 @@ lesson stop
 lesson run 6 --teleop
 ```
 
-접속 문구를 정하고 READY를 확인합니다. 노트북에서는 [리더 연결 절차](../../docs/remote-classroom.md#5-실제-리더암-연결)의
-`./lekiwi remote leader`에 같은 서버 Tailscale 주소·접속 문구·본인 USB 경로·기존 리더 ID를 사용합니다.
-같은 리더 송신기가 아직 실행 중이라면 중복 실행하지 않고 같은 접속 문구를 사용합니다.
+접속 문구 입력 없이 시작합니다. READY를 확인한 뒤 노트북에서는 [리더 연결 절차](../../docs/remote-classroom.md#5-실제-리더암-연결)의
+`./lekiwi remote leader`에 같은 서버 Tailscale 주소·서버 Ubuntu 계정(`--ssh-user`)·본인 USB 경로·기존 리더 ID를 사용합니다.
+SSH 인증으로 임시 키를 자동으로 받습니다. 서버 실습을 재시작했다면 기존 리더 송신기를 `Ctrl+C`로 종료한 뒤 다시 실행해 새 키를 받습니다. 동시에 두 송신기를 실행하지 않습니다.
 WebRTC에서 같은 서버 주소로 다시 Connect하고 팔·집게·베이스의 추종을 확인합니다.
 
 **데스크탑 직접 실행:** 본인 USB 경로로 다음을 실행합니다.

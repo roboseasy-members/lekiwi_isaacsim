@@ -385,17 +385,10 @@ def test_client_bundle_contains_only_explicit_sources(tmp_path):
     output = tmp_path / "client.zip"
     module.bundle(output)
     with zipfile.ZipFile(output) as archive:
-        assert len(archive.namelist()) == 8
+        assert len(archive.namelist()) == 9
         assert not any("/data/" in name or ".." in name for name in archive.namelist())
         assert "lekiwi-client/isaac_sim/remote_teleop.py" in archive.namelist()
-
-
-def test_connection_phrase_cannot_fall_back_to_echoed_input(monkeypatch):
-    import remote_teleop
-    monkeypatch.setattr(remote_teleop.sys, "stdin", SimpleNamespace(isatty=lambda: False))
-    monkeypatch.setattr(remote_teleop.getpass, "getpass", lambda *_: pytest.fail("must not prompt"))
-    with pytest.raises(RuntimeError, match="숨김"):
-        remote_teleop.connection_key()
+        assert "lekiwi-client/isaac_sim/remote_auth.py" in archive.namelist()
 
 
 @pytest.mark.parametrize("owner,should_stop", [("ours", True), ("another-session", False), (None, False)])

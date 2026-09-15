@@ -6,7 +6,7 @@ RUN python -m pip install --no-cache-dir --index-url https://download.pytorch.or
         torch==2.10.0 torchvision==0.25.0
 RUN python -m pip install --no-cache-dir 'lerobot[feetech]==0.6.1' feetech-servo-sdk==1.0.0
 COPY tools/so101_leader.py /opt/lekiwi/tools/so101_leader.py
-COPY isaac_sim/teleop_bridge.py isaac_sim/remote_teleop.py /opt/lekiwi/isaac_sim/
+COPY isaac_sim/teleop_bridge.py isaac_sim/remote_teleop.py isaac_sim/remote_auth.py /opt/lekiwi/isaac_sim/
 RUN python -c 'from lerobot.teleoperators.so_leader import SO101Leader, SO101LeaderConfig; import torch; assert torch.version.cuda is None' \
     && python -m pip check
 USER 1000:1000

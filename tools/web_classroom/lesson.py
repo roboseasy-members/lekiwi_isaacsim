@@ -157,11 +157,6 @@ def main(argv=None):
         if args.teleop:
             if args.chapter != 6 or args.script or args.experiment:
                 parser.error("리더 입력은 lesson run 6 --teleop으로 시작하세요.")
-            if not sys.stdin.isatty():
-                raise RuntimeError("리더 접속 문구는 브라우저 터미널에서 숨김 입력하세요.")
-            message["phrase"] = getpass.getpass("노트북에서도 사용할 접속 문구(12자 이상): ")
-            if len(message["phrase"]) < 12:
-                raise ValueError("접속 문구는 12자 이상입니다.")
     result = request(message)
     if args.op == "logs":
         print(result["log"])
