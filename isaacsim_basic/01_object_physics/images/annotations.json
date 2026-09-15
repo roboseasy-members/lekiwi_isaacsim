@@ -100,16 +100,16 @@
   },
   {
     "name": "04-gravity",
-    "title": "실제 화면 · 중력 방향과 크기",
+    "title": "중력 방향과 크기",
     "marks": [
       {
         "box": [
-          1178,
-          124,
-          417,
-          22
+          1226,
+          402,
+          370,
+          28
         ],
-        "label": "Stage의 PhysicsScene을 선택합니다."
+        "label": "PhysicsScene의 Property입니다."
       },
       {
         "box": [
@@ -118,8 +118,14 @@
           442,
           60
         ],
-        "label": "Gravity Direction=(0,0,-1), Gravity Magnitude=9.81을 확인합니다."
+        "label": "방향 (0, 0, -1), 크기 9.81 입력 후."
       }
+    ],
+    "crop": [
+      1128,
+      315,
+      486,
+      350
     ]
   },
   {
@@ -271,7 +277,7 @@
   },
   {
     "name": "10-file",
-    "title": "실제 화면 · 저장하고 다시 열기",
+    "title": "File 메뉴에서 저장하기",
     "marks": [
       {
         "box": [
@@ -280,7 +286,7 @@
           307,
           25
         ],
-        "label": "Open: 저장한 장면을 다시 엽니다."
+        "label": "Open: 저장한 장면 열기"
       },
       {
         "box": [
@@ -289,8 +295,14 @@
           307,
           51
         ],
-        "label": "Save / Save As: 현재 파일 저장 또는 새 과제 파일로 저장합니다."
+        "label": "Save / Save As: 장면 저장"
       }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      470
     ]
   },
   {
@@ -622,7 +634,7 @@
   },
   {
     "name": "19-create-physics",
-    "title": "실제 화면 · 물리 장면과 물리 재질 생성 메뉴",
+    "title": "Physics Scene 생성 메뉴",
     "marks": [
       {
         "box": [
@@ -631,7 +643,7 @@
           49,
           21
         ],
-        "label": "상단 Create 메뉴를 엽니다."
+        "label": "Create 메뉴를 엽니다."
       },
       {
         "box": [
@@ -640,7 +652,7 @@
           161,
           24
         ],
-        "label": "Physics 하위 메뉴를 엽니다."
+        "label": "Physics를 선택합니다."
       },
       {
         "box": [
@@ -649,17 +661,14 @@
           195,
           25
         ],
-        "label": "Physics Scene: 중력 방향과 크기를 지정할 물리 장면을 만듭니다."
-      },
-      {
-        "box": [
-          228,
-          289,
-          195,
-          25
-        ],
-        "label": "Physics Material: 뒤의 마찰·반발 실험에서 물리 재질을 만들 때 사용합니다."
+        "label": "Physics Scene을 클릭합니다."
       }
+    ],
+    "crop": [
+      0,
+      0,
+      440,
+      470
     ]
   },
   {
@@ -734,7 +743,2982 @@
           350
         ],
         "label": "오른쪽 Stage는 현재 비어 있습니다. 객체를 만들면 이 목록에 나타납니다."
+      },
+      {
+        "box": [
+          49,
+          27,
+          955,
+          582
+        ],
+        "label": "뷰포트: 가운데 큰 검은 화면과 격자입니다. 다음 절에서 물체를 만듭니다."
+      },
+      {
+        "box": [
+          1007,
+          445,
+          431,
+          422
+        ],
+        "label": "Property: 오른쪽 아래 영역입니다. 객체를 선택하면 설정이 나타납니다."
+      },
+      {
+        "box": [
+          5,
+          287,
+          31,
+          34
+        ],
+        "label": "Play: 왼쪽 세로 도구막대의 삼각형입니다. 장면을 만든 뒤 실행합니다."
       }
     ]
+  },
+  {
+    "name": "22-empty",
+    "title": "처음 만나는 Isaac Sim 화면",
+    "marks": [
+      {
+        "box": [
+          49,
+          27,
+          1063,
+          624
+        ],
+        "label": "Viewport: 장면을 보는 가운데 화면"
+      },
+      {
+        "box": [
+          1118,
+          28,
+          473,
+          445
+        ],
+        "label": "Stage: 객체 이름을 찾는 오른쪽 위"
+      },
+      {
+        "box": [
+          1118,
+          479,
+          473,
+          447
+        ],
+        "label": "Property: 선택한 객체를 설정하는 오른쪽 아래"
+      },
+      {
+        "box": [
+          5,
+          287,
+          31,
+          36
+        ],
+        "label": "Play: 왼쪽 삼각형. 지금은 누르지 않습니다."
+      }
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "23-create-world",
+    "title": "World 그룹 만들기",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          192,
+          163,
+          23
+        ],
+        "label": "Xform 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      380,
+      370
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "24-rename-menu",
+    "title": "객체 이름 바꾸기",
+    "marks": [
+      {
+        "box": [
+          1138,
+          104,
+          113,
+          25
+        ],
+        "label": "Xform 이름 위에서 우클릭"
+      },
+      {
+        "box": [
+          1192,
+          258,
+          181,
+          28
+        ],
+        "label": "Rename 클릭"
+      }
+    ],
+    "crop": [
+      1115,
+      24,
+      479,
+      445
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "25-world-name",
+    "title": "World 입력 후 Enter",
+    "marks": [
+      {
+        "box": [
+          1169,
+          104,
+          184,
+          25
+        ],
+        "label": "World 입력 → Enter"
+      }
+    ],
+    "crop": [
+      1115,
+      25,
+      479,
+      160
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "26-world-ready",
+    "title": "World 이름과 경로 확인",
+    "marks": [
+      {
+        "box": [
+          1140,
+          104,
+          270,
+          25
+        ],
+        "label": "Stage의 이름은 World입니다."
+      },
+      {
+        "box": [
+          1216,
+          560,
+          356,
+          32
+        ],
+        "label": "경로는 /World입니다."
+      }
+    ],
+    "crop": [
+      1115,
+      25,
+      479,
+      600
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "27-create-light",
+    "title": "조명 만들기",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          94,
+          164,
+          25
+        ],
+        "label": "Lights에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          227,
+          169,
+          134,
+          25
+        ],
+        "label": "Dome Light 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      380,
+      270
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "28-light-name",
+    "title": "Light 이름과 부모 확인",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "29-light-intensity",
+    "title": "조명 밝기 800 입력",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1128,
+          447,
+          426,
+          27
+        ],
+        "label": "Intensity: 800 입력 → Enter"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "30-create-physics",
+    "title": "Physics Scene 만들기",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          240,
+          164,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          228,
+          241,
+          199,
+          25
+        ],
+        "label": "Physics Scene 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      440,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "31-physics-before-parent",
+    "title": "World 밖에 만들어진 경우",
+    "marks": [
+      {
+        "box": [
+          1140,
+          143,
+          310,
+          25
+        ],
+        "label": "PhysicsScene이 World 밖에 있습니다."
+      },
+      {
+        "box": [
+          1215,
+          374,
+          358,
+          27
+        ],
+        "label": "현재 경로는 /PhysicsScene입니다."
+      }
+    ],
+    "crop": [
+      1115,
+      25,
+      479,
+      395
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "32-physics-drag-world",
+    "title": "World 이름 위로 드래그",
+    "marks": [
+      {
+        "box": [
+          1139,
+          104,
+          310,
+          25
+        ],
+        "label": "놓을 곳: World 이름 위"
+      },
+      {
+        "box": [
+          1140,
+          143,
+          310,
+          25
+        ],
+        "label": "PhysicsScene을 잡고 위로 옮깁니다."
+      }
+    ],
+    "crop": [
+      1115,
+      25,
+      479,
+      185
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "33-earth-gravity",
+    "title": "중력의 초기 표시",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          568,
+          426,
+          29
+        ],
+        "label": "방향: X=0 / Y=0 / Z=-1"
+      },
+      {
+        "box": [
+          1128,
+          600,
+          426,
+          29
+        ],
+        "label": "Earth Gravity: 기본 지구 중력"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      350
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "34-gravity-menu",
+    "title": "Earth Gravity를 숫자로 바꾸기",
+    "marks": [
+      {
+        "box": [
+          1128,
+          600,
+          171,
+          28
+        ],
+        "label": "Gravity Magnitude 이름 우클릭"
+      },
+      {
+        "box": [
+          1201,
+          707,
+          145,
+          25
+        ],
+        "label": "Set Minimum 클릭 → 임시로 0"
+      }
+    ],
+    "crop": [
+      1115,
+      535,
+      479,
+      257
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "35-gravity-value",
+    "title": "중력 크기 9.81 입력",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          568,
+          426,
+          29
+        ],
+        "label": "방향: X=0 / Y=0 / Z=-1"
+      },
+      {
+        "box": [
+          1128,
+          600,
+          426,
+          29
+        ],
+        "label": "크기: 9.81 입력 후 Enter"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      350
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "36-create-cube",
+    "title": "Shape의 Cube 선택",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          70,
+          164,
+          25
+        ],
+        "label": "Shape에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          229,
+          137,
+          112,
+          24
+        ],
+        "label": "Cube 클릭. Mesh가 아닙니다."
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      360,
+      265
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "37-ground-transform",
+    "title": "Ground의 위치와 크기",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: 0 / 0 / -0.05"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 0 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 6 / 4 / 0.1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "38-ground-size",
+    "title": "Ground의 Size 입력",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1128,
+          447,
+          426,
+          27
+        ],
+        "label": "Size: 1 입력 → Enter"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "39-add-collider",
+    "title": "바닥에 Collider 추가",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          627,
+          239,
+          25
+        ],
+        "label": "Collider 클릭. Rigid Body 제외"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "40-ground-collision",
+    "title": "바닥의 충돌 설정 확인",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1129,
+          447,
+          426,
+          28
+        ],
+        "label": "Collision Enabled 체크 확인"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "41-base-stage",
+    "title": "2절 완료: 네 객체 확인",
+    "marks": [
+      {
+        "box": [
+          1139,
+          104,
+          311,
+          23
+        ],
+        "label": "World: 세 객체의 상위 그룹"
+      },
+      {
+        "box": [
+          1160,
+          127,
+          290,
+          58
+        ],
+        "label": "Light·PhysicsScene·Ground"
+      }
+    ],
+    "crop": [
+      1115,
+      25,
+      479,
+      260
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "42-file-save-menu",
+    "title": "File에서 Save As 선택",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          221,
+          308,
+          24
+        ],
+        "label": "Save As 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "43a-save-extension",
+    "title": "파일 형식도 usda로 선택",
+    "marks": [
+      {
+        "box": [
+          795,
+          676,
+          302,
+          25
+        ],
+        "label": "파일 형식 목록을 엽니다."
+      },
+      {
+        "box": [
+          798,
+          727,
+          306,
+          26
+        ],
+        "label": "*.usda를 선택합니다."
+      }
+    ],
+    "crop": [
+      255,
+      253,
+      1082,
+      531
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "43-save-dialog",
+    "title": "공통 바닥을 새 파일로 저장",
+    "marks": [
+      {
+        "box": [
+          308,
+          285,
+          1001,
+          25
+        ],
+        "label": "주소: /data/isaacsim_basic/ 입력 → Enter"
+      },
+      {
+        "box": [
+          260,
+          676,
+          415,
+          26
+        ],
+        "label": "File name: base_scene 입력"
+      },
+      {
+        "box": [
+          795,
+          676,
+          302,
+          26
+        ],
+        "label": "파일 형식: *.usda 확인"
+      },
+      {
+        "box": [
+          1096,
+          676,
+          119,
+          26
+        ],
+        "label": "Save 클릭"
+      }
+    ],
+    "crop": [
+      255,
+      253,
+      1082,
+      456
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "44-cube-transform",
+    "title": "PracticeCube의 위치",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: 0 / 0 / 0.7"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 0 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 1 / 1 / 1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "45-cube-size",
+    "title": "PracticeCube의 Size",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1128,
+          447,
+          426,
+          27
+        ],
+        "label": "Size: 0.1 입력 → Enter"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "46-add-rigid-body",
+    "title": "큐브에 Rigid Body 추가",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          607,
+          239,
+          24
+        ],
+        "label": "Rigid Body 클릭"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      610
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "47-add-mass",
+    "title": "큐브에 Mass 추가",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          627,
+          239,
+          24
+        ],
+        "label": "Mass 클릭"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      610
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "51-cube-add-collider",
+    "title": "큐브에도 Collider 추가",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          587,
+          239,
+          24
+        ],
+        "label": "Collider 클릭"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      610
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "48-mass-value",
+    "title": "큐브의 질량 0.1 kg",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1129,
+          447,
+          426,
+          28
+        ],
+        "label": "Mass: 0.1 입력 → Enter"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "49-gravity-off",
+    "title": "체크하면 중력 OFF",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1129,
+          447,
+          426,
+          28
+        ],
+        "label": "Disable Gravity: 체크합니다."
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "50-gravity-on",
+    "title": "체크를 풀면 중력 ON",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1129,
+          447,
+          426,
+          28
+        ],
+        "label": "Disable Gravity: 체크 해제"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "52-cube-collision",
+    "title": "큐브의 충돌 활성화 확인",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1129,
+          447,
+          426,
+          28
+        ],
+        "label": "Collision Enabled 체크 확인"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "53-play-ready",
+    "title": "Play를 누르기 전의 큐브",
+    "marks": [
+      {
+        "box": [
+          5,
+          287,
+          31,
+          35
+        ],
+        "label": "왼쪽 삼각형 Play를 클릭합니다."
+      },
+      {
+        "box": [
+          552,
+          236,
+          65,
+          64
+        ],
+        "label": "큐브는 바닥 위 공중에서 출발합니다."
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      1112,
+      655
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "54-playing",
+    "title": "실행 후 Stop으로 되돌리기",
+    "marks": [
+      {
+        "box": [
+          5,
+          327,
+          31,
+          31
+        ],
+        "label": "Stop: 왼쪽 사각형. 실험 후 클릭합니다."
+      },
+      {
+        "box": [
+          552,
+          377,
+          65,
+          60
+        ],
+        "label": "Collider가 있는 큐브는 바닥 위에 멈춥니다."
+      },
+      {
+        "box": [
+          1470,
+          482,
+          85,
+          28
+        ],
+        "label": "멈춘 높이 Z는 약 0.05 m입니다."
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      1594,
+      655
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "55-duplicate-menu",
+    "title": "큐브 복제와 이름 변경",
+    "marks": [
+      {
+        "box": [
+          1160,
+          182,
+          282,
+          25
+        ],
+        "label": "PracticeCube 이름 위에서 우클릭"
+      },
+      {
+        "box": [
+          1232,
+          290,
+          261,
+          24
+        ],
+        "label": "Duplicate: 한 번 복제"
+      },
+      {
+        "box": [
+          1232,
+          315,
+          261,
+          24
+        ],
+        "label": "Rename: 복제 후 이름 변경"
+      }
+    ],
+    "crop": [
+      1115,
+      24,
+      479,
+      500
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "56-light-transform",
+    "title": "CubeLight의 위치",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: -0.3 / 0 / 1"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 0 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 1 / 1 / 1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "58-heavy-transform",
+    "title": "CubeHeavy의 위치",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: 0.3 / 0 / 1"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 0 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 1 / 1 / 1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "57-light-mass",
+    "title": "CubeLight의 질량",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1129,
+          447,
+          426,
+          28
+        ],
+        "label": "Mass: 0.1 kg 입력"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "59-heavy-mass",
+    "title": "CubeHeavy의 질량",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1129,
+          447,
+          426,
+          28
+        ],
+        "label": "Mass: 1 kg 입력"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "60-moon-gravity",
+    "title": "달 중력으로 변경",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          600,
+          426,
+          29
+        ],
+        "label": "Gravity Magnitude: 1.62"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      350
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "61-open-menu",
+    "title": "저장한 공통 바닥 열기",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          110,
+          308,
+          26
+        ],
+        "label": "Open 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      220
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "62-open-dialog",
+    "title": "파일 이름을 확인하고 열기",
+    "marks": [
+      {
+        "box": [
+          308,
+          285,
+          1001,
+          25
+        ],
+        "label": "주소: /data/isaacsim_basic/ 입력 → Enter"
+      },
+      {
+        "box": [
+          260,
+          676,
+          534,
+          26
+        ],
+        "label": "File name: base_scene.usda"
+      },
+      {
+        "box": [
+          1096,
+          676,
+          119,
+          26
+        ],
+        "label": "Open File 클릭"
+      }
+    ],
+    "crop": [
+      255,
+      253,
+      1082,
+      456
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "62a-unsaved-dialog",
+    "title": "저장 여부를 묻는 창",
+    "marks": [
+      {
+        "box": [
+          681,
+          493,
+          73,
+          25
+        ],
+        "label": "Save: 현재 이름으로 저장"
+      },
+      {
+        "box": [
+          759,
+          493,
+          75,
+          25
+        ],
+        "label": "Don't Save: 현재 변경을 저장하지 않고 열기"
+      },
+      {
+        "box": [
+          839,
+          493,
+          73,
+          25
+        ],
+        "label": "Cancel: 열기를 취소하고 기존 실습 유지"
+      }
+    ],
+    "crop": [
+      596,
+      426,
+      402,
+      109
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "63-ramp-low-transform",
+    "title": "RampLow의 입력값",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: 0 / -0.4 / 0.4"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 15 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 1.6 / 0.5 / 0.06"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "64-ramp-high-transform",
+    "title": "RampHigh의 입력값",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: 0 / 0.4 / 0.4"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 15 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 1.6 / 0.5 / 0.06"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "65-friction-cube-low",
+    "title": "CubeLow의 입력값",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: -0.461999 / -0.4 / 0.607650"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 15 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 0.1 / 0.1 / 0.1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "66-friction-cube-high",
+    "title": "CubeHigh의 입력값",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: -0.461999 / 0.4 / 0.607650"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 15 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 0.1 / 0.1 / 0.1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "67-create-material",
+    "title": "물리 재질 만들기",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          240,
+          164,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          228,
+          288,
+          199,
+          25
+        ],
+        "label": "Physics Material 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      440,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "68-material-type",
+    "title": "재질의 종류 선택",
+    "marks": [
+      {
+        "box": [
+          645,
+          435,
+          231,
+          24
+        ],
+        "label": "Rigid Body Material 체크"
+      },
+      {
+        "box": [
+          697,
+          508,
+          95,
+          24
+        ],
+        "label": "Ok 클릭"
+      }
+    ],
+    "crop": [
+      596,
+      421,
+      403,
+      119
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "69-low-friction",
+    "title": "Low: 낮은 마찰",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1127,
+          744,
+          431,
+          60
+        ],
+        "label": "Physics > Rigid Body Material"
+      },
+      {
+        "box": [
+          1129,
+          807,
+          425,
+          28
+        ],
+        "label": "Dynamic Friction: 0.05"
+      },
+      {
+        "box": [
+          1129,
+          836,
+          425,
+          28
+        ],
+        "label": "Static Friction: 0.05"
+      },
+      {
+        "box": [
+          1129,
+          865,
+          425,
+          28
+        ],
+        "label": "Restitution: 0"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      640
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "70-high-friction",
+    "title": "High: 높은 마찰",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1127,
+          744,
+          431,
+          60
+        ],
+        "label": "Physics > Rigid Body Material"
+      },
+      {
+        "box": [
+          1129,
+          807,
+          425,
+          28
+        ],
+        "label": "Dynamic Friction: 0.8"
+      },
+      {
+        "box": [
+          1129,
+          836,
+          425,
+          28
+        ],
+        "label": "Static Friction: 0.8"
+      },
+      {
+        "box": [
+          1129,
+          865,
+          425,
+          28
+        ],
+        "label": "Restitution: 0"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      640
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "83-restitution-high",
+    "title": "High: 반발계수 0.8",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1127,
+          744,
+          431,
+          60
+        ],
+        "label": "Physics > Rigid Body Material"
+      },
+      {
+        "box": [
+          1129,
+          807,
+          425,
+          28
+        ],
+        "label": "Dynamic Friction: 0.5"
+      },
+      {
+        "box": [
+          1129,
+          836,
+          425,
+          28
+        ],
+        "label": "Static Friction: 0.5"
+      },
+      {
+        "box": [
+          1129,
+          865,
+          425,
+          28
+        ],
+        "label": "Restitution: 0.8"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      640
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "71-physics-binding-menu",
+    "title": "물리 재질 목록에서 Low 선택",
+    "marks": [
+      {
+        "box": [
+          1128,
+          670,
+          431,
+          31
+        ],
+        "label": "Physics materials 영역입니다."
+      },
+      {
+        "box": [
+          1277,
+          701,
+          291,
+          27
+        ],
+        "label": "연결할 객체: /World/RampLow"
+      },
+      {
+        "box": [
+          1228,
+          736,
+          340,
+          24
+        ],
+        "label": "None 오른쪽 ▼ 클릭"
+      },
+      {
+        "box": [
+          1230,
+          847,
+          345,
+          32
+        ],
+        "label": "/World/Low 선택"
+      }
+    ],
+    "crop": [
+      1115,
+      601,
+      479,
+      292
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "72-ramp-low-bound",
+    "title": "RampLow에 Low 연결",
+    "marks": [
+      {
+        "box": [
+          1128,
+          704,
+          431,
+          31
+        ],
+        "label": "Physics materials 영역"
+      },
+      {
+        "box": [
+          1226,
+          735,
+          342,
+          27
+        ],
+        "label": "객체: /World/RampLow"
+      },
+      {
+        "box": [
+          1226,
+          770,
+          342,
+          26
+        ],
+        "label": "연결된 재질: /World/Low"
+      }
+    ],
+    "crop": [
+      1115,
+      699,
+      479,
+      152
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "73-cube-low-bound",
+    "title": "CubeLow에도 Low 연결",
+    "marks": [
+      {
+        "box": [
+          1128,
+          670,
+          431,
+          31
+        ],
+        "label": "Physics materials 영역"
+      },
+      {
+        "box": [
+          1226,
+          701,
+          342,
+          27
+        ],
+        "label": "객체: /World/CubeLow"
+      },
+      {
+        "box": [
+          1226,
+          736,
+          342,
+          26
+        ],
+        "label": "연결된 재질: /World/Low"
+      }
+    ],
+    "crop": [
+      1115,
+      665,
+      479,
+      152
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "74-cube-high-bound",
+    "title": "CubeHigh에 High 연결",
+    "marks": [
+      {
+        "box": [
+          1128,
+          670,
+          431,
+          31
+        ],
+        "label": "Physics materials 영역"
+      },
+      {
+        "box": [
+          1226,
+          701,
+          342,
+          27
+        ],
+        "label": "객체: /World/CubeHigh"
+      },
+      {
+        "box": [
+          1226,
+          736,
+          342,
+          26
+        ],
+        "label": "연결된 재질: /World/High"
+      }
+    ],
+    "crop": [
+      1115,
+      665,
+      479,
+      152
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "84-ball-binding",
+    "title": "BallHigh에 High 연결",
+    "marks": [
+      {
+        "box": [
+          1128,
+          670,
+          431,
+          31
+        ],
+        "label": "Physics materials 영역"
+      },
+      {
+        "box": [
+          1226,
+          701,
+          342,
+          27
+        ],
+        "label": "객체: /World/BallHigh"
+      },
+      {
+        "box": [
+          1226,
+          736,
+          342,
+          26
+        ],
+        "label": "연결된 재질: /World/High"
+      }
+    ],
+    "crop": [
+      1115,
+      665,
+      479,
+      152
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "75-friction-ready",
+    "title": "두 경사면의 출발 위치",
+    "marks": [
+      {
+        "box": [
+          330,
+          245,
+          395,
+          265
+        ],
+        "label": "앞쪽: RampLow와 CubeLow"
+      },
+      {
+        "box": [
+          470,
+          214,
+          370,
+          242
+        ],
+        "label": "뒤쪽: RampHigh와 CubeHigh"
+      },
+      {
+        "box": [
+          5,
+          287,
+          31,
+          35
+        ],
+        "label": "Play로 미끄러짐 비교"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      1112,
+      655
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "76-friction-result",
+    "title": "마찰이 작은 큐브가 미끄러짐",
+    "marks": [
+      {
+        "box": [
+          924,
+          607,
+          65,
+          45
+        ],
+        "label": "CubeLow: 경사면 아래로 이동"
+      },
+      {
+        "box": [
+          535,
+          225,
+          46,
+          42
+        ],
+        "label": "CubeHigh: 경사면 위에 남음"
+      },
+      {
+        "box": [
+          5,
+          327,
+          31,
+          31
+        ],
+        "label": "Stop 후 값을 바꾸고 재실험"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      1112,
+      655
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "77-pad-low",
+    "title": "PadLow의 입력값",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: -0.5 / 0 / 0.05"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 0 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 0.7 / 0.7 / 0.1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "78-pad-high",
+    "title": "PadHigh의 입력값",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: 0.5 / 0 / 0.05"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 0 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 0.7 / 0.7 / 0.1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "79-create-sphere",
+    "title": "공은 Shape의 Sphere",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          70,
+          164,
+          25
+        ],
+        "label": "Shape에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          229,
+          185,
+          112,
+          25
+        ],
+        "label": "Sphere 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      360,
+      265
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "80-ball-low-transform",
+    "title": "BallLow의 위치",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: -0.5 / 0 / 1"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 0 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 1 / 1 / 1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "82-ball-high-transform",
+    "title": "BallHigh의 위치",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          481,
+          431,
+          29
+        ],
+        "label": "Translate: 0.5 / 0 / 1"
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Rotate: 0 / 0 / 0"
+      },
+      {
+        "box": [
+          1128,
+          547,
+          431,
+          28
+        ],
+        "label": "Scale: 1 / 1 / 1"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "81-ball-radius",
+    "title": "공의 반지름 입력",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1128,
+          316,
+          446,
+          25
+        ],
+        "label": "Property 검색창입니다."
+      },
+      {
+        "box": [
+          1128,
+          447,
+          426,
+          27
+        ],
+        "label": "Radius: 0.05 입력 → Enter"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      240
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "85-bounce-ready",
+    "title": "공과 받침대의 출발 모습",
+    "marks": [
+      {
+        "box": [
+          475,
+          155,
+          39,
+          38
+        ],
+        "label": "왼쪽 BallLow: 반발계수 0"
+      },
+      {
+        "box": [
+          669,
+          188,
+          39,
+          38
+        ],
+        "label": "오른쪽 BallHigh: 반발계수 0.8"
+      },
+      {
+        "box": [
+          5,
+          287,
+          31,
+          35
+        ],
+        "label": "Play로 낙하와 첫 반동 관찰"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      1112,
+      655
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "86-bounce-result",
+    "title": "낙하 후 서로 다른 반동",
+    "marks": [
+      {
+        "box": [
+          480,
+          335,
+          39,
+          38
+        ],
+        "label": "BallLow: 받침대 위에 멈춤"
+      },
+      {
+        "box": [
+          663,
+          276,
+          42,
+          38
+        ],
+        "label": "BallHigh: 다시 튀어 오름"
+      },
+      {
+        "box": [
+          5,
+          327,
+          31,
+          31
+        ],
+        "label": "Stop으로 처음 위치로 복원"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      1112,
+      655
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "87-orient-input",
+    "title": "회전 칸이 Orient로 보일 때",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "선택한 객체 이름을 확인합니다."
+      },
+      {
+        "box": [
+          1214,
+          373,
+          360,
+          27
+        ],
+        "label": "Prim Path가 /World/…인지 봅니다."
+      },
+      {
+        "box": [
+          1128,
+          513,
+          431,
+          29
+        ],
+        "label": "Orient의 Y에 15도 입력"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      310
+    ],
+    "wrap_labels": true
   }
 ]
