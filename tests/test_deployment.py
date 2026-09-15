@@ -381,13 +381,13 @@ def test_removed_hub_commands_cannot_run(fake_docker, args):
     assert not log.exists() or not any('run' in call for call in calls(log))
 
 
-def test_dataset_upload_is_only_available_through_hidden_browser_prompt(fake_docker):
+def test_dataset_upload_requires_hidden_terminal_or_explicit_session_pipe(fake_docker):
     env, log = fake_docker
     result = run('bash', str(ROOT / 'lekiwi'), 'dataset', 'upload', '--name', 'sample',
                  '--repo-id', 'student/lekiwi-data', '--private', env=env,
                  input='hf_test_token_123456789\n')
     assert result.returncode != 0
-    assert '05_upload_dataset.py' in result.stderr
+    assert '대화형 터미널' in result.stderr
     assert not any('run' in call for call in calls(log))
 
 
@@ -410,15 +410,17 @@ def test_local_dataset_inspection_forwards_arguments_offline(fake_docker):
     env, log = fake_docker
     result = run('bash', str(ROOT/'lekiwi'), 'dataset', 'inspect', '--name', 'example', env=env)
     assert result.returncode == 0, result.stderr
-    assert calls(log)[-1][-3:] == ['inspect','--name','example']
-    assert 'HF_HUB_OFFLINE=1' in calls(log)[-1]
+    command = next(call for call in calls(log) if 'run' in call)
+    assert command[-3:] == ['inspect','--name','example']
+    assert 'HF_HUB_OFFLINE=1' in command
 
 
 @pytest.mark.parametrize('owned', ['1', ''])
-def test_browser_dataset_job_uses_existing_cli_and_owns_cleanup(fake_docker, owned):
+@pytest.mark.parametrize('session', ['', 'browser-job-test'])
+def test_dataset_job_uses_existing_cli_and_owns_cleanup(fake_docker, owned, session):
     env, log = fake_docker
     result = run('bash', str(ROOT / 'lekiwi'), 'dataset', 'inspect', '--name', 'example',
-                 env=dict(env, LEKIWI_CLASSROOM_SESSION='browser-job-test', MANAGER_OWNED=owned))
+                 env=dict(env, LEKIWI_CLASSROOM_SESSION=session, MANAGER_OWNED=owned))
     assert result.returncode == 0, result.stderr
     command = next(call for call in calls(log) if 'run' in call)
     assert command[-3:] == ['inspect', '--name', 'example']

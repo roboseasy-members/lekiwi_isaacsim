@@ -1,9 +1,12 @@
-"""동일 LAN의 실습 서버와 Ubuntu 노트북 연결 도구."""
+"""Tailscale 또는 LAN의 실습 서버와 Ubuntu 노트북 연결 도구."""
 import argparse
+from contextlib import ExitStack, nullcontext
 import http.server
 import json
 import os
 from pathlib import Path
+import pwd
+import secrets
 import signal
 import socket
 import subprocess
@@ -16,7 +19,8 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "isaac_sim"))
-from remote_teleop import PORT, Receiver, Sender, address, connection_key, receive_loop
+from remote_teleop import PORT, Receiver, Sender, address, receive_loop
+from remote_auth import KeyServer, fetch_key
 from teleop_bridge import JOINTS
 
 
@@ -43,7 +47,7 @@ def stop_owned(dock, name, label, identity):
 
 def bundle(path):
     files = ["lekiwi", "tools/remote_classroom/main.py", "tools/so101_leader.py",
-             "isaac_sim/remote_teleop.py", "isaac_sim/teleop_bridge.py",
+             "isaac_sim/remote_teleop.py", "isaac_sim/remote_auth.py", "isaac_sim/teleop_bridge.py",
              "docker/Dockerfile.leader", "docs/remote-classroom.md", ".dockerignore"]
     # 목록에 지정한 소스만 포함합니다. data·보정·인증정보·작업 백업은 제외합니다.
     with tempfile.NamedTemporaryFile(dir=path.parent, suffix=".zip") as staged:
@@ -92,7 +96,7 @@ def serve(args, *, control_key=None):
     data = Path(os.environ.get("LEKIWI_DATA_DIR", ROOT / "data"))
     if not data.is_absolute():
         raise ValueError("LEKIWI_DATA_DIR must be absolute")
-    # 이미지·sudo 준비는 접속 문구 입력과 수신 서버 개방보다 먼저 합니다.
+    # 이미지·sudo 준비는 인증 키 생성과 수신 서버 개방보다 먼저 합니다.
     dock = docker()
     subprocess.run(dock + ["info"], check=True, stdout=subprocess.DEVNULL)
     active = subprocess.check_output(dock + ["ps", "-q", "--filter",
@@ -102,7 +106,7 @@ def serve(args, *, control_key=None):
         raise RuntimeError("이미 실행 중인 실습을 정상 종료한 뒤 다시 실행하세요.")
     # 다른 체크아웃에서 열린 영상 서버도 덮어쓰지 않습니다.
     check_stream_port(host)
-    key = (control_key if control_key is not None else connection_key()) if args.teleop else None
+    key = (control_key if control_key is not None else secrets.token_bytes(32)) if args.teleop else None
     if args.teleop and (not isinstance(key, bytes) or len(key) != 32):
         raise ValueError("리더 입력 인증 키가 올바르지 않습니다.")
     parent = data / "remote"
@@ -131,7 +135,8 @@ def serve(args, *, control_key=None):
     errors = []
     process = None
     web = None
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock, \
+            (KeyServer(host, key) if args.teleop else nullcontext()):
         sock.bind((host, PORT))
         def receive():
             try:
@@ -147,6 +152,9 @@ def serve(args, *, control_key=None):
                 bundle(path)
                 web = serve_bundle(host, path)
             print(f"LEKIWI_REMOTE server={host} control_udp={PORT} chapter={args.chapter} teleop={args.teleop}", flush=True)
+            if args.teleop:
+                account = pwd.getpwuid(os.getuid()).pw_name
+                print(f"리더 자동 인증: 노트북 명령에 --host {host} --ssh-user {account}를 사용하세요.", flush=True)
             print(f"Isaac 로그: {directory / 'sim.log'}", flush=True)
             print("Ctrl+C로 이 실습을 종료합니다. 화면 준비 후 노트북 클라이언트에서 접속하세요.", flush=True)
             with (directory / "sim.log").open("w") as log:
@@ -218,7 +226,7 @@ def check(host):
 
 
 def demo(args):
-    sender = Sender(args.host, connection_key())
+    sender = Sender(args.host, fetch_key(args.host, args.ssh_user))
     count = 0
     started = time.monotonic()
     try:
@@ -267,9 +275,16 @@ def leader(args):
         raise ValueError("Unsafe device lock directory")
     device = port.stat()
     lock_path = lock_dir / f"{os.major(device.st_rdev):x}-{os.minor(device.st_rdev):x}.lock"
-    with lock_path.open("a") as lock:
+    with lock_path.open("a") as lock, ExitStack() as auth:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         identity = uuid.uuid4().hex
+        if args.command == "leader":
+            # SSH 인증이 실패하면 USB를 연 컨테이너를 시작하지 않습니다.
+            key = fetch_key(args.host, args.ssh_user)
+            relay = f"relay:{identity}"
+            auth.enter_context(KeyServer(relay, key))
+            args_to_send += ["--remote-key-socket", relay]
+            del key
         name = f"lekiwi-remote-leader-{os.getuid()}-{identity[:8]}"
         process = subprocess.Popen(dock + ["run", "--rm", "-it", "--init", "--network", "host",
             "--user", f"{os.getuid()}:{os.getgid()}", "--group-add", str(device.st_gid),
@@ -311,6 +326,7 @@ def main(argv=None):
     checker.add_argument("--host", required=True, type=address)
     fake = commands.add_parser("demo", help="노트북: USB 없이 가상 관절 값 전송")
     fake.add_argument("--host", required=True, type=address)
+    fake.add_argument("--ssh-user", help="서버 실습을 실행한 Ubuntu 계정 (생략하면 SSH 설정 사용)")
     fake.add_argument("--seconds", type=float, default=10)
     for command in ("leader", "calibrate"):
         child = commands.add_parser(command)
@@ -318,6 +334,7 @@ def main(argv=None):
         child.add_argument("--id", required=True)
         if command == "leader":
             child.add_argument("--host", required=True, type=address)
+            child.add_argument("--ssh-user", help="서버 실습을 실행한 Ubuntu 계정 (생략하면 SSH 설정 사용)")
     args = parser.parse_args(argv)
     if args.command in {"workspace", "setup-editor"}:
         sys.path.insert(0, str(ROOT))

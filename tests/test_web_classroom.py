@@ -86,14 +86,12 @@ class Child:
         return self.code
 
 
-def test_secret_in_pipe_and_duplicate_start_cannot_replace_session(course):
+def test_teleop_without_phrase_and_duplicate_start_cannot_replace_session(course):
     session = Session(course, course / "data", "192.168.1.2", popen=Child)
-    phrase = "unit-test-not-a-real-secret"
-    assert session.dispatch({"op": "run", "chapter": 6, "teleop": True, "phrase": phrase})["state"] == "STARTING"
+    assert session.dispatch({"op": "run", "chapter": 6, "teleop": True})["state"] == "STARTING"
     child = session.process
-    assert json.loads(child.stdin.payload)["phrase"] == phrase
-    assert phrase not in str(child.command) + str(child.options)
-    assert phrase not in session.log.read_text()
+    assert json.loads(child.stdin.payload)["teleop"] is True
+    assert "phrase" not in json.loads(child.stdin.payload)
     with pytest.raises(RuntimeError, match="lesson stop"):
         session.dispatch({"op": "run", "chapter": 2})
     assert session.process is child
@@ -102,6 +100,17 @@ def test_secret_in_pipe_and_duplicate_start_cannot_replace_session(course):
     assert session.dispatch({"op": "stop"})["state"] == "STOPPED"
     assert child.signals == [signal.SIGINT]
     assert session.dispatch({"op": "run", "chapter": 2})["state"] == "STARTING"
+
+
+def test_lesson_teleop_starts_without_prompt_or_tty(monkeypatch):
+    from tools.web_classroom import lesson
+    calls = []
+    monkeypatch.setattr(lesson.getpass, "getpass", lambda *_: pytest.fail("must not prompt"))
+    monkeypatch.setattr(lesson.sys, "stdin", io.StringIO(""))
+    monkeypatch.setattr(lesson, "request", lambda message: calls.append(message) or {"state": "STARTING"})
+    lesson.main(["run", "6", "--teleop"])
+    assert len(calls) == 1 and calls[0]["teleop"] is True
+    assert "phrase" not in calls[0]
 
 
 def test_failed_and_stuck_child_are_not_reported_as_success(course):
@@ -170,7 +179,8 @@ def test_editor_entrypoint_starts_without_reading_a_password(monkeypatch):
         "/opt/lekiwi-editor/editor.yaml", "/opt/lekiwi-editor/lekiwi.code-workspace"])]
 
 
-def test_workspace_ready_without_password_input(course, monkeypatch, capsys):
+@pytest.mark.parametrize("closed_connection", [False, True])
+def test_workspace_ready_without_password_input(course, monkeypatch, capsys, closed_connection):
     from types import SimpleNamespace
     import pwd
     import shlex
@@ -204,8 +214,16 @@ def test_workspace_ready_without_password_input(course, monkeypatch, capsys):
     monkeypatch.setattr(workspace.time, "sleep", lambda seconds: None)
     monkeypatch.setattr(remote, "stop_owned", lambda *args: stopped.append(args))
     with socket.socket() as probe:
+        probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
+        if closed_connection:
+            probe.listen(1)
+            with socket.create_connection(("127.0.0.1", port)) as client:
+                accepted, _ = probe.accept()
+                accepted.shutdown(socket.SHUT_WR)
+                accepted.close()
+                assert client.recv(1) == b""
     workspace.run_workspace(SimpleNamespace(host="192.168.1.2", port=port))
     assert len(children) == 1
     assert children[0].options["stdin"] == subprocess.DEVNULL
@@ -220,6 +238,19 @@ def test_workspace_ready_without_password_input(course, monkeypatch, capsys):
         "-o", "ServerAliveInterval=30", "-L", f"127.0.0.1:{port}:127.0.0.1:{port}",
         "classroom-user@192.168.1.2"]
     assert "사용자명@" not in output
+
+
+def test_workspace_rejects_active_port_before_docker(monkeypatch):
+    from types import SimpleNamespace
+    import tools.web_classroom.main as workspace
+    monkeypatch.setenv("ACCEPT_EULA", "Y")
+    monkeypatch.setattr(workspace, "docker_command", lambda: pytest.fail("must not touch Docker"))
+    with socket.socket() as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("127.0.0.1", 0))
+        listener.listen(1)
+        with pytest.raises(OSError):
+            workspace.run_workspace(SimpleNamespace(host="127.0.0.1", port=listener.getsockname()[1]))
 
 
 def test_workspace_cli_has_no_password_option(monkeypatch, capsys):

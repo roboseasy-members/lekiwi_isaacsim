@@ -2,17 +2,14 @@
 
 서버가 발급한 일회용 요청을 받은 뒤 관절을 읽습니다. 서버 자신의 발급 시각으로
 유효 기간을 검사하므로 두 PC의 시계를 맞출 필요가 없고 밀린 입력도 재생하지 않습니다.
-접속 문구는 메모리에서만 사용하며 HMAC은 입력의 인증·변조 검사용입니다(암호화 아님).
+임시 키는 SSH로 전달하며 HMAC은 입력의 인증·변조 검사용입니다(암호화 아님).
 """
 import errno
-import getpass
-import hashlib
 import hmac
 import ipaddress
 import json
 import secrets
 import socket
-import sys
 import time
 
 from teleop_bridge import (REMOTE_INPUT_TIMEOUT, REMOTE_RECOVERY_WINDOW,
@@ -36,15 +33,6 @@ def address(value):
     if ip.is_unspecified or ip.is_multicast or int(ip) == 0xFFFFFFFF:
         raise ValueError("접속 가능한 데스크탑 IPv4를 지정하세요.")
     return str(ip)
-
-
-def connection_key():
-    if not sys.stdin.isatty():
-        raise RuntimeError("접속 문구는 대화형 터미널에서 숨김 입력으로 지정하세요.")
-    phrase = getpass.getpass("양쪽 PC에서 같은 접속 문구를 입력하세요(12자 이상, 화면에 표시되지 않음): ")
-    if len(phrase) < 12:
-        raise ValueError("접속 문구는 12자 이상으로 정하세요. 명령줄이나 문서에 적지 마세요.")
-    return hashlib.pbkdf2_hmac("sha256", phrase.encode(), b"lekiwi-lan-v1", 200_000)
 
 
 def encode(message, key):

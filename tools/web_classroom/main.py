@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 import pwd
 import shlex
-import socket
 import subprocess
 import tempfile
 import threading
@@ -75,15 +74,14 @@ def healthy(url):
 
 
 def run_workspace(args):
-    from tools.remote_classroom.main import stop_owned
+    from tools.remote_classroom.main import stop_owned, check_stream_port
     from isaac_sim.remote_teleop import address
     host = address(args.host)
     if not 1024 <= args.port <= 65535:
         raise ValueError("편집기 포트는 1024~65535입니다.")
     if os.environ.get("ACCEPT_EULA") != "Y":
         raise RuntimeError("Isaac Sim 라이선스 동의 후 export ACCEPT_EULA=Y를 실행하세요.")
-    with socket.socket() as probe:
-        probe.bind(("127.0.0.1", args.port))
+    check_stream_port("127.0.0.1", args.port)
     dock = docker_command()
     data = Path(os.environ.get("LEKIWI_DATA_DIR", ROOT / "data")).resolve()
     state = data / "web_classroom"

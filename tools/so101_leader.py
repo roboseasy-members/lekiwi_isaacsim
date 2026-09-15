@@ -114,19 +114,23 @@ def main():
     parser.add_argument("--state", type=Path)
     parser.add_argument("--session")
     parser.add_argument("--remote-host", help="원격 Isaac Sim 서버 IPv4; 로컬 파일 대신 LAN으로 전송")
+    parser.add_argument("--remote-key-socket", help="실행기가 제공하는 임시 인증 소켓")
     args = parser.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.id):
         parser.error("id must contain only letters, digits, underscore or hyphen")
     if args.remote_host and (args.state or args.session or args.calibrate_only):
         parser.error("--remote-host는 --state/--session/--calibrate-only와 함께 사용할 수 없습니다")
+    if bool(args.remote_host) != bool(args.remote_key_socket):
+        parser.error("원격 리더는 ./lekiwi remote leader로 실행하세요.")
     if not args.calibrate_only and not args.remote_host and (not args.state or not args.session):
         parser.error("streaming requires --state and --session")
     if not sys.stdin.isatty():
         raise RuntimeError("Interactive terminal required; calibration choices cannot be skipped")
     sender = None
     if args.remote_host:
-        from remote_teleop import Sender, connection_key
-        sender = Sender(args.remote_host, connection_key())
+        from remote_teleop import Sender
+        from remote_auth import local_key
+        sender = Sender(args.remote_host, local_key(args.remote_key_socket))
     args.calibration_dir.mkdir(parents=True, exist_ok=True)
     path = args.calibration_dir / f"{args.id}.json"
     # Lock for the whole connection, including prompts. No concurrent writer.

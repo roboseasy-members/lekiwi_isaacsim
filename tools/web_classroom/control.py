@@ -19,7 +19,7 @@ MAX_REQUEST = 8192
 
 
 def selection(message, root):
-    if set(message) - {"op", "chapter", "experiment", "script", "teleop", "phrase"}:
+    if set(message) - {"op", "chapter", "experiment", "script", "teleop"}:
         raise ValueError("지원하지 않는 실행 옵션입니다.")
     chapter, experiment, script = (message.get(k) for k in ("chapter", "experiment", "script"))
     if sum(v is not None for v in (chapter, experiment, script)) != 1:
@@ -45,12 +45,7 @@ def selection(message, root):
     teleop = message.get("teleop", False)
     if type(teleop) is not bool or (teleop and chapter != 6):
         raise ValueError("리더 입력은 6장에서만 사용할 수 있습니다.")
-    phrase = message.get("phrase")
-    if teleop and (not isinstance(phrase, str) or not 12 <= len(phrase) <= 512):
-        raise ValueError("리더 접속 문구는 12~512자입니다.")
-    if not teleop and phrase is not None:
-        raise ValueError("리더 입력을 사용하지 않는 실습입니다.")
-    return dict(chapter=chapter or 1, experiment=experiment, script=script, teleop=teleop, phrase=phrase)
+    return dict(chapter=chapter or 1, experiment=experiment, script=script, teleop=teleop)
 
 
 class Session:

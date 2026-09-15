@@ -1,8 +1,8 @@
 # Isaac Sim Basic · 환경 설정·직접 제작·Python 실습 0~6장
 
 환경 설정 → 객체 물리 → 관절 → 카메라 → 입력·조작 → 관절 기록 → LeKiwi 데이터셋 순서입니다.
-**처음 원격 수업을 시작한다면 [0장 환경 설정](00_env_setting/README.md)부터 진행합니다.**
-학생별 데스크탑·노트북을 Tailscale로 연결하고 영상·Play 조작을 확인한 뒤 1장으로 넘어갑니다.
+**처음 수업을 시작한다면 [0장 환경 설정](00_env_setting/README.md)부터 진행합니다.**
+학생별 Ubuntu NVIDIA GPU 노트북 한 대에서 편집기와 Isaac Sim 창·Play 조작을 확인한 뒤 1장으로 넘어갑니다. 리더암 USB도 같은 노트북에 연결합니다.
 **화면에서 직접 제작 → 속성을 바꾸며 관찰 → 같은 구성을 Python으로 제작 → 두 결과 비교**로 수업합니다.
 Isaac Sim 안에 전용 Lesson 탭을 만들지 않습니다. 기본 Stage·Property·Viewport·Play/Stop을 사용합니다.
 
@@ -14,7 +14,7 @@ API 이름·Python 파일·코드 실행과 수정은 각 장의 마지막 ‘�
 
 | 장 | 본문 | 먼저 마우스로 하는 일 | 마지막 코드 실습 | 노션 ZIP |
 |---|---|---|---|---|
-| 0 | [환경 설정](00_env_setting/README.md) | Tailscale·영상·Play 접속 확인 | 환경 준비 단계 | [노션](00_env_setting/00_env_setting_notion.zip) |
+| 0 | [환경 설정](00_env_setting/README.md) | 로컬 환경·편집기·창·Play 확인 | 환경 준비 단계 | [노션](00_env_setting/00_env_setting_notion.zip) |
 | 1 | [객체와 물리](01_object_physics/README.md) | 바닥·물체 생성, 중력·충돌·질량·마찰·반발 실험 | 같은 여섯 물리 실험 구현 | [노션](01_object_physics/01_object_physics_notion.zip) |
 | 2 | [관절과 모터](02_robot_joints/README.md) | 받침·팔·관절·Drive 제작, 목표 각도 비교 | 같은 모형과 응답 구현 | [노션](02_robot_joints/02_robot_joints_notion.zip) |
 | 3 | [카메라와 시점](03_robot_cameras/README.md) | Camera 생성, 렌즈·자세·부모 변경 | 같은 카메라와 LeKiwi 좌표 이해 | [노션](03_robot_cameras/03_robot_cameras_notion.zip) |
@@ -28,20 +28,13 @@ API 이름·Python 파일·코드 실행과 수정은 각 장의 마지막 ‘�
 
 ## 첫 실습은 빈 편집 화면에서 시작하기
 
-원격 수업은 [0장](00_env_setting/README.md)을 마친 뒤 브라우저 터미널에서 확인용 실습을 종료합니다.
-
-```bash
-lesson stop
-lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_empty_stage.py
-```
-
-이 명령으로 이미 빈 화면을 열었다면 1장의 실행 명령은 건너뜁니다. `lesson status`의 READY를 확인하고 WebRTC에서 다시 Connect합니다. 객체는 [1장 본문](01_object_physics/README.md)에서 직접 만듭니다.
-
-데스크탑에서 직접 수업하는 경우에는 프로젝트 설치를 마친 뒤 저장소 루트에서 다음을 실행합니다.
+[0장](00_env_setting/README.md)의 확인용 창을 닫고 **노트북의 저장소 루트 터미널**에서 실행합니다.
 
 ```bash
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
+
+이미 빈 화면을 열었다면 중복 실행하지 않습니다. 객체는 [1장](01_object_physics/README.md)에서 직접 만듭니다.
 
 일반 Isaac Sim 5.1 설치에서는 앱을 열고 `File > New`로 시작할 수 있습니다.
 1장에서 만든 `base_scene.usda`는 2·3·6장의 시작 장면으로, 2장의 `my_joint.usda`는 4·5장의 관절 모형으로 재사용합니다.
@@ -51,18 +44,18 @@ lesson run --file /workspace/isaacsim_basic/01_object_physics/experiments/00_emp
 
 아래 명령은 각 장의 마우스 실습과 저장을 마친 뒤 사용합니다.
 
-| 장 | 원격 수업 — 브라우저 터미널 | 데스크탑 — 저장소 루트 터미널 |
-|---|---|---|
-| 1 | `lesson run 1` | `./lekiwi basic --chapter 1` |
-| 2 | `lesson run 2` | `./lekiwi basic --chapter 2` |
-| 3 | `lesson run 3` | `./lekiwi basic --chapter 3` |
-| 4 | `lesson run 4` | `./lekiwi basic --chapter 4` |
-| 5 | `lesson run 5` | `./lekiwi basic --chapter 5` |
-| 6 | `lesson run 6` | `./lekiwi basic --chapter 6` |
+| 장 | 같은 노트북의 저장소 루트 터미널 |
+|---|---|
+| 1 | `./lekiwi basic --chapter 1` |
+| 2 | `./lekiwi basic --chapter 2` |
+| 3 | `./lekiwi basic --chapter 3` |
+| 4 | `./lekiwi basic --chapter 4` |
+| 5 | `./lekiwi basic --chapter 5` |
+| 6 | `./lekiwi basic --chapter 6` |
 
 1장 비교 파일은 `--experiment 1`부터 `--experiment 6`입니다. 실험 번호와 장 번호는 다릅니다.
 Python을 수정할 때는 실행 종료 → 코드 저장 → 같은 명령 재실행 순서로 진행합니다.
-원격 실행 종료는 `lesson stop`, 데스크탑은 Isaac Sim 창 닫기입니다. 저장·폐기 작업을 마치고 종료합니다.
+실행 종료는 Isaac Sim 창 닫기입니다. 저장·폐기 작업을 마치고 종료합니다.
 
 학생 파일의 객체·물리 설정 줄에는 한국어 설명과 단위, 주석 처리된 비교 예제가 있습니다.
 호스트에서 저장한 파일은 다음 실행에 반영되며, 코드만 수정할 때 Docker 이미지 재빌드는 필요 없습니다.
