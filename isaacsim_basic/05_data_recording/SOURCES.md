@@ -1,4 +1,20 @@
-# 5편 출처와 화면 기록
+# 5장 · 시연 데이터 취득 · 출처와 검증 범위
+
+## 현재 수업 기준 · 2026-09-16 흐름 복원
+
+4장과 같은 맵에서 teleop --record로 두 카메라·상태·명령을 저장합니다.
+현재 본문은 README이며, 아래 과거 관절 모형·코스 제작 안내 이력은 이번 장의 필수 진행 순서가 아닙니다.
+
+- 실행 근거: [프로젝트 실행기](../../lekiwi), [코스와 조작](../../isaac_sim/keyboard_drive.py), [색상 맵](../../isaac_sim/color_course.py).
+- 기록 근거: [공통 기록 코드](../06_lekiwi_dataset/experiments/01_lekiwi_recording.py).
+- 변환·학습·추론: [학생 설정 파일](../06_lekiwi_dataset/experiments/), [ACT 실행기](../../tools/act/launch.py).
+- `images/course-recording.png`: REC·시간·프레임·팔 상태의 기존 실제 캡처를 재사용했습니다. 원본은 리더 없는 상태 표시 검사이며 현재 노트북의 시연 결과가 아닙니다.
+- 원본: [기존 캡처](../06_lekiwi_dataset/images/screenshots/10-recording-status.png). 이 장의 `images/screenshots/course-recording.png`에 바이트를 바꾸지 않고 복사했습니다.
+- 원본 SHA256: `b375207ac73a3e90e702e8aef531f4dee57d8abb404911d214299ef08190a318`.
+- 표시본은 기존 SVG 주석 생성기로 빨간 박스·설명을 추가했습니다. 새 버튼·화면 내용을 합성하지 않습니다.
+
+이번 변경은 문서·실행 선택·학생 설정과 관련 자동 검사를 대상으로 합니다.
+실물 리더·GPU 학습·추론 화면을 이번 변경에서 새로 실행한 결과와 혼동하지 않습니다. 실제 추론은 최종 리허설에서 확인합니다.
 
 ## 공식 문서
 
@@ -8,7 +24,7 @@
 - [카메라 센서](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/sensors/isaacsim_sensors_camera.html)
 
 문서를 참고해 프로젝트 교육용 예제를 직접 작성했습니다. 런타임 버전은 Isaac Sim 5.1.0입니다.
-1~5장 학생 파일은 로봇 자산 없이 Isaac Sim Python으로 실행합니다. 6장은 프로젝트의 기록 형식과 로봇 자산을 사용합니다.
+이하에는 이전 보충 예제와 화면의 이력이 포함돼 있습니다. 현재 수업의 1~3장은 기초 예제이며, 4~6장은 프로젝트 코스·리더·기록·학습 실행기를 사용합니다.
 
 ## 화면
 

@@ -1,7 +1,7 @@
 # 0장 · 환경 설정 — 노트북 한 대로 수업 준비하기
 
 **배정받은 Ubuntu NVIDIA GPU 노트북 한 대에서 코드 편집, Isaac Sim 화면, 리더암 조작, 데이터 수집과 학습을 진행합니다.**
-리더암 USB도 이 노트북에 연결합니다. 장비 연결과 보정은 4장 또는 6장의 리더 실습에서 합니다.
+리더암 USB도 이 노트북에 연결합니다. 장비 연결과 보정은 4장에서 확인하고 5장 데이터 취득에도 같은 리더를 사용합니다.
 
 처음에는 **이 README를 위에서 아래로** 따라갑니다. 저장소 맨 앞의 [README](../../README.md)는 전체 기능을 찾아보는 참고 문서입니다.
 **0장에서는 학생이 직접 교재를 받고 VS Code 설치 → GPU·Docker 준비 → 이미지 빌드 → 실행 검사를 진행합니다.**
@@ -14,7 +14,7 @@ VS Code 설치 전에는 강사가 제공한 이 교재 링크를 브라우저�
 | 인터넷 | 저장소·Docker 이미지·필요한 모델 다운로드, 선택한 데이터셋 업로드 |
 | Ubuntu 로그인 계정과 sudo 사용 권한 | VS Code·드라이버·Docker 설치. 본인 노트북의 로그인 비밀번호 사용 |
 | VS Code | 이 장에서 설치하고 교재 읽기·Python 파일 수정에 사용 |
-| SO101 리더암·USB·전원 | 4·6장에서 같은 노트북에 연결 |
+| SO101 리더암·USB·전원 | 4장 텔레옵·5장 데이터 취득에서 같은 노트북에 연결 |
 
 대여 RTX 3070 노트북도 아래 실행 검사로 준비 상태를 확인합니다. GPU 이름만으로 모든 실습과 학습의 성능을 보장하지 않습니다.
 Tailscale, AnyDesk, SSH 터널, 브라우저 편집기, WebRTC 클라이언트 설치 단계는 이번 수업에 없습니다.
@@ -136,7 +136,7 @@ APT·Secure Boot에서 추가 질문이 나올 수 있으므로 안내를 읽고
 드라이버 설치 또는 운영체제 상태 때문에 재부팅을 요청하면 다음 순서로 진행합니다. 자동으로 재부팅되지는 않습니다.
 
 1. 편집 중인 파일을 저장하고 실행 중인 작업을 정상 종료합니다.
-2. Ubuntu 메뉴에서 재시작합니다. Secure Boot의 MOK 등록 화면이 나오면 강사와 안내를 확인합니다.
+2. Ubuntu 메뉴에서 재시작합니다. Secure Boot의 파란 MOK 등록 화면이 나오면 [아래 등록 화면 안내](#mok-boot-screen)에 따라 진행합니다. 이때 드라이버 설치 중 정한 임시 비밀번호가 필요합니다.
 3. 로그인 후 VS Code에서 같은 프로젝트 폴더를 다시 엽니다.
 4. 새 터미널을 열고 `pwd`, `ls lekiwi`로 위치를 확인합니다.
 5. 라이선스 동의 설정과 로컬 화면 설정을 다시 적용하고 설치를 이어갑니다.
@@ -147,8 +147,123 @@ export LEKIWI_DISPLAY_MODE=local
 ./lekiwi install
 ```
 
-저장소를 다시 clone하거나 기존 폴더를 지우지 않습니다. 재부팅 후에도 드라이버 오류가 남으면 자동 설치를 반복하지 말고
-`nvidia-smi` 결과와 마지막 오류를 강사에게 보여 주세요.
+저장소를 다시 clone하거나 기존 폴더를 지우지 않습니다. 재부팅 후에도 아래 오류가 나오면 설치를 반복하지 말고 다음 절차로 원인을 확인합니다.
+
+```text
+중단: 재부팅 후에도 580 계열(580.65.06 이상) 드라이버가 준비되지 않았습니다.
+nvidia-smi의 실제 버전과 Secure Boot의 MOK 등록을 확인하세요. 자동 재설치는 하지 않습니다.
+```
+
+#### 3.3.1. 드라이버 설치 상태와 MOK 등록 여부 확인하기
+
+**오류가 발생한 노트북의 Ubuntu 터미널**에서 실행합니다. 폴더 위치는 상관없으며 아래 명령은 상태만 확인합니다.
+
+```bash
+nvidia-smi
+uname -r
+dkms status
+mokutil --sb-state
+sudo mokutil --test-key /var/lib/shim-signed/mok/MOK.der
+```
+
+`sudo` 비밀번호는 지금 노트북의 Ubuntu 로그인 비밀번호입니다. 입력 중 글자나 별표가 보이지 않아도 정상입니다.
+
+다음은 실제 수업 준비 중 확인한 **MOK 미등록 사례**입니다. 버전·커널 번호는 노트북마다 다를 수 있습니다.
+
+| 확인한 출력 | 뜻 |
+|---|---|
+| `nvidia-smi`에서 `couldn't communicate with the NVIDIA driver` | GPU 드라이버와 통신하지 못함 |
+| `uname -r`에서 `6.17.0-35-generic` | 현재 실행 중인 커널 버전 |
+| `dkms status`에서 `nvidia/580.178.04, 6.17.0-35-generic, x86_64: installed` | 이 커널용 드라이버는 설치됨. 실제 로드 성공과는 다름 |
+| `SecureBoot enabled` | 부팅 시 드라이버 서명을 검사하는 보안 기능이 켜져 있음 |
+| `MOK.der is not enrolled` | 해당 드라이버 서명을 신뢰하도록 하는 키가 아직 등록되지 않음 |
+
+**현재 커널용 드라이버가 설치돼 있고, Secure Boot가 켜져 있으며, 키가 `not enrolled`인 경우** 아래 등록 절차를 진행합니다.
+MOK는 이 노트북에서 만든 드라이버의 서명을 신뢰하도록 등록하는 키입니다. 등록하지 않으면 Secure Boot가 해당 드라이버의 로드를 막을 수 있습니다.
+[Ubuntu Secure Boot 설명](https://documentation.ubuntu.com/security/security-features/platform-protections/secure-boot/)
+
+파일이 없다는 오류, `dkms: command not found`, 현재 커널과 다른 DKMS 결과, `SecureBoot disabled`, 이미 등록됐다는 결과라면
+이 사례와 조건이 다릅니다. **MOK 미등록으로 단정하지 말고 위 출력 전체를 강사에게 보여 주세요.**
+`nvidia-smi`가 정상이어도 드라이버가 580 계열이 아니면 설치기의 준비 완료 조건을 충족하지 않습니다.
+
+#### 3.3.2. 등록을 요청하고 임시 비밀번호 정하기
+
+위 조건에 해당하면 같은 터미널에서 한 번 실행합니다.
+
+```bash
+sudo mokutil --import /var/lib/shim-signed/mok/MOK.der
+```
+
+| 터미널에 나타나는 문구 | 입력할 내용 |
+|---|---|
+| `[sudo] password for ...:` | Ubuntu 로그인 비밀번호. 최근에 인증했다면 생략될 수 있음 |
+| `input password:` | **재부팅 때 사용할 임시 비밀번호를 새로 정해** 입력 |
+| `input password again:` | 방금 정한 임시 비밀번호를 한 번 더 입력 |
+
+임시 비밀번호는 영문·숫자로 정하고 기억해 둡니다. Ubuntu 로그인 비밀번호를 변경하는 과정이 아닙니다.
+입력 중 문자가 보이지 않아도 정상입니다. 비밀번호 자체를 채팅·교재·저장소에 기록하지 않습니다.
+
+오류 없이 원래 터미널 프롬프트로 돌아오면 아래 단계로 진행합니다. 별도의 `Success` 문구가 없어도 됩니다.
+**이 명령은 등록 요청만 만듭니다. 재부팅 화면에서 승인해야 등록이 완료됩니다.**
+[Ubuntu mokutil 명령 설명](https://manpages.ubuntu.com/manpages/noble/man1/mokutil.1.html)
+
+<a id="mok-boot-screen"></a>
+
+#### 3.3.3. 재부팅 화면에서 Enroll MOK 선택하기
+
+열어 둔 파일을 저장하고 실행 중인 작업을 정상 종료합니다. 아래 순서를 읽어 둔 뒤 재부팅합니다.
+부팅 화면은 **이 노트북의 화면과 키보드로 직접 조작**합니다.
+
+```bash
+sudo reboot
+```
+
+1. 부팅 중 `Press any key…` 안내가 나오면 시간이 지나기 전에 아무 키나 누릅니다.
+2. 파란색 **Perform MOK management** 화면에서 방향키로 **Enroll MOK**를 선택하고 Enter를 누릅니다.
+3. 다음 화면에서 **Continue**를 선택하고 Enter를 누릅니다.
+4. 키 등록 여부를 묻는 화면에서 **Yes**를 선택하고 Enter를 누릅니다.
+5. Password 입력 화면에서 **방금 `mokutil --import`에 입력한 임시 비밀번호**를 입력하고 Enter를 누릅니다.
+6. 관리 메뉴로 돌아오면 **Reboot**를 선택합니다. Ubuntu 로그인 화면이 나올 때까지 기다립니다.
+
+선택 순서는 **Enroll MOK → Continue → Yes → 임시 비밀번호 → Reboot**입니다.
+처음 메뉴의 **Continue boot**는 등록을 건너뛰고 부팅하는 항목입니다. 중간 단계의 **Continue**와 구분합니다.
+드라이버 설치 중 이미 임시 비밀번호를 정하고 처음 재부팅하는 경우에는 그때 정한 비밀번호를 사용합니다.
+[Ubuntu 공식 MOK 등록 화면 순서](https://iso.qa.ubuntu.com/qatracker/testcases/1771/revisions/2031/info)
+
+파란 화면이 나타나지 않았거나 `Enroll MOK`가 없었다면 Ubuntu에 로그인한 뒤 아래 두 결과를 강사에게 보여 주세요.
+첫 명령은 이미 등록됐는지, 두 번째는 등록을 기다리는 요청이 있는지 확인합니다.
+
+```bash
+sudo mokutil --test-key /var/lib/shim-signed/mok/MOK.der
+sudo mokutil --list-new
+```
+
+#### 3.3.4. 등록과 GPU 인식을 확인하고 설치 이어가기
+
+Ubuntu 바탕화면으로 돌아오면 터미널에서 실행합니다.
+
+```bash
+sudo mokutil --test-key /var/lib/shim-signed/mok/MOK.der
+nvidia-smi
+```
+
+**두 가지를 모두 확인합니다.**
+
+- 첫 명령에 **`MOK.der is already enrolled`**가 표시됩니다.
+- `nvidia-smi`에 GPU 정보 표가 나오고 **Driver Version이 580 계열이며 580.65.06 이상**입니다. `CUDA Version` 칸과 구분합니다.
+
+두 항목을 확인했으면 VS Code에서 기존 수업 폴더를 열고 새 터미널에서 `pwd`, `ls lekiwi`로 저장소 최상위 위치인지 확인합니다.
+같은 터미널에서 설정을 다시 적용하고 설치를 이어갑니다.
+
+```bash
+export ACCEPT_EULA=Y
+export LEKIWI_DISPLAY_MODE=local
+./lekiwi install
+```
+
+정상이라면 현재 드라이버를 유지하고 Docker·이미지 빌드·실행 검사로 넘어갑니다.
+키는 등록됐는데 GPU 정보가 나오지 않거나 같은 중단 메시지가 반복되면, 결과를 강사에게 보여 주고 원인을 확인합니다.
+드라이버 설치 상태 파일을 지워 강제로 재설치하지 않습니다. **MOK 등록만으로 설치 전체가 완료된 것은 아니며**, 다음 절의 `verification=PASS`까지 확인합니다.
 
 ### 3.4. 설치 완료 확인과 이후 Docker 권한 설정
 

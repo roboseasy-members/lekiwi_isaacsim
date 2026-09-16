@@ -1,7 +1,25 @@
-"""1장 · 주석을 바꾸며 중력과 접촉을 비교합니다. Isaac Sim 5.1 독립 실행."""
+"""1장 8.1~8.3절 · 큐브의 중력과 충돌을 한 단계씩 켜 보는 시작 코드.
+
+목적: 마우스로 만들었던 바닥·작은 파란 큐브를 코드로 만들고 물리 속성을 비교합니다.
+실행 위치: 같은 노트북의 저장소 최상위 폴더 터미널.
+실행: ./lekiwi basic --experiment 1  (./lekiwi basic --chapter 1과 같은 파일)
+
+읽는 순서
+1. build_scene(): 단위·중력·조명 → 고정 바닥 → 큐브 형상·색상 → 강체·질량·중력 제외.
+2. main(): 앱 시작 → 새 장면 → build_scene 호출 → 초기 USD 저장 → 창 유지.
+3. 맨 아래 __main__: 이 파일을 프로그램으로 실행했을 때 main()을 호출하는 입구.
+
+기본 결과: Play를 눌러도 큐브가 높이 0.7 m에 머뭅니다. 중력이 꺼져 있습니다.
+바꿔 볼 값: CreateDisplayColorAttr의 색상, CreateDisableGravityAttr(True/False), CollisionAPI 줄.
+중력을 켜고 큐브 Collider를 주석으로 두면 바닥을 통과합니다. Collider도 켜면 바닥에 멈춥니다.
+이 파일을 수정했으면 저장 후 같은 명령으로 다시 실행합니다.
+--experiment 2/3은 따로 준비된 비교 파일을 여는 명령입니다.
+학생 파일 수정에는 이미지 재빌드가 필요 없습니다. Script Editor에 파일 전체를 붙여 넣지 않습니다.
+자세한 코드 읽기: isaacsim_basic/CODE_GUIDE.md"""
 
 
 def build_scene(stage):
+    """넘겨받은 Stage 안에 이 실험의 객체와 속성을 만듭니다. 앱 시작은 main()이 담당합니다."""
     from pxr import Gf, UsdGeom, UsdLux, UsdPhysics, UsdShade, PhysxSchema
     UsdGeom.SetStageMetersPerUnit(stage, 1.0)  # 길이: m
     UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)  # 장면의 위쪽을 +Z로 지정합니다. 바닥은 XY 평면입니다.
@@ -34,6 +52,7 @@ def build_scene(stage):
 
 def main():
     # Isaac Sim 모듈은 SimulationApp 생성 뒤에 불러옵니다.
+    """앱과 새 장면을 준비하고 화면을 유지합니다. 실험 설정은 build_scene()에서 읽습니다."""
     from isaacsim import SimulationApp
     app = SimulationApp({"headless": False, "width": 1280, "height": 720})  # Isaac Sim 앱을 먼저 시작합니다. 이후에 omni/pxr API를 불러옵니다.
     try:

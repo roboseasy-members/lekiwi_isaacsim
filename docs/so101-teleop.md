@@ -97,7 +97,7 @@ USD 관절 한계를 넘는 목표는 제한하고 화면에 `LIMIT` 관절명�
 
 원격 가상 로봇은 별도 기준을 사용한다. 500 ms 입력 공백에서 정지하고 마지막 입력부터 2초 안에
 같은 연결의 새 표본 3개를 확인하면 팔 추종을 재개한다. Space·영상 종료·긴 끊김 이후에는 R이 필요하다.
-실습 중 대처는 [4장 통신 복구](../isaacsim_basic/04_teleoperation/README.md#47-실습-중-늦어지거나-끊기면)를 따른다.
+실습 중 대처는 [4장 입력 복구](../isaacsim_basic/04_teleoperation/README.md#teleop-recovery)를 따른다.
 
 ## 구현 구조와 검증 범위
 

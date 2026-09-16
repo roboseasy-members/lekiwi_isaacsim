@@ -55,7 +55,7 @@ Isaac Sim 추론의 시작·정지·재시작을 확인했습니다. 학습 품�
 | 재접속 후 R | 다시 RUNNING → FINISHED. 관측 순서·모델 응답 오류 없이 완료 |
 
 `seconds`는 처리한 시뮬레이션 분량입니다. 모델 계산 중 물리 시간을 멈추므로 실제 기다리는 시간과 다릅니다.
-수업 화면에서의 상태 확인과 복구 절차는 [6장 ACT 추론](../isaacsim_basic/06_lekiwi_dataset/README.md#68-act-추론-스크립트)을 따릅니다.
+수업 화면에서의 상태 확인과 복구 절차는 [6장 ACT 추론](../isaacsim_basic/06_lekiwi_dataset/README.md#6-추론-스크립트로-같은-맵의-로봇-실행하기)을 따릅니다.
 
 ## 종료와 자동 검사
 

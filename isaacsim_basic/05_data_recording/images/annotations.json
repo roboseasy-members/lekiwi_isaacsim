@@ -613,5 +613,50 @@
         "label": "Open File 클릭"
       }
     ]
+  },
+  {
+    "name": "course-recording",
+    "title": "5장 · REC와 프레임 증가, 수집 종료와 팔 상태",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          16,
+          68,
+          189,
+          26
+        ],
+        "label": "F5 후 REC / RECORDING이면 데이터 수집 중입니다."
+      },
+      {
+        "box": [
+          16,
+          97,
+          303,
+          47
+        ],
+        "label": "에피소드 시간과 프레임 수가 증가하는지 확인합니다."
+      },
+      {
+        "box": [
+          16,
+          144,
+          195,
+          23
+        ],
+        "label": "F6은 수집 종료입니다. 이후 F7 또는 F9로 저장해야 합니다."
+      },
+      {
+        "box": [
+          16,
+          168,
+          266,
+          24
+        ],
+        "label": "팔 추종 상태와 수집 상태는 다릅니다. 이 사진은 리더 없는 검사 예시입니다."
+      }
+    ],
+    "source_sha256": "b375207ac73a3e90e702e8aef531f4dee57d8abb404911d214299ef08190a318",
+    "source_origin": "06_lekiwi_dataset/images/screenshots/10-recording-status.png"
   }
 ]

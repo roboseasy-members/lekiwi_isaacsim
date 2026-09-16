@@ -7,7 +7,7 @@
 
 | 원본 파일 | 해당 단원에서 확인할 단계 |
 |---|---|
-| [01-client-server-address.png](../isaacsim_basic/00_env_setting/images/screenshots/01-client-server-address.png) | Server에 서버의 Tailscale 주소를 넣고 해상도를 선택한 뒤 Connect |
+| [01-client-server-address.png](https://github.com/roboseasy-members/lekiwi_isaacsim/blob/b5dd9e641f9c41bed127ef381ef0d2528cf4460a/isaacsim_basic/00_env_setting/images/screenshots/01-client-server-address.png) | Server에 서버의 Tailscale 주소를 넣고 해상도를 선택한 뒤 Connect. 원격 수업 보관 버전의 사진이며 현재 로컬 수업에서는 사용하지 않음 |
 | [02-leader-following.png](../isaacsim_basic/04_teleoperation/images/screenshots/11-remote-leader.png) | 리더 연결·보정 확인 후 영상 창에서 R 입력, `ARM Following leader` 확인 |
 | [03-base-turn.png](../isaacsim_basic/04_teleoperation/images/screenshots/12-remote-base.png) | 베이스 회전 후 로봇 방향과 전방 카메라 화면의 변화 확인 |
 | [04-recording-active.png](../isaacsim_basic/06_lekiwi_dataset/images/screenshots/11-remote-recording.png) | F5 입력 후 `REC / RECORDING`과 프레임 증가를 직접 확인 |

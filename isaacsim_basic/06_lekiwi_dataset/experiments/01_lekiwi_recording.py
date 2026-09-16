@@ -1,9 +1,24 @@
-"""6장 · LeKiwi 두 카메라와 상태/명령을 수집하는 실제 코드.
+"""5장 · 빨주노초 맵에서 두 카메라와 상태·명령을 수집하는 공통 코드.
 
-이 파일은 프로젝트의 EpisodeWorker를 사용합니다. 1~5장과 달리 저장소가 필요합니다.
-실행: ./lekiwi basic --chapter 6 또는 ./lekiwi record
-Viewport에서 F5 기록 / F6 종료 / F7 실패·연습 저장 / F9 성공 저장 / F10 두 번 폐기.
-"""
+기존 실행기와 연결되어 있어 파일 위치는 06_lekiwi_dataset에 유지합니다.
+실행 위치: 같은 노트북의 저장소 최상위 폴더 터미널.
+키보드 기록 검사: ./lekiwi record
+리더 집기 시연: 5장 README의 실제 USB 경로를 넣은 teleop 명령에 --record를 추가합니다.
+기존 ./lekiwi basic --chapter 6도 키보드 기록 예제로 유지합니다.
+
+읽는 순서
+1. task_description / __init__의 duration_seconds: 과제와 최대 기록 시간을 정합니다.
+2. handle_key(): F5 시작·F6 종료·F7 연습 저장·F9 성공 저장·F10 두 번 폐기를 요청합니다.
+3. before_step()/after_step(): 30 Hz의 명령 전 상태와 명령 적용 뒤 상태를 연결합니다.
+4. snapshot()/accept_capture(): front·wrist의 실제 촬영 시각을 확인하고 같은 시각의 상태와 묶습니다.
+5. EpisodeWorker / poll_io(): 파일 쓰기를 처리하고 완료되면 SAVED로 바꿉니다.
+
+바꿔 볼 값: 과제 설명과 기록 길이. LEKIWI_RECORD_TASK/SECONDS 환경변수가 코드 기본값보다 우선합니다.
+화면: READY → F5 → RECORDING → F6 → FINISHING → UNSAVED → F7/F9 → SAVED.
+결과: data/recordings/ 아래 manifest.json·frames.jsonl·images/front·images/wrist.
+시간 정렬·오류 검사 코드는 기록 품질을 지키므로 첫 실습에서는 그대로 둡니다.
+RecordingPanel이라는 이름은 기록 상태를 관리하는 클래스이며 별도 패널 클릭을 요구하지 않습니다.
+자세한 코드 읽기: isaacsim_basic/CODE_GUIDE.md"""
 from collections import deque
 import math
 from pathlib import Path
@@ -26,7 +41,9 @@ from episode_worker import EpisodeWorker
 
 
 class RecordingPanel:
+    """기록 요청·영상 시각·상태 전환·저장 완료를 관리합니다. 로봇 조작은 호출하는 실행기가 담당합니다."""
     def __init__(self, camera_paths, config, source, layout):
+        """두 카메라 센서와 저장 위치를 준비하고, 초기 영상이 연속으로 도착할 때까지 기다립니다."""
         import omni.replicator.core as rep
 
         from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
@@ -83,6 +100,7 @@ class RecordingPanel:
         print(f"LEKIWI_RECORD directory={self.directory}", flush=True)
 
     def snapshot(self, world):
+        """두 카메라의 RGB와 실제 촬영 시각을 읽습니다. 서로 다른 시각의 영상이면 기록을 진행하지 않습니다."""
         images, stamps = {}, {}
         references = []
         for name, (_, rgb, reference) in self.sensors.items():
@@ -115,6 +133,7 @@ class RecordingPanel:
 
     def before_step(self, world, state, action, base_pose, *, control_ready=True):
         # 같은 시각의 영상과 명령을 연결합니다. 지연 영상도 촬영 시각으로 검증합니다.
+        """명령 직전의 상태·행동·영상을 준비하고, 키보드가 요청한 기록 시작·종료·저장을 처리합니다."""
         self.capture = None
         try:
             # 카메라 오류가 계속돼도 미완료 기록을 버릴 수 있어야 한다.
@@ -193,6 +212,7 @@ class RecordingPanel:
         self.refresh()
 
     def after_step(self, world, next_state):
+        """명령 적용 뒤 상태를 추가합니다. 1/30초 간격을 확인하고 같은 시각 영상과 연결합니다."""
         if self.pending is None:
             return
         row, self.pending = self.pending, None
@@ -213,6 +233,7 @@ class RecordingPanel:
         self.refresh()
 
     def accept_capture(self, images, stamps):
+        """가장 오래 기다린 상태와 영상의 촬영 시각이 일치할 때 한 프레임을 저장 작업자에게 넘깁니다."""
         if not self.waiting or self.mode not in {"RECORDING", "FINISHING"}:
             return
         row = self.waiting[0]
@@ -230,12 +251,14 @@ class RecordingPanel:
         self.finish_if_drained()
 
     def finish_if_drained(self):
+        """종료 요청 뒤 남은 프레임과 파일 쓰기가 끝나면 사용자의 저장 결정을 기다립니다."""
         if self.mode == "FINISHING" and not self.waiting:
             self.writer.stop()  # 새 프레임 입력을 끝내고 대기 중 파일 쓰기가 완료되도록 합니다.
             if self.writer.drained:
                 self.mode = "UNSAVED"
 
     def poll_io(self):
+        """비동기 파일 작업 결과를 확인합니다. 저장 요청과 실제 SAVED 완료를 구분합니다."""
         if not self.writer:
             return
         self.writer.poll()  # 백그라운드 저장 완료 또는 오류를 확인합니다. 긴 파일 작업으로 UI를 막지 않습니다.
@@ -249,6 +272,7 @@ class RecordingPanel:
             self.mode, self.error = "DISCARDED", ""
 
     def fail(self, exc):
+        """오류 뒤 새 프레임 입력을 멈추고 ERROR 상태를 알립니다. 정상 데이터로 자동 저장하지 않습니다."""
         self.pending = None
         self.waiting.clear()
         if self.writer:
@@ -279,6 +303,7 @@ class RecordingPanel:
                 print("LEKIWI_RECORD 미저장 기록을 폐기하려면 3초 안에 F10을 다시 누르세요.", flush=True)
 
     def refresh(self):
+        """상태가 바뀌거나 기록 시간이 늘었을 때 터미널 진행 상황을 갱신합니다."""
         count = self.writer.count if self.writer else 0
         # 프레임마다 출력하면 조작이 느려지므로 상태 변화 또는 시뮬레이션 1초마다 출력합니다.
         status = (self.mode, count // FPS, self.error)
@@ -289,6 +314,7 @@ class RecordingPanel:
             self.last_status = status
 
     def close(self):
+        """저장 작업을 마무리하고 미완료 기록이 남으면 경로를 알립니다."""
         if self.writer:
             self.writer.close()  # 이 기록 작업자의 남은 작업과 자원을 정리합니다.
             self.writer.poll()  # 백그라운드 저장 완료 또는 오류를 확인합니다. 긴 파일 작업으로 UI를 막지 않습니다.

@@ -1,4 +1,20 @@
-# 6편 출처와 화면 기록
+# 6장 · 변환·ACT 학습·추론 · 출처와 검증 범위
+
+## 현재 수업 기준 · 2026-09-16 흐름 복원
+
+5장 원본을 골라 변환·검사하고 ACT 학습과 저장 모델 추론을 진행합니다.
+현재 본문은 README이며, 아래 과거 관절 모형·코스 제작 안내 이력은 이번 장의 필수 진행 순서가 아닙니다.
+
+- 실행 근거: [프로젝트 실행기](../../lekiwi), [코스와 조작](../../isaac_sim/keyboard_drive.py), [색상 맵](../../isaac_sim/color_course.py).
+- 기록 근거: [공통 기록 코드](../06_lekiwi_dataset/experiments/01_lekiwi_recording.py).
+- 변환·학습·추론: [학생 설정 파일](../06_lekiwi_dataset/experiments/), [ACT 실행기](../../tools/act/launch.py).
+- `images/convert-settings.png`: 기존 실제 편집 화면에서 현재도 같은 episode_ids·dataset_name·success_only 영역만 잘라 보여 줍니다. 과거 브라우저 실행 명령은 현재 절차로 안내하지 않습니다.
+- 원본: [기존 캡처](../06_lekiwi_dataset/images/screenshots/11-browser-dataset.png). 이 장의 `images/screenshots/convert-settings.png`에 바이트를 바꾸지 않고 복사했습니다.
+- 원본 SHA256: `0b592725873832dce63cb52ff55d371947d05f40df5605c833fa6a0e928620d3`.
+- 표시본은 기존 SVG 주석 생성기로 빨간 박스·설명을 추가했습니다. 새 버튼·화면 내용을 합성하지 않습니다.
+
+이번 변경은 문서·실행 선택·학생 설정과 관련 자동 검사를 대상으로 합니다.
+실물 리더·GPU 학습·추론 화면을 이번 변경에서 새로 실행한 결과와 혼동하지 않습니다. 실제 추론은 최종 리허설에서 확인합니다.
 
 ## 공식 문서
 
@@ -12,7 +28,7 @@
 - [ViewportWindow의 UI 표시 영역 get_frame](https://docs.omniverse.nvidia.com/kit/docs/omni.kit.viewport.window/107.0.7/omni.kit.viewport.window/omni.kit.viewport.window.ViewportWindow.html)
 
 문서를 참고해 프로젝트 교육용 예제를 직접 작성했습니다. 런타임 버전은 Isaac Sim 5.1.0입니다.
-1~5장 학생 파일은 로봇 자산 없이 Isaac Sim Python으로 실행합니다. 6장은 프로젝트의 기록 형식과 로봇 자산을 사용합니다.
+이하에는 이전 보충 예제와 화면의 이력이 포함돼 있습니다. 현재 수업의 1~3장은 기초 예제이며, 4~6장은 프로젝트 코스·리더·기록·학습 실행기를 사용합니다.
 
 - [5.1 Replicator 비동기 렌더링과 프레임 누락](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/replicator_tutorials/troubleshooting.html#async-rendering-and-frame-skipping)
 
@@ -43,7 +59,9 @@
 공식 학습기와 저장된 전·후처리기, ACT의 `select_action`·`reset`을 호출합니다.
 학생 설정·작업 수명 관리·Isaac Sim 카메라와 제어 연결은 이 프로젝트에 맞춰 작성했습니다.
 모델 계산 동안 물리 시간을 멈추어 수집과 동일한 시뮬레이션 30 FPS 행동 간격을 유지하는 구조입니다.
-실제 추론 동작과 전체 리허설은 아직 검증하지 않았습니다.
+변환 데이터 900프레임을 사용한 ACT 학습 1회·모델 저장과 추론 시작·정지·재시작은
+[2026-09-13 실제 실행 기록](../../docs/act-rehearsal-20260913.md)에서 확인했습니다.
+현재 교재는 같은 변환·학습·추론 기반을 사용합니다. 수정한 로컬 교재의 전체 진행과 수업용 노트북 확인은 최종 리허설 범위입니다.
 
 ## 2026-09-13 · 직접 제작과 코드 연결 보강
 

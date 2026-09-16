@@ -30,7 +30,8 @@ def script_path(name, root=ROOT):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     selection = parser.add_mutually_exclusive_group()
-    selection.add_argument("--chapter", type=int, choices=CHAPTERS)
+    selection.add_argument("--chapter", type=int, choices=CHAPTERS,
+                           help="1~3장 기초 코드; 4~6은 기존 관절 입력·JSON 기록·키보드 수집 보충 예제. 본 수업은 각 장 README 참고")
     selection.add_argument("--script", help="isaacsim_basic 기준 상대 경로")
     selection.add_argument("--experiment", type=int, choices=EXPERIMENTS, help="1장 비교 예제")
     selection.add_argument("--lesson", choices=("blank", "drop", "mass", "friction", "bounce", "basket", "joints", "recording"))

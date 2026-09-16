@@ -10,7 +10,7 @@ export LEKIWI_DATA_DIR="${LEKIWI_DATA_DIR:-${project_dir}/data}"
 fail() { echo "ERROR: $*" >&2; exit 1; }
 usage() {
     echo 'Usage: ./lekiwi COMMAND [ARGS]'
-    echo '  classroom                 로컬 창으로 1~6장 실습 선택'
+    echo '  classroom                 기초 코드·코스 미리보기·기록 검사·데이터 목록 선택'
     echo '  install [--check|--verify] 학생 PC 준비 / 읽기 전용 검사 / GPU 실습 검사'
     echo '  doctor                    Check Docker access, GPU and bundled assets'
     echo '  config                    Validate/render Docker Compose configuration'
@@ -21,7 +21,7 @@ usage() {
     echo '  export-dataset ARGS       Convert saved recordings to a local LeRobot dataset'
     echo '  dataset-ui                브라우저에서 로컬 시연 선택·변환·데이터셋 검사'
     echo '  dataset COMMAND [ARGS]    list / export / inspect / upload'
-    echo '  basic [--chapter 1..6 | --script PATH | --experiment 1..6]  학생 Python 파일 실행'
+    echo '  basic [--chapter 1..6 | --script PATH | --experiment 1..6]  기초 코드·기존 보충 예제 실행'
     echo '  test-recording            Check classroom recording/replay (no USB)'
     echo '  test-basic                Check classroom physics inside Docker (no USB)'
     echo '  scene [--seed N|--layout FILE] [--start-count N --middle-count N]  Open collection course'

@@ -357,7 +357,7 @@ Hinge
 3. Axis=Y, 제한=-60/60도, Base Z=0.15, Arm Z=0.45를 확인합니다.
 4. **File → Save** 또는 Ctrl+S로 `my_joint.usda`를 저장합니다. 아직 새 이름으로 저장하지 않았다면 **Save As → 이름 my_joint → 형식 *.usda**를 사용합니다.
 5. **File → Open**으로 `/data/isaacsim_basic/my_joint.usda`를 다시 엽니다.
-6. Hinge의 여섯 객체(Base·Arm·두 Shape·FixedBase·Shoulder)와 목표 0도를 확인합니다. 이 파일을 **4·5장에서 재사용**합니다.
+6. Hinge의 여섯 객체(Base·Arm·두 Shape·FixedBase·Shoulder)와 목표 0도를 확인합니다. 이 파일은 관절 입력·JSON 기록 **보충 예제**에서 재사용할 수 있습니다. 4장 본 수업은 준비된 빨주노초 코스로 진행합니다.
 
 다음을 화면에서 짚어 설명할 수 있으면 코드 실습으로 넘어갑니다.
 

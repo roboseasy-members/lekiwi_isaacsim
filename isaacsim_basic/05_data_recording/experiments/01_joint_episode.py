@@ -1,6 +1,22 @@
-"""관절 제어/기록 실습. build_scene은 2장에서 배운 모형 정의입니다."""
+"""보충 예제 · 한 관절의 관측·명령·다음 관측을 JSON에 기록하고 재생하는 코드.
+
+5장 본 수업은 빨주노초 맵의 teleop --record입니다. 이 JSON은 LeRobot 학습용 변환 입력이 아닙니다.
+보충 실행: 저장소 최상위 폴더 터미널에서 ./lekiwi basic --chapter 5
+
+읽는 순서
+1. build_scene(): 한 관절 모형을 만듭니다.
+2. record(): 현재 각도 → 목표 명령 → 물리 1스텝 → 다음 각도를 180회 기록합니다.
+3. replay(): 저장된 명령을 같은 모형에 다시 적용하고 기록 당시 각도와 오차를 비교합니다.
+4. main(): 준비 후 자동 record()를 실행하고, 완료 후 일시정지한 화면을 유지합니다.
+
+기본 결과: 60 Hz에서 180프레임, 즉 시뮬레이션 3초의 episode.json이 저장됩니다.
+바꿔 볼 값: main()의 if path is not None / replay 두 줄을 켜서 방금 기록을 재생합니다.
+기록 중 Pause/Stop을 누르지 않습니다. 저장 위치는 STUDENT_RECORD saved= 출력에서 확인합니다.
+모든 관절 상태·action은 rad입니다. 데이터 재생은 명령을 다시 적용하는 것이며 모델 학습이 아닙니다.
+저장 후 같은 명령으로 재실행합니다. 자세한 코드 읽기: isaacsim_basic/CODE_GUIDE.md"""
 
 def box(stage, path, position, size, color, *, collision=True, mass=None, angle=0):
+    """위치(m)·크기(m)·색상으로 상자를 만듭니다. mass=None은 고정 물체, 숫자는 동적 강체입니다."""
     from pxr import Gf, UsdGeom, UsdPhysics
     cube = UsdGeom.Cube.Define(stage, path)  # 지정한 Stage 경로에 육면체를 만듭니다. 경로 이름으로 객체를 다시 찾습니다.
     cube.CreateSizeAttr(1.0)  # 육면체의 기본 한 변 길이를 지정합니다. Scale을 곱하면 최종 크기가 됩니다.
@@ -17,6 +33,7 @@ def box(stage, path, position, size, color, *, collision=True, mass=None, angle=
 
 
 def build_scene(stage):
+    """넘겨받은 Stage 안에 이 실험의 객체와 속성을 만듭니다. 앱 시작은 main()이 담당합니다."""
     from pxr import Gf, UsdGeom, UsdLux, UsdPhysics, UsdShade, PhysxSchema
     UsdGeom.SetStageMetersPerUnit(stage, 1.0)  # 길이: m
     UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)  # 장면의 위쪽을 +Z로 지정합니다. 바닥은 XY 평면입니다.

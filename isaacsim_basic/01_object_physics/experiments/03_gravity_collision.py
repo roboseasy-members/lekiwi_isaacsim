@@ -1,7 +1,22 @@
-"""1장 · 주석을 바꾸며 중력과 접촉을 비교합니다. Isaac Sim 5.1 독립 실행."""
+"""1장 · 중력과 큐브 충돌을 모두 켠 비교 코드.
+
+목적: 큐브와 바닥 양쪽에 Collider를 설정하면 떨어지는 물체가 바닥에 멈춤을 확인합니다.
+실행 위치: 노트북의 저장소 최상위 폴더 터미널.
+실행: ./lekiwi basic --experiment 3
+
+읽는 순서: build_scene()의 바닥 → 큐브 형상 → 강체·질량 → 중력·CollisionAPI → main().
+기본 결과: Play를 누르면 파란 큐브 한 개가 떨어져 바닥에 멈춥니다.
+큐브 한 변은 0.1 m, 바닥 윗면은 Z=0이므로 안착한 중심 높이는 약 0.05 m입니다.
+
+바꿔 볼 값: 큐브의 CollisionAPI 줄을 주석 처리하면 바닥을 통과합니다.
+CreateDisableGravityAttr(True)로 바꾸면 중력을 받지 않습니다. 한 번에 한 조건만 비교하세요.
+이 파일을 수정했다면 Ctrl+S로 저장 후 --experiment 3으로 다시 실행합니다.
+결과 확인: Play로 낙하·접촉 관찰, Stop으로 시작 상태 복원.
+자세한 코드 읽기: isaacsim_basic/CODE_GUIDE.md"""
 
 
 def build_scene(stage):
+    """넘겨받은 Stage 안에 이 실험의 객체와 속성을 만듭니다. 앱 시작은 main()이 담당합니다."""
     from pxr import Gf, UsdGeom, UsdLux, UsdPhysics, UsdShade, PhysxSchema
     UsdGeom.SetStageMetersPerUnit(stage, 1.0)  # 길이: m
     UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)  # 장면의 위쪽을 +Z로 지정합니다. 바닥은 XY 평면입니다.
@@ -34,6 +49,7 @@ def build_scene(stage):
 
 def main():
     # Isaac Sim 모듈은 SimulationApp 생성 뒤에 불러옵니다.
+    """앱과 새 장면을 준비하고 화면을 유지합니다. 실험 설정은 build_scene()에서 읽습니다."""
     from isaacsim import SimulationApp
     app = SimulationApp({"headless": False, "width": 1280, "height": 720})  # Isaac Sim 앱을 먼저 시작합니다. 이후에 omni/pxr API를 불러옵니다.
     try:

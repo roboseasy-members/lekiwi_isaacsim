@@ -14,9 +14,17 @@ spec.loader.exec_module(classroom)
 def test_each_lesson_has_local_command_and_textbook(lesson):
     args = classroom.command(lesson)
     assert args[0] == str(ROOT / "lekiwi")
-    assert args[1] in {"basic", "scene", "record"}
+    assert args[1] in {"basic", "scene", "record", "dataset"}
     assert "teleop" not in args and "calibrate" not in args
     assert (ROOT / "isaacsim_basic" / classroom.LESSONS[lesson][1] / "README.md").is_file()
+
+
+def test_applied_lessons_open_course_recording_and_read_only_inventory():
+    commands = {name[:2]: classroom.command(name)[1:] for name in classroom.LESSONS}
+    assert commands['4장'] == ['scene']
+    assert commands['5장'] == ['record']
+    # 설정 전 학습·업로드나 실물 연결을 자동 시작하지 않습니다.
+    assert commands['6장'] == ['dataset', 'list']
 
 
 def test_session_guards_duplicate_start_and_stop_uses_launch_identity(tmp_path, monkeypatch):

@@ -1,4 +1,4 @@
-"""Ubuntu PC의 Isaac Sim 창으로 1~6편을 실행하는 실습 선택 창."""
+"""1~3장 기초 예제·4~5장 키보드 검사·6장 데이터 목록을 여는 로컬 실행기."""
 import fcntl
 import os
 from pathlib import Path
@@ -12,9 +12,9 @@ LESSONS = {
     "1장 · 객체와 물리": (("basic", "--chapter", "1"), "01_object_physics"),
     "2장 · 로봇 관절": (("basic", "--chapter", "2"), "02_robot_joints"),
     "3장 · 카메라 API": (("basic", "--chapter", "3"), "03_robot_cameras"),
-    "4장 · 관절 입력 API": (("basic", "--chapter", "4"), "04_teleoperation"),
-    "5장 · 기록과 재생": (("basic", "--chapter", "5"), "05_data_recording"),
-    "6장 · LeKiwi 데이터 수집": (("basic", "--chapter", "6"), "06_lekiwi_dataset"),
+    "4장 · 텔레옵 (키보드 미리보기)": (("scene",), "04_teleoperation"),
+    "5장 · 데이터 취득 (키보드 검사)": (("record",), "05_data_recording"),
+    "6장 · 변환·학습·추론 (데이터 목록)": (("dataset", "list"), "06_lekiwi_dataset"),
 }
 
 
@@ -93,11 +93,11 @@ def main():
     window.geometry("850x660")
     panel = ttk.Frame(window, padding=16)
     panel.pack(fill="both", expand=True)
-    ttk.Label(panel, text="실습을 선택하고 이 PC의 Isaac Sim 창에서 진행하세요.",
+    ttk.Label(panel, text="실습을 선택하고 교재의 실행 순서를 확인하세요.",
               font=("sans", 15, "bold")).pack(anchor="w", pady=8)
     lesson = tk.StringVar(value=next(iter(LESSONS)))
     ttk.Combobox(panel, textvariable=lesson, values=list(LESSONS), state="readonly").pack(fill="x", pady=5)
-    ttk.Label(panel, text="4·6장은 키보드 실습입니다. USB 리더 실습은 각 편의 교재를 따라 진행하세요.").pack(anchor="w", pady=8)
+    ttk.Label(panel, text="4·5장 USB 리더와 6장 변환·학습·추론은 교재의 터미널 명령으로 실행합니다.").pack(anchor="w", pady=8)
     session = Session(data_dir)
     state = tk.StringVar(value="실습을 선택한 뒤 시작하세요.")
     controls = ttk.Frame(panel)
@@ -107,7 +107,8 @@ def main():
         try:
             args = command(lesson.get())
             session.start(args)
-            state.set("시작 중 · 첫 실행은 수 분 걸릴 수 있습니다.")
+            state.set("데이터 목록 조회 중 · 아래 결과를 확인하세요." if args[1] == "dataset"
+                      else "시작 중 · 첫 실행은 수 분 걸릴 수 있습니다.")
         except (ValueError, RuntimeError, OSError) as exc:
             messagebox.showerror("실행 실패", str(exc))
 

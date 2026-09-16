@@ -1,7 +1,21 @@
-"""마우스로 환경을 만드는 빈 편집 화면. 물체·바닥·관절은 자동 생성하지 않습니다."""
+"""1~3장 · 마우스로 장면을 만들기 위한 빈 Isaac Sim 창.
+
+목적: 학생이 World·조명·바닥·물체를 직접 추가할 시작 화면을 엽니다.
+실행 위치: 같은 노트북의 저장소 최상위 폴더에 있는 터미널.
+실행: ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
+
+읽는 순서
+1. main(): SimulationApp으로 앱을 연 뒤 omni 모듈을 가져옵니다.
+2. context.new_stage(): 새 장면을 열고 기본 Physics 편집 메뉴를 준비합니다.
+3. app.update(): 창을 닫을 때까지 화면과 입력 처리를 계속합니다.
+
+이 파일은 큐브·바닥을 자동으로 만들지 않습니다. 실행 직후 빈 Stage가 정상입니다.
+만든 장면은 File → Save As로 /data/isaacsim_basic/에 직접 저장합니다.
+다른 실습용 코드와 비교하는 방법은 isaacsim_basic/CODE_GUIDE.md를 참고하세요."""
 
 
 def main():
+    """마우스 실습용 새 Stage와 편집 메뉴를 준비하고 창이 닫힐 때까지 화면을 유지합니다."""
     from isaacsim import SimulationApp
     app = SimulationApp({"headless": False, "width": 1280, "height": 720})
     try:

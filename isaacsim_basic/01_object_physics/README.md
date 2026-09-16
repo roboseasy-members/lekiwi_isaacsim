@@ -63,7 +63,7 @@ World는 객체를 모아 둘 그룹, Light는 조명, PhysicsScene은 중력 �
 
 ![Stage에서 Xform을 우클릭하고 Rename 선택](images/24-rename-menu.png)
 
-4. 기존 이름을 지우고 **`World`**를 입력한 뒤 Enter를 누릅니다. `Word`가 아니라 `World`입니다.
+4. 기존 이름을 지우고 **`World`**를 입력한 뒤 Enter를 누릅니다.
 
 ![새 이름 World를 입력하는 칸](images/25-world-name.png)
 

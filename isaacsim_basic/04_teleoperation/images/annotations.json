@@ -546,5 +546,38 @@
         "label": "Open File 클릭"
       }
     ]
+  },
+  {
+    "name": "course-overview",
+    "title": "4장 · 빨주노초 코스의 베이스와 리더암 조작",
+    "crop": [
+      0,
+      0,
+      896,
+      486
+    ],
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          52,
+          85,
+          411,
+          396
+        ],
+        "label": "왼쪽 뷰포트를 클릭한 뒤 이동키를 누릅니다. 리더 실행에서는 먼저 R로 활성화합니다."
+      },
+      {
+        "box": [
+          475,
+          85,
+          413,
+          396
+        ],
+        "label": "오른쪽은 전방 카메라입니다. 큐브와 바구니 위치를 확인합니다."
+      }
+    ],
+    "source_sha256": "b2fcf4c3e373c7995ef4ddf5076625e8d125798973060bbb8b3a40b03551253a",
+    "source_origin": "06_lekiwi_dataset/images/screenshots/09-code-first.png"
   }
 ]

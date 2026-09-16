@@ -1,6 +1,22 @@
-"""3장 · Camera 생성과 화각 비교. Viewport의 카메라 목록에서 Camera를 고릅니다."""
+"""3장 · 카메라를 생성하고 위치·시선·렌즈를 비교하는 코드.
+
+목적: 물체를 보는 카메라의 자세와 화각을 코드로 지정합니다.
+실행: 저장소 최상위 폴더 터미널에서 ./lekiwi basic --chapter 3
+
+읽는 순서
+1. build_scene(): 바닥과 관찰용 큐브를 만들고 /World/Camera를 생성합니다.
+2. SetLookAt(eye, target, up): 카메라 위치·바라볼 점·위쪽 방향으로 시선을 정합니다.
+3. GetInverse(): 보기 변환을 장면에 놓을 카메라 자세로 바꿉니다.
+4. FocalLength/Aperture/ClippingRange: 렌즈·영상 가로 폭·보이는 거리 범위를 정합니다.
+
+실행 후 Viewport의 카메라 목록에서 /World/Camera를 선택해야 이 카메라의 화면을 봅니다.
+기본값: FocalLength=24. 바꿔 볼 값: 해당 줄 대신 48 줄을 켜고 같은 카메라 시점을 비교합니다.
+관찰용 큐브는 정적이므로 Play를 눌러도 떨어지지 않습니다. 렌즈 비교에는 물리 실행이 필요 없습니다.
+이 파일은 카메라 속성 예제이며 영상 데이터셋 저장은 5장의 기록기로 진행합니다.
+저장 후 같은 명령으로 재실행합니다. 자세한 코드 읽기: isaacsim_basic/CODE_GUIDE.md"""
 
 def build_scene(stage):
+    """넘겨받은 Stage 안에 이 실험의 객체와 속성을 만듭니다. 앱 시작은 main()이 담당합니다."""
     from pxr import Gf, UsdGeom, UsdLux, UsdPhysics, UsdShade, PhysxSchema
     UsdGeom.SetStageMetersPerUnit(stage, 1.0)  # 길이: m
     UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)  # 장면의 위쪽을 +Z로 지정합니다. 바닥은 XY 평면입니다.
@@ -36,6 +52,7 @@ def build_scene(stage):
 
 def main():
     # Isaac Sim 모듈은 SimulationApp 생성 뒤에 불러옵니다.
+    """앱과 새 장면을 준비하고 화면을 유지합니다. 실험 설정은 build_scene()에서 읽습니다."""
     from isaacsim import SimulationApp
     app = SimulationApp({"headless": False, "width": 1280, "height": 720})  # Isaac Sim 앱을 먼저 시작합니다. 이후에 omni/pxr API를 불러옵니다.
     try:

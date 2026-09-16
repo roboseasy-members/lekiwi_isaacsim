@@ -1456,5 +1456,47 @@
         "label": "확인 후 Save"
       }
     ]
+  },
+  {
+    "name": "convert-settings",
+    "title": "6장 · 변환할 에피소드와 출력 이름 설정",
+    "crop": [
+      270,
+      219,
+      900,
+      209
+    ],
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          312,
+          221,
+          653,
+          69
+        ],
+        "label": "episode_ids: 본인이 저장한 실제 ID를 따옴표로 감싸 한 줄씩 입력합니다."
+      },
+      {
+        "box": [
+          312,
+          334,
+          482,
+          23
+        ],
+        "label": "dataset_name: 새 출력 이름을 입력합니다. 기존 이름은 덮어쓰지 않습니다."
+      },
+      {
+        "box": [
+          312,
+          399,
+          232,
+          24
+        ],
+        "label": "success_only: False는 선택한 전체 기록, True는 성공 기록만 변환합니다."
+      }
+    ],
+    "source_sha256": "0b592725873832dce63cb52ff55d371947d05f40df5605c833fa6a0e928620d3",
+    "source_origin": "06_lekiwi_dataset/images/screenshots/11-browser-dataset.png"
   }
 ]

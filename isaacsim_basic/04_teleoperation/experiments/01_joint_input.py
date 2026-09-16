@@ -1,6 +1,21 @@
-"""관절 제어/기록 실습. build_scene은 2장에서 배운 모형 정의입니다."""
+"""보충 예제 · 키보드 입력이 단일 관절 목표가 되는 과정을 읽는 코드.
+
+4장 본 수업은 README의 빨주노초 맵 teleop입니다. 이 파일은 회색 바닥과 한 관절 모형을 엽니다.
+보충 실행: 저장소 최상위 폴더 터미널에서 ./lekiwi basic --chapter 4
+
+읽는 순서
+1. build_scene(): 2장과 같은 고정 받침·회전 팔·Drive를 만듭니다.
+2. main()의 on_key(): J/L/K 입력을 받아 target이라는 목표 숫자를 바꿉니다.
+3. 반복문: ArticulationAction으로 목표를 보내고 world.step()으로 실제 움직임을 계산합니다.
+
+화면 조작: Viewport 클릭 → J=+30도, L=-30도, K=0도. 실제 USB 리더는 열지 않습니다.
+바꿔 볼 값: on_key()의 np.deg2rad(30) 안 숫자를 15로 바꿔 작은 목표와 비교합니다.
+키 값은 도로 읽기 쉽게 쓰고 deg2rad로 라디안으로 바꿉니다. 제어기 입력 단위는 rad입니다.
+목표를 지정하는 것과 실제 관절이 그 위치에 도달하는 것은 다릅니다.
+저장 후 같은 명령으로 재실행합니다. 자세한 코드 읽기: isaacsim_basic/CODE_GUIDE.md"""
 
 def box(stage, path, position, size, color, *, collision=True, mass=None, angle=0):
+    """위치(m)·크기(m)·색상으로 상자를 만듭니다. mass=None은 고정 물체, 숫자는 동적 강체입니다."""
     from pxr import Gf, UsdGeom, UsdPhysics
     cube = UsdGeom.Cube.Define(stage, path)  # 지정한 Stage 경로에 육면체를 만듭니다. 경로 이름으로 객체를 다시 찾습니다.
     cube.CreateSizeAttr(1.0)  # 육면체의 기본 한 변 길이를 지정합니다. Scale을 곱하면 최종 크기가 됩니다.
@@ -17,6 +32,7 @@ def box(stage, path, position, size, color, *, collision=True, mass=None, angle=
 
 
 def build_scene(stage):
+    """넘겨받은 Stage 안에 이 실험의 객체와 속성을 만듭니다. 앱 시작은 main()이 담당합니다."""
     from pxr import Gf, UsdGeom, UsdLux, UsdPhysics, UsdShade, PhysxSchema
     UsdGeom.SetStageMetersPerUnit(stage, 1.0)  # 길이: m
     UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)  # 장면의 위쪽을 +Z로 지정합니다. 바닥은 XY 평면입니다.

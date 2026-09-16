@@ -1,6 +1,22 @@
-"""2장 · Joint와 Drive를 코드로 만듭니다. 각도 단위는 degree입니다."""
+"""2장 · 받침과 팔을 관절로 연결하고 목표 각도를 주는 코드.
+
+목적: 마우스로 만들었던 Fixed Joint·Revolute Joint·Angular Drive를 코드와 연결합니다.
+실행: 저장소 최상위 폴더 터미널에서 ./lekiwi basic --chapter 2
+
+읽는 순서
+1. build_scene(): 바닥 → Base/Arm 강체 → FixedBase 고정 → Shoulder 회전 관절 → Drive.
+2. Body0/Body1은 연결 대상, LocalPos0/1은 각 몸체에서 본 같은 접점의 좌표입니다.
+3. Drive는 목표 각도로 가도록 힘을 주며, main()은 화면과 Play/Stop 실행을 준비합니다.
+
+기본값: Y축 회전, 관절 한계 -60~60도, 목표 0도, Stiffness=1000, Damping=50.
+바꿔 볼 값: CreateTargetPositionAttr(0)을 주석 처리하고 30 또는 -30 줄 하나만 켭니다.
+Play 뒤 팔의 각도가 바뀌는지 봅니다. 목표 각도와 실제 움직임은 구분합니다.
+이 파일의 USD Angular Drive 목표·관절 한계는 degree(도)입니다.
+보충 입력 예제의 ArticulationAction은 rad이므로 숫자를 그대로 옮기지 않습니다.
+저장 후 같은 명령으로 재실행합니다. 자세한 코드 읽기: isaacsim_basic/CODE_GUIDE.md"""
 
 def box(stage, path, position, size, color, *, collision=True, mass=None, angle=0):
+    """위치(m)·크기(m)·색상으로 상자를 만듭니다. mass=None은 고정 물체, 숫자는 동적 강체입니다."""
     from pxr import Gf, UsdGeom, UsdPhysics
     cube = UsdGeom.Cube.Define(stage, path)  # 지정한 Stage 경로에 육면체를 만듭니다. 경로 이름으로 객체를 다시 찾습니다.
     cube.CreateSizeAttr(1.0)  # 육면체의 기본 한 변 길이를 지정합니다. Scale을 곱하면 최종 크기가 됩니다.
@@ -17,6 +33,7 @@ def box(stage, path, position, size, color, *, collision=True, mass=None, angle=
 
 
 def build_scene(stage):
+    """넘겨받은 Stage 안에 이 실험의 객체와 속성을 만듭니다. 앱 시작은 main()이 담당합니다."""
     from pxr import Gf, UsdGeom, UsdLux, UsdPhysics, UsdShade, PhysxSchema
     UsdGeom.SetStageMetersPerUnit(stage, 1.0)  # 길이: m
     UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)  # 장면의 위쪽을 +Z로 지정합니다. 바닥은 XY 평면입니다.
@@ -72,6 +89,7 @@ def build_scene(stage):
 
 def main():
     # Isaac Sim 모듈은 SimulationApp 생성 뒤에 불러옵니다.
+    """앱과 새 장면을 준비하고 화면을 유지합니다. 실험 설정은 build_scene()에서 읽습니다."""
     from isaacsim import SimulationApp
     app = SimulationApp({"headless": False, "width": 1280, "height": 720})  # Isaac Sim 앱을 먼저 시작합니다. 이후에 omni/pxr API를 불러옵니다.
     try:
