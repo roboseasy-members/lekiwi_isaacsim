@@ -6,9 +6,10 @@ Windows·WSL·macOS·ARM, 원격 Docker·Docker Desktop·rootless Docker의 자�
 ## 처음 실행
 
 Git이 없다면 먼저 `sudo apt update`와 `sudo apt install git`을 실행하고 저장소를 받습니다.
+로보시지 멤버스의 공개 수업 저장소를 사용하므로 다운로드에 GitHub 로그인은 필요하지 않습니다.
 
 ```bash
-git clone --branch develop https://github.com/SJun99/lekiwi_isaacsim.git
+git clone --branch develop https://github.com/roboseasy-members/lekiwi_isaacsim.git
 cd lekiwi_isaacsim
 ./lekiwi install --check
 ```

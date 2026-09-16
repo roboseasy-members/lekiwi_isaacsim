@@ -1,4 +1,7 @@
-# LeKiwi Isaac Sim · 설치부터 로컬 데이터 수집까지
+# 로보시지 멤버스 · LeKiwi Isaac Sim 수업
+
+로보시지 멤버스의 **노트북 한 대로 배우는 Isaac Sim·LeKiwi 실습 교재**입니다.
+수강생은 공개 수업 저장소 [roboseasy-members/lekiwi_isaacsim](https://github.com/roboseasy-members/lekiwi_isaacsim/tree/develop)의 `develop` 브랜치를 사용합니다.
 
 **처음 시작한다면 [0장 환경 설정](isaacsim_basic/00_env_setting/README.md)을 먼저 읽으세요.** 현재 수업 브랜치는 `develop`입니다.
 학생마다 **Ubuntu NVIDIA GPU 노트북 한 대**로 코드 편집·Isaac Sim 화면·키보드·USB 리더암·데이터 수집·학습을 진행합니다.
@@ -8,7 +11,7 @@
 데이터셋 업로드는 선택 사항이며, 로컬 변환본으로 바로 학습할 수 있습니다.
 리더암도 이 노트북의 USB에 연결합니다. 실제 SO101 리더의 관절을 읽어 **화면 속 LeKiwi와 팔**을 조작하며 실제 follower를 움직이지 않습니다.
 로봇 자산·교재는 저장소에 포함되고 Isaac Sim·LeRobot은 Docker에서 실행합니다.
-원격 접속 준비는 이 수업 절차에서 제외했습니다. 원격 수업 최종본은 `feature/remote_classroom`에 보관합니다.
+원격 접속 준비는 이 수업 절차에서 제외했습니다.
 
 | 단계 | 이번 저장소에서 진행할 범위 |
 |---|---|
@@ -33,10 +36,10 @@ sudo apt update
 sudo apt install git
 ```
 
-저장소를 받을 위치에서 실행합니다. 비공개 저장소라면 GitHub 접근 권한과 인증을 먼저 준비합니다.
+저장소를 받을 위치에서 실행합니다. 공개 저장소이므로 교재를 내려받을 때 GitHub 로그인이나 별도 접근 권한이 필요하지 않습니다.
 
 ```bash
-git clone --branch develop https://github.com/SJun99/lekiwi_isaacsim.git
+git clone --branch develop https://github.com/roboseasy-members/lekiwi_isaacsim.git
 cd lekiwi_isaacsim
 git branch --show-current
 ```
@@ -359,15 +362,15 @@ sudo를 사용하는 긴 세션에서는 인증 만료로 기존 터미널의 �
 
 ## 업데이트와 브랜치
 
+로보시지 멤버스 수업 저장소에서는 다음 두 브랜치를 구분합니다.
+
 | 브랜치 | 용도 |
 |---|---|
-| `develop` | 노트북 한 대 수업·현재 리허설 |
-| `feature/local_classroom` | 이번 로컬 수업 전환 작업 |
-| `feature/remote_classroom` | 원격 수업 최종본 보관 (`b5dd9e6`, 자동 인증 포함) |
-| `test` | 사전 환경 점검용 |
+| `develop` | 현재 수업·리허설에 사용할 최신 교재와 실행 코드 |
 | `main` | 전체 리허설 후 반영할 안정 버전 |
 
-`main`은 리허설을 마친 수업 내용을 반영하는 안정 버전입니다. 본 수업 배포 브랜치는 강사가 별도 안내합니다.
+**현재는 `develop`을 받습니다.** GitHub 첫 화면이 `main`이면 왼쪽 위 브랜치 선택에서 `develop`으로 바꾼 뒤 교재를 읽으세요.
+개발용 작업 브랜치·사전 점검용 `test`·원격 수업 최종본은 개인 개발 저장소에서 별도로 관리합니다.
 
 나중에 업데이트할 때는 장비·시뮬레이터를 정상 종료하고 저장소에서 실행합니다.
 

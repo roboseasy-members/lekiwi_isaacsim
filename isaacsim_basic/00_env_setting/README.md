@@ -24,10 +24,11 @@ Tailscale, AnyDesk, SSH 터널, 브라우저 편집기, WebRTC 클라이언트 �
 ## 1. 교재 받기
 
 노트북의 Ubuntu 바탕화면에서 `Ctrl+Alt+T`로 터미널을 엽니다. Git이 없다면 `sudo apt update`와 `sudo apt install git`으로 준비합니다.
-강사에게 저장소 접근 권한을 받은 뒤, 교재를 둘 폴더에서 실행합니다. 기존 폴더를 덮어쓰거나 지우지 않습니다.
+로보시지 멤버스의 공개 수업 저장소를 받습니다. GitHub 로그인이나 별도 접근 권한 없이 내려받을 수 있습니다.
+교재를 둘 폴더에서 실행합니다. 기존 폴더를 덮어쓰거나 지우지 않습니다.
 
 ```bash
-git clone --branch develop --single-branch https://github.com/SJun99/lekiwi_isaacsim.git lekiwi_classroom
+git clone --branch develop --single-branch https://github.com/roboseasy-members/lekiwi_isaacsim.git lekiwi_classroom
 cd lekiwi_classroom
 git branch --show-current
 pwd
