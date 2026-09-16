@@ -1,64 +1,118 @@
 # 4장 · 관절을 직접 조작하고 입력 연결하기
 
-2장에서 만든 팔의 목표를 마우스로 바꾸며 ‘입력한 값’과 ‘실제 움직임’을 구분합니다.
-**1~3절은 화면에서 직접 조작·저장하고, 마지막 4절에서 같은 모형에 키보드 제어 코드를 연결합니다.**
-LeKiwi 주행과 실물 리더 연결은 마지막 코드 실습의 확장 과정입니다.
+2장에서 만든 팔에 목표 각도를 입력하고, 같은 일을 키보드로 할 수 있도록 연결합니다.
+**1~3절은 마우스로 조작·저장하고, 마지막 4절에서 제어 코드를 실행합니다.**
+앞부분에는 실물 리더암이 필요 없습니다. LeKiwi 주행·실물 SO101 연결은 마지막 절의 확장 실습입니다.
 
 ## 1. 직접 만든 관절 모형 열기
 
-마우스 실습용 빈 편집기를 사용 중이면 그대로 이어갑니다. 앞 장의 코드 예제가 열려 있으면 결과를 저장하고 Isaac Sim 창을 닫습니다.
-아래 명령은 **같은 노트북의 저장소 최상위 폴더(`lekiwi` 파일이 있는 곳)**에서 실행합니다.
-이 명령은 편집 화면만 열며, 실습 객체는 이후 메뉴로 직접 만듭니다.
+### 1.1. 편집기와 파일 열기
+
+1. 다른 코드 예제가 실행 중이면 저장 후 Isaac Sim 창을 닫습니다. 빈 편집기가 이미 열려 있으면 그대로 사용합니다.
+2. 같은 노트북의 **저장소 최상위 폴더** 터미널에서 실행합니다.
 
 ```bash
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-Isaac Sim 창이 열리고 로딩이 끝나면 Viewport를 클릭해 조작합니다. 처음 실행은 캐시 준비로 시간이 걸릴 수 있습니다.
-명령을 중복 실행하지 말고, 오류가 나면 실행 터미널의 마지막 오류를 확인합니다.
+3. 로딩이 끝나면 상단 **File → Open**을 클릭합니다.
 
-일반 Isaac Sim 설치에서는 앱을 직접 엽니다. 이전 실습이 실행 중이면 저장을 마치고 종료한 뒤 시작합니다.
+![관절 파일을 여는 File Open 메뉴](images/guide-open-menu.png)
 
-`File > Open`으로 2장에서 직접 만든 관절 파일을 엽니다.
-Docker 수업의 경로 예시는 `/data/isaacsim_basic/my_joint.usda`입니다. 본인이 다른 이름으로 저장했다면 그 파일을 엽니다.
-아직 모형이 없다면 [2장](../02_robot_joints/README.md) 1~5절에서 먼저 만듭니다.
+4. 파일 창 위쪽 주소에 **`/data/isaacsim_basic/`**를 입력하고 Enter를 누릅니다.
+5. 아래 **File name에 `my_joint.usda`**를 입력하고 **Open File**을 클릭합니다.
 
-Stage에서 `/World/Hinge`를 펼칩니다. `Base`, `Arm`, `FixedBase`, `Shoulder`가 있는지 확인합니다.
-Base와 Arm 아래에는 각각 Shape가 있습니다. 관절 속성은 Shape가 아닌 Shoulder를 선택해서 바꿉니다.
+![파일 창의 주소 이름 Open File 위치](images/guide-open-dialog.png)
 
-![Base·Arm·관절을 찾는 Stage 구조](images/manual-joint-structure.png)
+사진처럼 **2장에서 저장한 `my_joint.usda`를 입력**합니다.
+본인이 다른 이름으로 저장했다면 실제 이름을 사용합니다. 파일이 없으면 [2장 1~5절](../02_robot_joints/README.md)을 먼저 마칩니다.
 
-사진은 2장의 완성 모형입니다. 같은 구조의 본인 파일을 열어 아래 실습을 진행합니다.
+### 1.2. Stage에서 Shoulder 찾기
+
+1. 오른쪽 Stage에서 **World 왼쪽 펼치기 표시**를 클릭합니다.
+2. 그 아래 **Hinge 왼쪽 펼치기 표시**를 클릭합니다.
+3. Base·Arm·FixedBase·Shoulder를 찾습니다. Base·Arm 아래에는 각각 Shape가 있습니다.
+
+![관절 모형의 Stage에서 찾을 객체들](images/guide-joint-tree.png)
+
+4. **Shoulder 이름**을 한 번 클릭합니다. Base·Arm·Shape를 선택하지 않습니다.
+5. Property의 Prim Path가 **`/World/Hinge/Shoulder`**인지 확인합니다.
+6. Shoulder를 못 찾으면 Stage 검색창에 `Shoulder`를 입력하고 검색된 항목을 클릭합니다. 검색창은 Stage와 Property에 각각 있으니 위치를 구분합니다.
 
 ## 2. 목표 각도를 입력하고 Play로 확인하기
 
-1. Stop 상태에서 Stage의 `/World/Hinge/Shoulder`를 클릭합니다.
-2. Property의 `Physics > Drive > Angular`를 펼치고 Target Position을 찾습니다.
-3. 숫자 칸을 Ctrl+클릭하고 `30`을 입력한 뒤 Enter로 확정합니다.
-4. Play를 눌러 팔이 움직이는 방향과 멈춘 모습을 관찰합니다.
-5. Stop을 누른 뒤 `-30`, `0`도 같은 방법으로 하나씩 확인합니다.
+### 2.1. Target Position 찾기
 
-![Angular Drive의 Target Position 입력 위치](images/manual-drive-target.png)
+1. 왼쪽 **■ Stop**을 눌러 제작 상태로 돌아옵니다. 이미 Stop 상태이면 그대로 둡니다.
+2. Shoulder를 선택하고 오른쪽 **Property 검색창에 `target`**을 입력합니다.
+3. **Drive → Angular** 아래 **Target Position**을 찾습니다.
+4. **숫자 칸을 Ctrl+클릭 → `30` 입력 → Enter** 순서로 바꿉니다. Target Velocity는 `0`으로 유지합니다.
 
-Target Position은 요청한 각도입니다. 실제 팔이 도달한 각도를 자동으로 보여 주는 측정 칸은 아닙니다.
-이 단계에서는 J/L/K 키로 팔이 움직이지 않습니다. 기본 속성 창에서 목표를 입력하고 Play로 확인합니다.
+![Shoulder 검색과 Property target 검색 및 입력 칸](images/guide-target-input.png)
 
-| 직접 입력한 목표 (도) | 확인할 것 |
+Stage 검색은 객체를 찾고, Property 검색은 선택한 객체의 속성을 찾습니다. 입력할 때 영문·숫자 상태인지도 확인합니다.
+
+### 2.2. Play로 결과를 보고 Stop으로 복원하기
+
+1. 가운데 물체가 보이는 큰 화면이 **뷰포트**입니다. 빈 바닥을 한 번 클릭합니다.
+2. 화면 맨 왼쪽 세로 도구막대의 **▶ Play**를 한 번 누릅니다.
+3. 받침은 제자리에 있고 팔만 기울어지는지 관찰합니다.
+4. 실험을 마치면 **■ Stop**을 클릭합니다. **Pause(일시정지)**는 그 자세에서 멈추는 기능이므로 다시 시작할 때는 Stop을 사용합니다.
+
+![실제로 기울어진 팔과 Pause Stop 버튼](images/guide-angle-result.png)
+
+Stop 후 선택 대상이 바뀌면 **Shoulder를 다시 선택하고 `target`을 검색**합니다.
+속성 제목만 보이면 왼쪽 삼각형으로 Physics → Drive → Angular를 펼칩니다.
+
+**Target Position은 요청한 각도입니다. 실제 팔의 현재 각도를 측정해서 표시하는 칸이 아닙니다.**
+숫자가 30으로 바뀌었어도 Play하지 않았거나 관절 설정이 잘못됐으면 팔이 움직이지 않을 수 있습니다.
+
+### 2.3. 반대 방향과 기준 자세 비교
+
+아래 행을 위에서부터 하나씩 수행합니다. 매번 **Stop → 값 입력 → Enter → Play → 관찰 → Stop** 순서입니다.
+
+| Target Position | 확인할 것 |
 |---|---|
-| 30 | 팔이 어느 쪽으로 움직이는가 |
-| -30 | 앞 실험과 반대 방향으로 움직이는가 |
-| 0 | 세워진 기준 자세로 돌아오는가 |
+| `30` | 한쪽으로 기울어지는가 |
+| `-30` | 앞 실험과 반대 방향으로 기울어지는가 |
+| `0` | 세워진 기준 자세를 유지하는가 |
 
-목표 숫자와 실제 팔의 모습을 함께 보며 비교합니다.
+이 단계에서는 J/L/K 키가 연결되어 있지 않습니다. 키보드 제어는 마지막 코드 절에서 실행합니다.
+
+### 2.4. 움직이지 않을 때 확인 순서
+
+1. Play 상태인지, Shoulder를 선택했는지 확인합니다.
+2. Property 검색어를 지우고 **Angular Drive** 값을 아래 사진과 비교합니다.
+
+![Angular Drive 기준값 확인](images/guide-drive-values.png)
+
+3. **Stiffness=1000, Damping=50, Max Force=100, Target Velocity=0**인지 봅니다.
+4. 목표만 바뀌고 팔이 안 움직이면 [2장](../02_robot_joints/README.md)의 Body 0·1, Axis=Y, -60/60도 제한을 확인합니다.
+5. 받침과 팔 전체가 떨어지거나 모형이 튀면 Stop하고 FixedBase·Shoulder의 연결 대상을 강사와 확인합니다.
 
 ## 3. 저장하고 입력·목표·움직임 구분하기
 
-Stop 후 Target Position=0, Target Velocity=0으로 복원합니다.
-2장의 기본 Drive 값인 Stiffness=1000, Damping=50, Max Force=100을 확인합니다.
-`File > Save As`로 `my_joint_control.usda`를 저장하고 다시 열어 목표값과 모형을 확인합니다.
+### 3.1. 다음 실습에 쓸 기본값으로 복원
 
-화면에서 숫자를 입력한 것, Drive가 가진 목표, 물리 계산으로 팔이 움직인 결과는 서로 다른 단계입니다.
-이제 같은 목표를 키 입력으로 전달하도록 코드를 연결합니다.
+1. Stop 상태로 돌아옵니다.
+2. Shoulder의 **Target Position=0, Target Velocity=0**을 입력합니다.
+3. Property 검색어를 지우고 **Stiffness=1000, Damping=50, Max Force=100**을 확인합니다.
+
+### 3.2. my_joint_control.usda로 따로 저장
+
+1. 상단 **File → Save As**를 클릭합니다.
+
+![새 실습 파일로 저장하는 Save As](images/guide-save-menu.png)
+
+2. 주소=`/data/isaacsim_basic/`, File name=**`my_joint_control`**로 입력합니다.
+3. 파일 형식 목록에서 **`*.usda`**를 선택하고 Save를 누릅니다. 이름에 확장자를 쓴 것만으로 형식 선택을 대신하지 않습니다.
+
+![파일 형식 usda 선택](images/guide-save-format.png)
+
+4. File → Open으로 **`my_joint_control.usda`**를 다시 열고 Hinge의 구조와 Target Position=0을 확인합니다.
+
+이제 **손으로 숫자를 입력 → Drive 목표가 바뀜 → Play의 물리 계산으로 팔이 움직임**을 직접 확인했습니다.
+다음 절에서는 같은 목표를 키보드 J/L/K로 전달합니다. USD 저장은 Python 파일을 바꾸지 않습니다.
 
 ## 4. 마지막: 같은 작업을 코드로 구현하기
 

@@ -65,3 +65,54 @@
 | `images/screenshots/09-create-practice-camera.png` | `cd8a924ea34f2ba6c329970a4b6c0e17afeb1c875a8fa91006b4d5f55f597d3c` |
 | `images/screenshots/10-camera-transform.png` | `36b6eb439492588e89fd153ab4b7baf0d2f9b352ab62b7d6e7136e9ae23f56ce` |
 | `images/screenshots/11-add-rotation.png` | `d6f39a81e5a17dfc81240603294409533c6789a290146d443c8a1d30dcce28a5` |
+
+## 2026-09-16 · 입문자용 클릭·입력 화면 보강
+
+마우스로 제작 → 값 변경과 관찰 → 저장 → 마지막 코드 실습 순서로 본문을 세분화했습니다.
+선택할 객체의 경로, 클릭할 메뉴, 입력할 숫자를 분리하고 실제 화면에 빨간 박스를 추가했습니다.
+
+이번 장 표시본은 새 촬영 기반 14개, 기존 실제 화면 재사용 7개입니다. 여러 장에서 공유하는 촬영은 중복 집계됩니다.
+원본 PNG는 `images/screenshots/`, 빨간 박스와 설명은 SVG 및 `annotations.json`, 본문 표시본은 PNG입니다.
+화면 내용을 합성하거나 숫자를 이미지 편집으로 바꾸지 않았습니다. SVG는 원본 PNG 바이트를 그대로 포함하며 화면 밖에 설명을 붙입니다.
+
+### 촬영·확인 범위
+
+재부팅 후 RTX 5060 Laptop GPU와 NVIDIA 드라이버 580.178.04가 정상 인식되는 환경에서 Isaac Sim 5.1 실제 GUI를 촬영했습니다.
+촬영용 부품·속성 배치 일부는 별도 임시 USD/API로 준비했습니다. 따라서 이 자료는 모든 객체를 처음부터 마우스로 제작한 전체 학생 리허설의 기록은 아닙니다.
+
+뷰포트 Cameras → Camera 선택, Focal Length 24→48→24, Stage에서 Camera를 CameraMount 아래로 드래그, 부모 X=0.3 이동과 Z=15° 회전·복원을 확인했습니다.
+
+기존 학생 Python 코드는 수정하지 않았습니다. 코드 검증은 촬영 앱을 재사용한 범위이며, 일반 실행 명령 전체·새 PC 설치·실물 USB 리더·데이터 업로드·학습을 이번에 다시 시험한 것은 아닙니다. 자세한 결과는 [검증 기록](../VALIDATION.md)에 있습니다.
+
+### 원본 출처
+
+| 표시본 | 원본 출처 | 원본 SHA256 |
+|---|---|---|
+| `step-cube-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-cube-transform.png` | `06e9a7d746ef057590564fca6989e06f4875974f396f3c19120de582127c93ab` |
+| `guide-camera-position` | 2026-09-16 실제 촬영, `images/screenshots/guide-camera-position.png` | `e10485a09c8c1a70b9762514d05d6ac818224a1c4272d28fce59bc7a60cb873d` |
+| `guide-camera-rotation` | 2026-09-16 실제 촬영, `images/screenshots/guide-camera-rotation.png` | `e10485a09c8c1a70b9762514d05d6ac818224a1c4272d28fce59bc7a60cb873d` |
+| `guide-camera-focal` | 2026-09-16 실제 촬영, `images/screenshots/guide-camera-focal.png` | `b07e4e993dfb1dc36bbc735f7840cd5fd86b27563a98615e4920a26ba9e5648c` |
+| `guide-lens-fields` | 2026-09-16 실제 촬영, `images/screenshots/guide-lens-fields.png` | `2266542467537a1dbc96ae054d360de28de9c3f0642c94b42e21fa2e5f0a5053` |
+| `step-clipping` | 2026-09-16 실제 촬영, `images/screenshots/step-clipping.png` | `e112b04fd25c2702ed7465dd6dc1e5f3be2f6c8c51160c4e637ea3f43614aac6` |
+| `step-camera-picker` | 2026-09-16 실제 촬영, `images/screenshots/step-camera-picker.png` | `0a80409e77aabd8c09b9c08784c38d54036ea431006354121cdb75cb4449244e` |
+| `guide-camera-view` | 2026-09-16 실제 촬영, `images/screenshots/guide-camera-view.png` | `a4ab2024ebf00470ad0a8612f2a38affd742113afba3b6a60d34cbc864044e8f` |
+| `step-focal48` | 2026-09-16 실제 촬영, `images/screenshots/step-focal48.png` | `393941df6cb773a26ef9fec10e34be18a4d87e023db46d421f1533381d0fa2fd` |
+| `step-camera-parent` | 2026-09-16 실제 촬영, `images/screenshots/step-camera-parent.png` | `f361ae0937fbded2b2089e059640eb38f2db16ed15f47b74db0159800cd22773` |
+| `step-mount-move` | 2026-09-16 실제 촬영, `images/screenshots/step-mount-move.png` | `12fa789566a1a51284854e4dd373fd135a6ad05c33beddb5f35eb5cfa08bdb25` |
+| `step-mount-rotate` | 2026-09-16 실제 촬영, `images/screenshots/step-mount-rotate.png` | `b8f0fe3719e91890b3ae3a49d2533bc39dea7288dea426cf275fd18c07c5cdc2` |
+| `guide-save-format` | 2026-09-16 실제 촬영, `images/screenshots/guide-save-format.png` | `65595aad8c742ea2dd82f104cb47172eef77ec5b071fef6cb1eeeb848538eb06` |
+| `step-cube-size` | 2026-09-16 실제 촬영, `images/screenshots/step-cube-size.png` | `78a6b815c90a7ffaf8dfe9a31447cd6b653b3d5dc1c797196a386deff0f5bc07` |
+| `guide-open-menu` | 기존 촬영: `01_object_physics/images/screenshots/61-open-menu.png` | `52027f9b1eac98c368810803cdee216d636db53cdc20f5067bc8cfac899fee84` |
+| `guide-open-dialog` | 기존 촬영: `01_object_physics/images/screenshots/62-open-dialog.png` | `3ef7d51b090c2ca81cac3633b1d5c496957a3115db902d18274e7c82badaf5e2` |
+| `guide-save-menu` | 기존 촬영: `01_object_physics/images/screenshots/42-file-save-menu.png` | `6e816f7d0ba36e96d4bc35ebe1a2b37ffaefa356f18b65d1b2cb0451a7928699` |
+| `guide-create-cube` | 기존 촬영: `01_object_physics/images/screenshots/36-create-cube.png` | `d6fe5ac98b54d576987f331f1f83d194f5b2bbed98e7b68c6e0a27e8ce8d995b` |
+| `guide-create-xform` | 기존 촬영: `01_object_physics/images/screenshots/23-create-world.png` | `34a76860eed04244f817cb784afc0adfcc153c388ad8bacc9370e0e6e3e7dfb4` |
+| `guide-create-camera` | 기존 촬영: `03_robot_cameras/images/screenshots/09-create-practice-camera.png` | `cd8a924ea34f2ba6c329970a4b6c0e17afeb1c875a8fa91006b4d5f55f597d3c` |
+| `guide-add-rotation` | 기존 촬영: `03_robot_cameras/images/screenshots/11-add-rotation.png` | `d6f39a81e5a17dfc81240603294409533c6789a290146d443c8a1d30dcce28a5` |
+
+### 표시본과 Notion 자료 재생성
+
+```bash
+python3 isaacsim_basic/01_object_physics/images/build_annotations.py isaacsim_basic/03_robot_cameras/images
+/usr/bin/python3 isaacsim_basic/export_lessons.py isaacsim_basic/03_robot_cameras
+```

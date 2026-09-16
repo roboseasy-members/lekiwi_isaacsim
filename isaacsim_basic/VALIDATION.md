@@ -399,3 +399,51 @@ API 근거: [NVIDIA Window 도킹 안내](https://docs.omniverse.nvidia.com/dev-
 - 관련 자동 검사: `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/test_web_classroom.py tests/test_act_workflow.py --tb=short` — 56개 통과.
 - 별도로 완료한 NVTX 공통 실행·서버 이미지·1~6장·ACT GPU 검증은 [실행 검증 기록](../docs/act-rehearsal-20260913.md#공통-실행기-반영)에 있습니다.
 - 이번 README 점검은 문서·명령·코드의 정적 대조입니다. 학생이 처음부터 모든 마우스 조작을 수행하는 전체 리허설, 새 PC 설치, 15쌍 동시·장시간 검사를 완료했다는 의미는 아닙니다. 추가 GPU 세션이나 실제 리더암 조작은 하지 않았습니다.
+
+## 2026-09-16 · 2~6장 입문자용 화면 보강과 재부팅 후 검증
+
+### 변경 범위
+
+- 2~6장 모두 마우스로 제작 → 속성 입력 → Play와 관찰 → 저장 → 마지막 코드 실습 순서로 안내합니다.
+- Base/Arm과 자식 Shape, 고정·회전 관절의 연결 대상, 카메라와 부모 그룹, 바구니의 다섯 부품을 각각 구분해 설명합니다.
+- 이번 추가 표시본 102개 중 62개는 새 실제 촬영 기반, 40개는 기존 실제 촬영본을 다시 표시한 자료입니다. 같은 촬영을 여러 장에서 사용한 수가 포함되며, 독립적인 새 촬영 62회를 뜻하지 않습니다.
+- 잘못된 선택 대상·파일 이름·렌즈 값을 보여 주던 참고 사진을 해당 실습 화면으로 교체했습니다. `Create from View`는 실제 메뉴에 맞춰 Perspective 메뉴의 직접 항목으로 수정했습니다.
+- PNG 원본은 보존하고 SVG로 빨간 박스와 하단 설명을 붙였습니다. 각 장 SOURCES에 원본 경로와 SHA256을 기록했습니다.
+- 5개 장의 Notion ZIP을 갱신했습니다. 마지막 코드 절의 본문과 학생 Python 파일은 변경하지 않았습니다. 강사 전용 대본은 계속 Git에서 제외합니다.
+
+### 실행 환경과 확인 방식
+
+재부팅 전 NVIDIA 커널 모듈과 라이브러리 버전 불일치로 촬영을 중단했습니다. 사용자 재부팅 뒤 RTX 5060 Laptop GPU와 드라이버 580.178.04의 일치를 `nvidia-smi`와 커널 모듈 정보로 확인했습니다.
+Isaac Sim 5.1의 임시 촬영 앱 하나를 사용하고, 실습 장면과 기록 출력은 기존 사용자 데이터와 분리했습니다. 촬영 앱은 확인 후 종료했습니다.
+
+부품 배치 일부는 USD API로 준비한 뒤 실제 GUI를 촬영했습니다. 아래 표의 핵심 조작은 GUI 및 시뮬레이션으로 확인했지만, 모든 객체를 학생이 처음부터 마우스로 생성하는 전체 수업 리허설을 대신하지는 않습니다.
+4·5장의 실행 검사는 기존 촬영 앱을 재사용한 검사이며, `./lekiwi basic`으로 컨테이너를 새로 시작하는 전체 경로를 이번에 다시 시험한 결과는 아닙니다.
+
+| 장 | 실제 확인 | 결과 |
+|---|---|---|
+| 2 | FixedBase Body 1의 대상 선택 창에서 Base 선택·확정, 질량 입력, 목표 각도 입력과 Play/Stop | 목표 +30° → +29.9999°, -30° → -29.9999°, 80° → 상한 약 60.0002° |
+| 3 | Cameras → Camera 시점 선택, Focal Length 24→48→24, Camera를 CameraMount 아래로 드래그 | 렌즈 값 반영과 경로 `/World/CameraMount/Camera` 확인 |
+| 3 | 부모 Translate X=0.3, Rotate Z=15°를 GUI에서 입력 후 복원 | 실제 USD 속성값 및 화면 확인 |
+| 4 | 현재 `01_joint_input.py`의 main·키보드 콜백 실행, 실제 J/L/K 입력 | +30.0002° / -30.0002° / 약 0° 추종 |
+| 5 | 저장된 관절 USD에서 현재 `01_joint_episode.py`의 record·replay 함수 실행 | 180프레임, 유한한 숫자, 다음 상태와 다음 프레임 관측의 연속성 확인; 재생 최대 오차 출력 0.000000 rad |
+| 6 | `/LeKiwi`에서 Add → Reference로 제공 USD 선택 | 로봇 부품과 형상 표시 |
+| 6 | Show By Type → Physics → Colliders → Selected | 선택한 다섯 바구니 부품의 열린 충돌 구조 표시 |
+| 6 | DropCube Play와 Stop | (1.2, 0, 0.4) m에서 약 (1.20037, 0.00049, 0.014) m에 안착, Stop으로 시작 높이 복원 |
+| 6 | Create from View, OverviewCamera의 초점거리 두 배 변경과 복원 | 카메라 생성과 실제 렌즈 속성 확인 |
+| 공통 | 6개 저장 파일을 USD로 다시 열어 필수 Prim 확인 | my_joint, my_joint_control, my_joint_recording, my_camera, my_camera_mount, my_lekiwi_scene 통과 |
+
+실물 USB 리더암·토크·실제 로봇은 사용하지 않았습니다. 이번에 수집용 전체 코스의 시연·업로드·ACT 학습을 새로 실행한 것은 아닙니다.
+로봇 자산 참조 시 기존 `gripper_frame_link/visuals`의 참조 경고가 출력됐습니다. 이 기록은 모델의 모든 시각·충돌 자산이 경고 없이 로드된다는 검증이 아니라, 위 표에 적은 GUI 구성과 낙하 확인 범위입니다.
+
+### 자동 검사
+
+```bash
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/test_physics_experiments.py tests/test_local_classroom.py
+git diff --check
+```
+
+- 관련 테스트: **32 passed**.
+- 표시본 102개의 원본 해시·SVG 포함 바이트·빨간 박스 밖 픽셀 일치, 박스 경계와 설명 잘림 검사: 통과.
+- 5개 장의 로컬 링크·이미지, 셸 블록 31개의 구문, 학생 Python 문법: 통과.
+- Notion ZIP 5개의 무결성과 포함 이미지 일치: 통과.
+- 기존 실제 원본 52개의 SHA256, 각 장 마지막 코드 절의 변경 전 내용, 강사 대본 제외: 유지 확인.

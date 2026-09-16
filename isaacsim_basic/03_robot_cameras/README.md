@@ -1,97 +1,225 @@
 # 3장 · 마우스로 카메라 만들고 시점 바꾸기
 
-카메라를 직접 추가하고 위치·회전·렌즈를 바꾸며 화면이 어떻게 달라지는지 관찰합니다.
-**1~5절은 마우스 실습과 저장이고, 마지막 6절에서 같은 카메라의 코드와 LeKiwi 장착 카메라를 살펴봅니다.**
-카메라를 직접 만들고 위치·렌즈를 바꾼 결과를 화면에서 먼저 비교합니다.
+관찰용 큐브와 카메라를 직접 만들고 위치·방향·렌즈를 바꾸어 봅니다.
+**1~5절은 마우스 실습, 마지막 6절은 같은 작업을 코드로 구현하고 LeKiwi 카메라로 확장하는 실습입니다.**
+이 장의 큐브는 움직이지 않게 둡니다. 물체 움직임과 카메라 움직임을 동시에 바꾸지 않기 위해서입니다.
 
 ## 1. 카메라가 볼 환경 만들기
 
-마우스 실습용 빈 편집기를 사용 중이면 그대로 이어갑니다. 앞 장의 코드 예제가 열려 있으면 결과를 저장하고 Isaac Sim 창을 닫습니다.
-아래 명령은 **같은 노트북의 저장소 최상위 폴더(`lekiwi` 파일이 있는 곳)**에서 실행합니다.
-이 명령은 편집 화면만 열며, 실습 객체는 이후 메뉴로 직접 만듭니다.
+### 1.1. 공통 바닥 열기
+
+1. 앞 장의 실행 창을 저장 후 닫습니다. 빈 편집기가 이미 열려 있으면 그대로 사용합니다.
+2. 같은 노트북의 **저장소 최상위 폴더**에서 실행합니다.
 
 ```bash
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-Isaac Sim 창이 열리고 로딩이 끝나면 Viewport를 클릭해 조작합니다. 처음 실행은 캐시 준비로 시간이 걸릴 수 있습니다.
-명령을 중복 실행하지 말고, 오류가 나면 실행 터미널의 마지막 오류를 확인합니다.
+3. 로딩 후 상단 **File → Open**을 클릭합니다.
 
-일반 Isaac Sim 설치에서는 앱을 직접 엽니다. 이전 실습이 실행 중이면 저장을 마치고 종료한 뒤 시작합니다.
+![공통 바닥을 여는 File Open 메뉴](images/guide-open-menu.png)
 
-`File > Open`으로 1장의 `base_scene.usda`를 열고 `File > Save As`로 `my_camera.usda`를 만듭니다.
-아직 저장한 공통 바닥이 없다면 [1장](../01_object_physics/README.md) 1~2절을 먼저 마칩니다.
-World 아래에 `Create > Shape > Cube`로 `PracticeCube`를 만들고 Size=0.1, Translate=`(0,0,0.7)`, Rotate=0, Scale=1을 설정합니다.
-이 장의 관찰용 큐브에는 Rigid Body를 추가하지 않습니다. 카메라를 비교하는 동안 같은 위치에 머물도록 합니다.
-제작 중에는 Stop 상태를 유지합니다.
+4. 주소 칸에 **`/data/isaacsim_basic/`**를 입력하고 Enter를 누릅니다. File name에 **`base_scene.usda`**를 입력하고 **Open File**을 클릭합니다.
+
+![폴더 주소와 base_scene 파일 이름 및 Open File](images/guide-open-dialog.png)
+
+5. Stage의 World 아래에 Light·PhysicsScene·Ground만 있는지 확인합니다. 없다면 [1장 2절](../01_object_physics/README.md#2-world조명중력바닥-만들기)을 먼저 마칩니다.
+6. **File → Save As**로 주소는 같은 폴더, 이름은 **`my_camera`**, 형식은 **`*.usda`**로 저장합니다.
+
+![Save As와 파일 형식 선택을 시작하는 메뉴](images/guide-save-menu.png)
+
+![파일 이름과 별도로 usda 형식 선택](images/guide-save-format.png)
+
+공통 바닥 `base_scene`를 덮어쓰지 않습니다. 사진의 파일 목록은 예시이고, 이번 새 이름은 **my_camera**입니다.
+
+### 1.2. 관찰용 큐브 만들기
+
+1. **Stop 상태**에서 Stage의 World를 클릭합니다.
+2. **Create → Shape → Cube**를 선택합니다.
+
+![관찰용 Shape Cube 생성 메뉴](images/guide-create-cube.png)
+
+3. 새 Cube 이름 위에서 **우클릭 → Rename**을 누르고 **`PracticeCube`**를 입력한 뒤 Enter를 누릅니다.
+4. World 밖에 생겼으면 World 위로 드래그합니다. 선택 후 Prim Path가 **`/World/PracticeCube`**인지 봅니다.
+5. Property의 **Transform**을 펼치고 다음 값을 입력합니다. Ctrl+클릭으로 기존 숫자를 바꾼 뒤 Enter로 확정합니다.
+
+| PracticeCube의 줄 | X | Y | Z |
+|---|---|---|---|
+| Translate | `0` | `0` | `0.7` |
+| Rotate 또는 Orient | `0` | `0` | `0` |
+| Scale | `1` | `1` | `1` |
+
+![관찰용 큐브의 위치와 크기](images/step-cube-transform.png)
+
+6. Property 검색창에 `size`를 입력하고 **Size=`0.1`**을 입력합니다. 검색창 오른쪽 `×`를 누릅니다.
+![PracticeCube의 Size 0.1 입력](images/step-cube-size.png)
+
+7. **이 큐브에는 Rigid Body를 추가하지 않습니다.** 관찰하는 동안 공중의 같은 위치에 있어야 합니다.
+
+사진에서는 색을 칠한 큐브가 보입니다. 직접 만든 큐브가 회색이어도 위치·크기가 같으면 진행할 수 있습니다.
 
 ## 2. Camera 생성과 위치 입력
 
-1. World를 선택하고 상단 `Create > Camera`를 누릅니다.
-2. 이름은 `Camera`, Prim Path는 `/World/Camera`인지 확인합니다.
-3. Property > Transform에서 Translate=`(1.2,-1.6,1.1)` m, Scale=`(1,1,1)`을 입력합니다.
-4. 기존 회전 항목을 먼저 확인합니다. `Orient`가 있으면 표시되는 세 각도를 `(0,0,0)`으로 초기화합니다. 같은 회전이 두 번 적용되지 않게 합니다.
-5. **XYZ 순서의 Rotate**에 `(69.443955,0,36.869898)` 도를 입력합니다. Rotate 항목이 없다면 `Add > TransformOp > Rotate`로 추가하고 Rotate 옆 메뉴에서 XYZ 순서를 확인합니다. 이미 있으면 중복 추가하지 않습니다. Scale은 `(1,1,1)`로 유지합니다.
+### 2.1. Camera 만들고 경로 확인하기
 
-![이번 단원의 큐브 환경에서 Camera 생성 메뉴 열기](images/09-create-practice-camera.png)
+1. Stage의 **World**를 클릭합니다.
+2. 상단 **Create → Camera**를 클릭합니다.
 
-![Rotate가 없을 때 추가하는 TransformOp 메뉴](images/11-add-rotation.png)
+![World 선택과 Create Camera 위치](images/guide-create-camera.png)
 
-회전은 카메라가 `(0,0,0.35)`를 향하도록 계산한 값입니다. GUI의 회전 순서는 Transform의 Rotate 옆 메뉴에서 확인합니다.
-XYZ 이외의 순서에는 위 숫자를 그대로 사용하지 않습니다. 기본 생성 Camera의 Orient 값이 남아 있으면 먼저 0으로 복원합니다.
-카메라 위치가 맞아도 방향이 다르면 큐브가 화면 밖으로 나갑니다.
+3. 새 객체의 이름을 **`Camera`**로 맞춥니다. World 밖이면 World 아래로 옮깁니다.
+4. Camera를 클릭해 Property의 **Prim Path=`/World/Camera`**를 확인합니다. Stage의 Type은 **Camera**여야 합니다.
 
-![교재의 위치·XYZ 회전·Scale을 설정한 Camera](images/10-camera-transform.png)
+Xform은 부모 그룹이고 Camera는 렌즈를 가진 객체입니다. Xform을 선택하면 다음 절의 Focal Length 항목이 보이지 않습니다.
 
-위 사진의 Translate·Rotate·Scale·Orient와 본인의 값을 비교합니다.
+### 2.2. 위치와 크기 입력하기
+
+1. Camera를 선택한 채 Property의 **Transform**을 펼칩니다.
+2. **Translate X=`1.2`, Y=`-1.6`, Z=`1.1`**을 각각 입력합니다.
+3. **Scale X·Y·Z는 모두 `1`**로 둡니다.
+
+![Camera의 경로와 Translate Scale 입력 칸](images/guide-camera-position.png)
+
+### 2.3. 회전을 한 번만 적용하기
+
+1. Transform에서 **Orient** 줄이 있는지 확인합니다. 있으면 표시된 X·Y·Z 각도를 모두 **`0`**으로 맞춥니다.
+2. **Rotate** 줄이 이미 있으면 다시 추가하지 않습니다. 없으면 Property 위쪽 **Add → TransformOp → Rotate**를 선택합니다.
+
+![Rotate 줄이 없을 때 추가하는 메뉴](images/guide-add-rotation.png)
+
+3. Rotate 항목 옆의 순서 선택 메뉴에서 **XYZ**인지 확인합니다. 다른 순서이면 XYZ로 맞춘 뒤 아래 숫자를 입력합니다.
+4. **Rotate X=`69.443955`, Y=`0`, Z=`36.869898`**을 입력하고 각 칸에서 Enter를 누릅니다.
+
+![Camera Rotate XYZ 각도 입력 위치](images/guide-camera-rotation.png)
+
+5. Translate는 `(1.2,-1.6,1.1)`, Scale은 `(1,1,1)`, 기존 Orient는 `(0,0,0)`인지 다시 확인합니다.
+
+이 방향은 카메라가 `(0,0,0.35)` 쪽을 보도록 정한 값입니다. 사진에서는 소수점이 짧게 보일 수 있으니 **본문의 전체 숫자**를 입력합니다.
+Orient와 Rotate 양쪽에 같은 회전을 넣으면 회전이 두 번 적용될 수 있습니다.
 
 ## 3. 렌즈 값을 넣고 카메라 시점 선택하기
 
-1. Stage에서 **Camera 타입**의 객체를 선택합니다. 부모 Xform을 선택하면 렌즈 항목이 나오지 않습니다.
-2. Property의 Camera 항목에 아래 값을 입력합니다.
-3. Viewport 위쪽 `Perspective` 카메라 선택 메뉴에서 `/World/Camera`를 선택합니다.
-4. 큐브와 바닥이 보이는지 확인합니다. 마우스로 시점을 움직이면 Camera 자세까지 바뀔 수 있으므로 비교 중에는 고정합니다.
+### 3.1. Camera 속성 찾고 렌즈 입력하기
 
-| Camera 속성 | 값 |
+1. Stage에서 **Camera 타입 객체**를 클릭합니다. 검색어가 남아 있으면 지웁니다.
+2. Property를 아래로 내려 **Camera → Lens**를 펼칩니다.
+3. **Focal Length 칸에 `24`**를 입력합니다.
+
+![Camera의 Lens와 Focal Length 24 위치](images/guide-camera-focal.png)
+
+4. 같은 Camera 항목에서 아래 값을 한 칸씩 맞춥니다. 보이지 않으면 Property 안에서 스크롤하거나 검색창에 항목 이름을 입력합니다.
+
+| 항목 | 입력값 |
 |---|---|
-| Projection | `perspective` |
+| Projection | 목록에서 `perspective` |
 | Focal Length | `24` |
 | Horizontal Aperture | `20.955` |
 | Vertical Aperture | `15.2908` |
-| Clipping Range | near=`0.01`, far=`100` |
+| Clipping Range | 왼쪽 `0.01`, 오른쪽 `100` |
 
-![기존 Camera 타입과 광학 속성의 위치](images/04-camera-properties.png)
+![Camera 속성의 Aperture와 Clipping Range 위치](images/guide-lens-fields.png)
 
-위 사진은 로봇 전방 카메라의 속성 위치를 보여 줍니다. **이번 독립 카메라에는 사진 속 수치 대신 위 표를 입력**합니다.
+사진처럼 `aperture`를 검색하면 가로·세로 Aperture를 찾기 쉽습니다. 이어 검색어를 `clipping`으로 바꿔 **Clipping Range**의 두 칸을 입력합니다. **Clipping Planes**와 구분합니다.
 
-![기준 Camera와 시점 선택](images/08-code-first.png)
+![독립 Camera의 Clipping Range 0.01과 100](images/step-clipping.png)
 
-이 사진은 완성된 기준 장면입니다. 직접 만든 카메라에서도 같은 방향의 큐브·바닥을 볼 수 있는지 비교합니다.
-Viewport의 가로세로 비율이 다르면 최종 표시 범위에도 차이가 생기므로 비교할 때 창 크기를 유지합니다.
+입력 후 검색창 오른쪽 `×`를 누릅니다. 속성이 접혀 있으면 항목 왼쪽의 작은 삼각형을 펼칩니다.
+
+### 3.2. 카메라를 선택한 것과 카메라로 보는 것 구분하기
+
+**Stage에서 Camera를 클릭하는 것은 설정 대상을 선택하는 동작**입니다. 그것만으로 뷰포트 시점이 바뀌지는 않습니다.
+
+1. 뷰포트 위쪽에서 카메라 아이콘 옆 **Perspective** 글자를 클릭합니다.
+2. 열린 목록에서 **Cameras에 마우스를 올리고**, 오른쪽에 나타난 **`/World/Camera`에 해당하는 Camera**를 선택합니다. 경로가 아니라 마지막 이름만 표시될 수도 있습니다.
+![Perspective에서 Cameras와 Camera를 차례로 선택](images/step-camera-picker.png)
+
+3. 메뉴를 닫고 뷰포트 위쪽 이름이 **Camera**로 바뀌었는지 확인합니다.
+
+![뷰포트 위쪽 Camera 이름으로 활성 시점 확인](images/guide-camera-view.png)
+
+4. 가운데 영상에 큐브와 바닥이 보이는지 확인합니다. 지금은 Play를 누르지 않아도 카메라 시점을 볼 수 있습니다.
+5. Camera 시점에서는 마우스 드래그로 시점을 조절하지 않습니다. 카메라 자체의 위치·방향이 바뀔 수 있습니다.
+
+큐브가 안 보이면 **활성 시점 이름 → Camera 경로 → Translate → Rotate·Orient → Clipping** 순서로 확인합니다.
+화면이 다르다고 큐브나 Camera를 추가로 만들지 않습니다.
 
 ## 4. 화각·위치·부모를 한 가지씩 바꾸기
 
-1. 위치와 방향은 유지하고 Focal Length만 `24 → 48`로 바꿉니다. 물체가 크게 보이고 보이는 범위가 좁아지는지 관찰한 뒤 24로 복원합니다.
-2. 카메라 메뉴를 Perspective로 돌려놓고 Camera의 Translate X만 `1.2 → 1.5`로 바꿉니다. 다시 Camera 시점에서 비교합니다.
-3. X만 바꾸면 카메라의 방향은 그대로이고 위치만 이동합니다. 큐브가 화면에서 어느 쪽으로 옮겨 보이는지 관찰합니다.
-4. 위치를 복원하고 `File > Save As`로 `my_camera.usda`를 저장합니다.
+### 4.1. 같은 자리에서 Focal Length 24와 48 비교
 
-`File > Save As`로 `my_camera_mount.usda`를 만들어 부모 좌표계 실험을 이어갑니다.
-World 아래에 `Create > Xform`으로 `CameraMount`를 만들고 위치·회전 0, Scale 1로 둡니다.
-Stage에서 Camera를 CameraMount 아래로 끌어 옮깁니다. Perspective 시점으로 돌아온 뒤 CameraMount의
-Translate X를 `0 → 0.3`, Rotate Z를 `0 → 15`로 하나씩 바꾸고 Camera 시점에서 비교합니다.
-각 실험 뒤 값을 0으로 복원합니다. 자식 카메라도 함께 움직이는지 확인합니다.
-실제 로봇에서는 이 부모가 base_link나 wrist_link 역할을 합니다.
+1. 뷰포트의 활성 시점은 Camera로 유지합니다. 창 크기도 그대로 둡니다.
+2. Stage의 Camera를 클릭하고 Property 검색창에 **`focal`**을 입력합니다.
+3. Focal Length만 **`24 → 48`**로 바꾸고 Enter를 누릅니다.
+4. 큐브가 더 크게 보이고 주변이 덜 보이는지 비교합니다.
+![같은 자리에서 초점거리만 48로 바꾼 모습](images/step-focal48.png)
+
+5. **`24`로 복원**하고 검색어를 지웁니다.
+
+카메라 위치를 옮긴 것이 아닙니다. 같은 자리에서 보이는 범위가 바뀐 것입니다.
+
+### 4.2. 방향은 유지하고 위치만 변경
+
+1. 뷰포트 위쪽 Camera 메뉴를 열고 **Perspective**로 돌아옵니다.
+2. Stage의 Camera를 클릭하고 Transform의 **Translate X만 `1.2 → 1.5`**로 바꿉니다.
+3. 다시 뷰포트 메뉴에서 **Camera**를 선택하고 큐브가 화면의 어느 쪽으로 이동했는지 봅니다.
+4. Perspective로 돌아와 X를 **`1.2`로 복원**합니다. Y·Z와 회전값은 유지합니다.
+5. **File → Save**로 독립 카메라 장면 `my_camera.usda`를 저장합니다.
+
+### 4.3. CameraMount 그룹 만들기
+
+1. **File → Save As**로 새 파일을 만듭니다. 주소는 `/data/isaacsim_basic/`, 이름은 **`my_camera_mount`**, 형식은 **`*.usda`**입니다.
+2. Stage에서 World를 선택하고 **Create → Xform**을 클릭합니다.
+
+![카메라를 묶을 Xform 생성 메뉴](images/guide-create-xform.png)
+
+3. 새 Xform을 **`CameraMount`**로 이름 바꾸고 **`/World/CameraMount`**인지 확인합니다.
+4. CameraMount의 Translate·회전은 모두 `0`, Scale은 모두 `1`로 둡니다.
+5. Stage에서 **Camera 이름을 CameraMount 이름 위로 드래그**합니다.
+6. Camera를 다시 선택했을 때 Prim Path가 **`/World/CameraMount/Camera`**인지 확인합니다.
+7. 이동 후 Camera의 Translate·Rotate·Orient·Scale이 2절 값인지 확인합니다. 부모가 단위 변환이면 같은 값으로 유지됩니다.
+
+![CameraMount 아래로 옮긴 자식 Camera의 경로](images/step-camera-parent.png)
+
+```text
+World
+├─ Light
+├─ PhysicsScene
+├─ Ground
+├─ PracticeCube
+└─ CameraMount       ← 부모 그룹: Xform
+   └─ Camera         ← 렌즈를 가진 자식: Camera
+```
+
+### 4.4. 부모를 움직여 자식 카메라 관찰
+
+1. 활성 시점을 Perspective로 바꾸고 **CameraMount**를 선택합니다. Camera를 선택하지 않습니다.
+2. CameraMount의 **Translate X만 `0 → 0.3`**으로 바꿉니다.
+3. Camera 시점으로 전환해 영상이 달라지는지 봅니다. 부모를 옮기면 자식도 함께 움직입니다.
+![CameraMount의 Translate X 0.3 입력](images/step-mount-move.png)
+
+4. Perspective로 돌아와 CameraMount의 X를 **`0`으로 복원**합니다.
+5. CameraMount의 회전 줄(Rotate 또는 Orient)에서 **Z만 `0 → 15`**로 바꿉니다.
+6. Camera 시점에서 비교한 뒤 Perspective로 돌아와 Z를 **`0`으로 복원**합니다.
+
+![CameraMount의 Rotate Z 15 입력](images/step-mount-rotate.png)
+
+CameraMount를 선택하면 렌즈 항목이 안 보이는 것이 정상입니다. 실제 로봇에서는 이런 부모가 base_link·wrist_link 역할을 합니다.
 
 ## 5. 저장하고 카메라의 역할 정리하기
 
-Focal Length=24, 카메라 위치·회전은 2절 값, CameraMount의 위치·회전은 0으로 복원합니다.
-`File > Save`로 부모 실험 장면을 저장합니다. 원래 독립 카메라 장면인 `my_camera.usda`도 보관합니다.
+1. CameraMount의 위치·회전=`0`, Scale=`1`인지 확인합니다.
+2. 자식 Camera의 위치·회전은 2절 값, Focal Length=`24`로 복원합니다.
+3. **File → Save**로 `my_camera_mount.usda`를 저장합니다.
+4. File → Open으로 같은 파일을 다시 열고 **Stage의 부모·자식 경로**를 확인합니다.
+5. 뷰포트 메뉴에서 Camera를 다시 선택해 큐브와 바닥을 봅니다. 시점이 Perspective로 열렸다고 파일 저장 실패는 아닙니다.
 
-렌즈 24/48의 화면 차이와 부모 객체를 움직였을 때 카메라가 따라가는지 확인합니다.
-화각은 보이는 각도, 해상도는 픽셀 개수, Clipping은 표시하는 거리 범위입니다.
-카메라 위치 이동과 렌즈 값 변경이 화면에 주는 차이를 설명한 뒤 코드 실습으로 넘어갑니다.
-카메라를 만들고 장면을 저장하는 것만으로 시간별 영상 파일이 수집되지는 않습니다. 영상 수집은 6장에서 진행합니다.
+다음 세 가지를 비교하고 마지막 코드 실습으로 넘어갑니다.
+
+- Focal Length 24/48: 물체 크기와 주변이 보이는 범위
+- Camera의 Translate 변경: 카메라 위치 이동
+- CameraMount 변경: 부모와 함께 움직이는 자식 카메라
+
+**USD를 저장하면 카메라 설정을 가진 장면이 저장됩니다. 시간별 영상 파일은 아직 기록되지 않습니다.** RGB 영상 수집은 6장에서 진행합니다.
 
 ## 6. 마지막: 같은 작업을 코드로 구현하기
 

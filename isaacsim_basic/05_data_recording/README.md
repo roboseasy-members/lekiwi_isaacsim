@@ -1,64 +1,109 @@
 # 5장 · 장면 저장과 움직임 기록 구분하기
 
-먼저 직접 만든 관절을 화면에서 움직여 보고 장면을 저장합니다. 이어서 시간별 상태와 명령을 기록하는 방법을 배웁니다.
-**1~3절은 마우스로 모형 확인·조작·저장하고, 마지막 4절에서 같은 모형에 기록·재생 코드를 연결합니다.**
-이 장의 JSON은 에피소드 구조를 배우는 예제입니다. LeRobot 학습용 RGB 데이터는 6장에서 수집합니다.
+관절을 화면에서 움직여 본 뒤 장면을 저장하고, 마지막에 시간별 상태·명령을 기록하는 코드를 실행합니다.
+**1~3절은 마우스로 관찰·저장, 마지막 4절은 JSON 기록·재생 실습입니다.**
+이 장의 JSON은 데이터 구조를 배우는 예제입니다. LeRobot 학습용 RGB 데이터 수집은 6장에서 진행합니다.
 
 ## 1. 기록할 관절 모형 열기
 
-마우스 실습용 빈 편집기를 사용 중이면 그대로 이어갑니다. 앞 장의 코드 예제가 열려 있으면 결과를 저장하고 Isaac Sim 창을 닫습니다.
-아래 명령은 **같은 노트북의 저장소 최상위 폴더(`lekiwi` 파일이 있는 곳)**에서 실행합니다.
-이 명령은 편집 화면만 열며, 실습 객체는 이후 메뉴로 직접 만듭니다.
+### 1.1. 편집기와 기준 파일 열기
+
+1. 앞 장의 키보드 제어 프로그램이 실행 중이면 종료합니다. 실행 중인 코드가 목표를 계속 바꾸면 마우스로 입력한 값이 덮어써질 수 있습니다.
+2. 같은 노트북의 **저장소 최상위 폴더**에서 빈 편집기를 엽니다. 이미 빈 편집기를 사용 중이면 중복 실행하지 않습니다.
 
 ```bash
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-Isaac Sim 창이 열리고 로딩이 끝나면 Viewport를 클릭해 조작합니다. 처음 실행은 캐시 준비로 시간이 걸릴 수 있습니다.
-명령을 중복 실행하지 말고, 오류가 나면 실행 터미널의 마지막 오류를 확인합니다.
+3. **File → Open**을 클릭합니다.
 
-일반 Isaac Sim 설치에서는 앱을 직접 엽니다. 이전 실습이 실행 중이면 저장을 마치고 종료한 뒤 시작합니다.
+![File Open으로 기준 모형 열기](images/guide-open-menu.png)
 
-`File > Open`으로 2장에서 직접 만든 관절 파일을 엽니다.
-Docker 수업의 경로 예시는 `/data/isaacsim_basic/my_joint.usda`입니다. 본인이 다른 이름으로 저장했다면 그 파일을 엽니다.
-아직 모형이 없다면 [2장](../02_robot_joints/README.md) 1~5절에서 먼저 만듭니다.
+4. 파일 창의 주소에 **`/data/isaacsim_basic/`**를 입력하고 Enter를 누릅니다.
+5. **File name=`my_joint.usda` → Open File** 순서로 선택합니다.
 
-Stage에서 `/World/Hinge`를 펼칩니다. `Base`, `Arm`, `FixedBase`, `Shoulder`가 있는지 확인합니다.
-Base와 Arm 아래에는 각각 Shape가 있습니다. 관절 속성은 Shape가 아닌 Shoulder를 선택해서 바꿉니다.
+![폴더 주소와 파일 이름 입력 칸](images/guide-open-dialog.png)
 
-![Base·Arm·관절을 찾는 Stage 구조](images/manual-joint-structure.png)
+사진처럼 **2장에서 저장한 my_joint.usda**를 입력합니다.
+다른 이름으로 저장했다면 실제 이름을 입력합니다. 파일이 없으면 [2장 1~5절](../02_robot_joints/README.md)을 먼저 마칩니다.
 
-사진은 2장의 완성 모형입니다. 같은 구조의 본인 파일을 열어 아래 실습을 진행합니다.
+### 1.2. 모형과 관절 설정 확인
 
-Shoulder의 Body 0=Base, Body 1=Arm, Axis=Y, 각도 제한=-60/60도를 확인합니다.
-Drive는 Stiffness=1000, Damping=50, Max Force=100, Target Velocity=0으로 맞춥니다.
-이 값은 2장에서 만든 기준 설정입니다.
+1. Stage의 **World → Hinge**를 펼칩니다.
+2. Base·Arm·FixedBase·Shoulder와 Base·Arm 아래의 Shape를 확인합니다.
+
+![기록할 관절 모형의 Stage 구조](images/guide-joint-tree.png)
+
+3. **Shoulder를 클릭**합니다. Property 경로가 `/World/Hinge/Shoulder`인지 봅니다.
+4. Physics → Joint에서 **Body 0=Base, Body 1=Arm**, Revolute Joint에서 **Axis=Y, Lower=-60, Upper=60**을 확인합니다.
+
+![회전축과 각도 제한 확인](images/guide-joint-limits.png)
+
+5. Drive → Angular에서 **Stiffness=1000, Damping=50, Max Force=100, Target Velocity=0**을 확인합니다.
+
+![기록 전에 맞출 Drive 기준값](images/guide-drive-values.png)
+
+설정은 Stop 상태에서 바꿉니다. 검색으로 속성을 찾았으면 다음 속성으로 넘어가기 전 검색어를 지웁니다.
 
 ## 2. 직접 조작하며 무엇을 기록할지 관찰하기
 
-1. Stop 상태에서 Shoulder의 `Physics > Drive > Angular > Target Position`에 `30`을 입력합니다.
-2. Play를 누른 직후와 팔이 안정된 뒤의 모습을 비교합니다. 같은 목표여도 실제 상태는 시간에 따라 달라집니다.
-3. Stop한 뒤 `-30`으로 바꾸고 다시 Play합니다. 두 조건의 목표와 실제 움직임을 화면에서 비교합니다.
-4. Stop 후 목표를 `0`으로 복원합니다.
+### 2.1. 목표는 같아도 상태는 달라지는지 보기
 
-![직접 목표를 입력하는 Angular Drive 속성](images/manual-drive-target.png)
+1. Shoulder를 선택한 채 Property 검색창에 **`target`**을 입력합니다.
+2. **Target Position을 Ctrl+클릭 → `30` 입력 → Enter** 순서로 바꿉니다.
 
-여기서 남긴 사진은 관찰 기록입니다. 모든 순간의 관절각과 명령을 자동 저장한 데이터는 아닙니다.
-자동 기록에는 ‘언제, 어떤 상태에서, 어떤 명령을 보냈고, 그다음 어떻게 됐는지’가 함께 필요합니다.
+![관절의 목표 30도를 입력하는 곳](images/guide-target-input.png)
+
+3. 왼쪽 **▶ Play**를 누릅니다. **누른 직후의 팔**과 **잠시 뒤 안정된 팔**을 비교합니다.
+4. 목표 숫자는 계속 30이어도 팔의 실제 자세는 시간에 따라 바뀌는지 봅니다.
+
+![Play 후 팔의 상태 관찰과 Stop 위치](images/guide-angle-result.png)
+
+5. 왼쪽 **■ Stop**을 클릭합니다.
+6. Target Position=`-30`으로 바꾸고 다시 Play하여 반대 방향 움직임을 확인한 뒤 Stop합니다.
+7. 목표를 **`0`으로 복원**합니다.
+
+Stop 후 선택 대상이 바뀌면 **Shoulder를 다시 선택하고 `target`을 검색**합니다.
+속성 제목만 보이면 왼쪽 삼각형으로 Physics → Drive → Angular를 펼칩니다.
+
+### 2.2. 장면·사진·시간별 데이터 구분
+
+지금까지는 움직임을 눈으로 관찰했습니다. 별도의 기록 코드를 실행하지 않았으므로 시간별 명령과 상태 파일이 자동 생성되지는 않습니다.
+
+| 남길 대상 | 담기는 내용 |
+|---|---|
+| USD 장면 | 물체·관절·속성으로 구성된 실험 환경 |
+| 스크린샷 | 특정 순간 눈에 보인 화면 |
+| 이번 장의 JSON 에피소드 | 시간 순서의 상태 → 명령 → 다음 상태 |
+
+예를 들어 “목표 30도” 한 줄만으로는 팔이 언제 어디에 있었고 얼마나 빨리 움직였는지 알 수 없습니다.
+다음 코드에서는 **시간, 현재 관절각, 보낸 목표, 다음 관절각**을 함께 기록합니다.
 
 ## 3. 장면을 저장하고 다시 열기
 
-`File > Save As`로 `my_joint_recording.usda`를 저장합니다. Docker 수업에서는 `/data/isaacsim_basic/` 아래를 사용합니다.
-기존 파일이 있으면 새 이름으로 저장합니다. 다른 장면을 열었다가 `File > Open`으로 이 파일을 다시 열어
-Base·Arm·관절 구조와 목표 0도가 복원되는지 확인합니다.
+### 3.1. 기록용 장면을 별도 파일로 저장
 
-| 지금 저장한 것 | 다음에 기록할 것 |
-|---|---|
-| USD: 물체·관절·속성으로 구성된 장면 | JSON: 시간 순서의 관절 상태와 명령 |
-| File > Save As로 저장 | 마지막 절의 기록 프로그램으로 저장 |
+1. Stop 상태인지 확인합니다.
+2. Shoulder의 **Target Position=0, Target Velocity=0**으로 맞춥니다.
+3. 상단 **File → Save As**를 클릭합니다.
 
-기본 File > Save는 이 교재의 상태·명령 에피소드를 만들지 않습니다.
-저장한 USD를 다시 열어 모형과 속성을 확인한 뒤, 아래 코드로 시간별 기록을 추가합니다.
+![기록용 장면을 새 이름으로 저장](images/guide-save-menu.png)
+
+4. 주소에 **`/data/isaacsim_basic/`**, File name에 **`my_joint_recording`**을 입력합니다.
+5. 형식 목록에서 **`*.usda`**를 고르고 Save를 누릅니다.
+
+![확장자 usda를 선택하는 파일 형식 목록](images/guide-save-format.png)
+
+6. 같은 이름이 이미 있으면 새 이름으로 저장합니다. 마지막 코드 절에도 실제 저장한 파일 이름을 입력해야 합니다.
+
+### 3.2. 다시 열어 저장 결과 확인
+
+1. **File → Open**으로 `/data/isaacsim_basic/my_joint_recording.usda`를 엽니다.
+2. Stage의 Hinge 구조와 Shoulder의 Target Position=`0`을 확인합니다.
+3. 저장한 파일이 어떤 모형인지 확인한 뒤 창을 닫습니다. 이제 아래 코드를 실행할 준비가 됐습니다.
+
+**File → Save로 저장한 USD에는 이번 교재의 상태·명령 에피소드가 들어 있지 않습니다.**
+기본 메뉴에 전용 Record 버튼을 찾을 필요가 없습니다. 시간별 JSON을 만드는 것은 다음 절의 프로그램입니다.
 
 ## 4. 마지막: 같은 작업을 코드로 구현하기
 

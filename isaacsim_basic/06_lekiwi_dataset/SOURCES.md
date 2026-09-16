@@ -86,3 +86,63 @@
 |---|---|
 | `images/screenshots/10-recording-status.png` | `b375207ac73a3e90e702e8aef531f4dee57d8abb404911d214299ef08190a318` |
 | `images/screenshots/11-browser-dataset.png` | `0b592725873832dce63cb52ff55d371947d05f40df5605c833fa6a0e928620d3` |
+
+## 2026-09-16 · 입문자용 클릭·입력 화면 보강
+
+마우스로 제작 → 값 변경과 관찰 → 저장 → 마지막 코드 실습 순서로 본문을 세분화했습니다.
+선택할 객체의 경로, 클릭할 메뉴, 입력할 숫자를 분리하고 실제 화면에 빨간 박스를 추가했습니다.
+
+이번 장 표시본은 새 촬영 기반 22개, 기존 실제 화면 재사용 8개입니다. 여러 장에서 공유하는 촬영은 중복 집계됩니다.
+원본 PNG는 `images/screenshots/`, 빨간 박스와 설명은 SVG 및 `annotations.json`, 본문 표시본은 PNG입니다.
+화면 내용을 합성하거나 숫자를 이미지 편집으로 바꾸지 않았습니다. SVG는 원본 PNG 바이트를 그대로 포함하며 화면 밖에 설명을 붙입니다.
+
+### 촬영·확인 범위
+
+재부팅 후 RTX 5060 Laptop GPU와 NVIDIA 드라이버 580.178.04가 정상 인식되는 환경에서 Isaac Sim 5.1 실제 GUI를 촬영했습니다.
+촬영용 부품·속성 배치 일부는 별도 임시 USD/API로 준비했습니다. 따라서 이 자료는 모든 객체를 처음부터 마우스로 제작한 전체 학생 리허설의 기록은 아닙니다.
+
+GUI에서 /LeKiwi에 제공 USD를 Reference로 연결하고 Colliders → Selected 표시, Play/Stop 낙하, Create from View를 확인했습니다. DropCube는 시작 Z=0.4 m에서 바구니 안 Z≈0.014 m에 안착했고 Stop으로 복원됐습니다. OverviewCamera의 초점거리 두 배 변경과 복원도 확인했습니다.
+
+기존 학생 Python 코드는 수정하지 않았습니다. 코드 검증은 촬영 앱을 재사용한 범위이며, 일반 실행 명령 전체·새 PC 설치·실물 USB 리더·데이터 업로드·학습을 이번에 다시 시험한 것은 아닙니다. 자세한 결과는 [검증 기록](../VALIDATION.md)에 있습니다.
+
+### 원본 출처
+
+| 표시본 | 원본 출처 | 원본 SHA256 |
+|---|---|---|
+| `step-robot-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-robot-transform.png` | `41cf29efdafce373490c7887439b7549219988c6c28f8c206cf5bc6c220053d3` |
+| `step-ground-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-ground-transform.png` | `cd3cccd1fcd391022ee3361940f326286d426ffe0f250695f20f5e21a45a06d6` |
+| `step-cube-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-cube-transform.png` | `8ae590d1e7b66a37792dca40338c7c72f96ada032e74cfa17b9c56d77864080b` |
+| `step-basket-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-basket-transform.png` | `588233ba03aa240071dafd99d96fe058e189f92347fddb8b64f24e903a854568` |
+| `step-bottom-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-bottom-transform.png` | `8b9cd492f8b5bdd8a82eb6a815ee96a115fea512c5a8097921e3a3059c915942` |
+| `step-left-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-left-transform.png` | `3c6514f2a0752098a150e2298c746ab6c0ce3186f121011bd54c2b2b23e40ff3` |
+| `step-right-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-right-transform.png` | `b4f053ef3f3c7e8eae639adbd9d2ff46761ac94d9d22bcdf0a30f1345b8703ca` |
+| `step-front-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-front-transform.png` | `8826713e9fce0f2c1370f162bf7c97ddc6586bfaca5ea15f650264e89e59cc7e` |
+| `step-back-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-back-transform.png` | `026254f29d7d5db3dc8098f263085c6aaf68f9427850388ce03b75097f4402e0` |
+| `step-drop-transform` | 2026-09-16 실제 촬영, `images/screenshots/step-drop-transform.png` | `d24f1450a5896c28505f16c192dac47519a1f80748acc5ec78268c444dc82115` |
+| `guide-add-reference` | 2026-09-16 실제 촬영, `images/screenshots/guide-add-reference.png` | `60ae7978a0fe47757260f40c5f84973a14c8a722c15635106e07361db3fab56e` |
+| `step-reference-file` | 2026-09-16 실제 촬영, `images/screenshots/step-reference-file.png` | `410d71b6440c2a2da895e2d1c9c5c6815393f9e996341db04ec74f39992c99e9` |
+| `step-cube-size` | 2026-09-16 실제 촬영, `images/screenshots/step-cube-size.png` | `ef375fb3204f8cd8b478a9f4b269f277ac99aca2b93cda9af33fb5c281b7075d` |
+| `step-cube-mass` | 2026-09-16 실제 촬영, `images/screenshots/step-cube-mass.png` | `30bba87893e7e1272f673b94fa09d71f93a3a83d372d12dd703a1643040bce21` |
+| `step-collider-menu` | 2026-09-16 실제 촬영, `images/screenshots/step-collider-menu.png` | `37584e613d0907d084e65ab0f2818888a3719ae1cf5dfd2bc289cf124de743cc` |
+| `step-basket-colliders` | 2026-09-16 실제 촬영, `images/screenshots/step-basket-colliders.png` | `b35f30aad03d7e0eec91362f16a205284d9131573d0d5bf0876348f468bcad2b` |
+| `step-drop-result` | 2026-09-16 실제 촬영, `images/screenshots/step-drop-result.png` | `23528d151adf4dc0c91873db1d34166bd3491b5be29aea32556638875186a042` |
+| `step-create-from-view` | 2026-09-16 실제 촬영, `images/screenshots/step-create-from-view.png` | `e9dcfb947cc4ca16f37fe8d99eddfeea77fbb8a0419d39d36271a3ea716de9b8` |
+| `guide-view-menu` | 2026-09-16 실제 촬영, `images/screenshots/guide-view-menu.png` | `e6afe7707fa989b01015266a5bf5c9b3caba561cda0842c75f456637ca2c6167` |
+| `guide-camera-focal` | 2026-09-16 실제 촬영, `images/screenshots/guide-camera-focal.png` | `f68e009ecff8558bbebcc81c387219394e2542ef79e3f52b78a0176bc215300c` |
+| `step-save-scene` | 2026-09-16 실제 촬영, `images/screenshots/step-save-scene.png` | `7caaa99a1eb15480be712689d36e312c0b35b3104bb3a0c254545774dfd68a71` |
+| `guide-save-format` | 2026-09-16 실제 촬영, `images/screenshots/guide-save-format.png` | `7caaa99a1eb15480be712689d36e312c0b35b3104bb3a0c254545774dfd68a71` |
+| `guide-open-menu` | 기존 촬영: `01_object_physics/images/screenshots/61-open-menu.png` | `52027f9b1eac98c368810803cdee216d636db53cdc20f5067bc8cfac899fee84` |
+| `guide-open-dialog` | 기존 촬영: `01_object_physics/images/screenshots/62-open-dialog.png` | `3ef7d51b090c2ca81cac3633b1d5c496957a3115db902d18274e7c82badaf5e2` |
+| `guide-save-menu` | 기존 촬영: `01_object_physics/images/screenshots/42-file-save-menu.png` | `6e816f7d0ba36e96d4bc35ebe1a2b37ffaefa356f18b65d1b2cb0451a7928699` |
+| `guide-create-xform` | 기존 촬영: `01_object_physics/images/screenshots/23-create-world.png` | `34a76860eed04244f817cb784afc0adfcc153c388ad8bacc9370e0e6e3e7dfb4` |
+| `guide-create-cube` | 기존 촬영: `01_object_physics/images/screenshots/36-create-cube.png` | `d6fe5ac98b54d576987f331f1f83d194f5b2bbed98e7b68c6e0a27e8ce8d995b` |
+| `guide-add-rigid-body` | 기존 촬영: `01_object_physics/images/screenshots/46-add-rigid-body.png` | `a277dc0fb154605656face3e297f3fbeebb2fc4f812cffbbb2379e6c9daab009` |
+| `guide-add-mass` | 기존 촬영: `01_object_physics/images/screenshots/47-add-mass.png` | `59891154e4767ba7eb41aa45cebd4b3deaa69150fa828b6b58f724a2c6294852` |
+| `guide-add-collider` | 기존 촬영: `01_object_physics/images/screenshots/39-add-collider.png` | `2b6790cafdeafe5830587894acfb3857eef5c3579ee9288db41281ba958d5555` |
+
+### 표시본과 Notion 자료 재생성
+
+```bash
+python3 isaacsim_basic/01_object_physics/images/build_annotations.py isaacsim_basic/06_lekiwi_dataset/images
+/usr/bin/python3 isaacsim_basic/export_lessons.py isaacsim_basic/06_lekiwi_dataset
+```

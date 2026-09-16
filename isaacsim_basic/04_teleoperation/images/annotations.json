@@ -226,5 +226,325 @@
         "label": "Viewport를 클릭한 뒤 학생 파일의 J/L/K 키 입력을 사용합니다."
       }
     ]
+  },
+  {
+    "name": "guide-open-menu",
+    "title": "File에서 Open 선택",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          110,
+          308,
+          26
+        ],
+        "label": "Open 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      220
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-save-menu",
+    "title": "Save As 열기",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          221,
+          308,
+          24
+        ],
+        "label": "Save As 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-joint-tree",
+    "title": "관절 모형의 Stage",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1160,
+          205,
+          436,
+          143
+        ],
+        "label": "Base·Arm 아래 Shape, Hinge 아래 두 관절"
+      }
+    ],
+    "crop": [
+      1130,
+      92,
+      480,
+      270
+    ]
+  },
+  {
+    "name": "guide-drive-values",
+    "title": "Angular Drive 기준값",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1145,
+          714,
+          430,
+          28
+        ],
+        "label": "Type: force"
+      },
+      {
+        "box": [
+          1145,
+          744,
+          430,
+          29
+        ],
+        "label": "Max Force: 100"
+      },
+      {
+        "box": [
+          1145,
+          773,
+          430,
+          29
+        ],
+        "label": "Target Position: 0"
+      },
+      {
+        "box": [
+          1145,
+          802,
+          430,
+          29
+        ],
+        "label": "Target Velocity: 0"
+      },
+      {
+        "box": [
+          1145,
+          831,
+          430,
+          28
+        ],
+        "label": "Damping: 50"
+      },
+      {
+        "box": [
+          1145,
+          860,
+          430,
+          29
+        ],
+        "label": "Stiffness: 1000"
+      }
+    ],
+    "crop": [
+      1130,
+      653,
+      480,
+      281
+    ]
+  },
+  {
+    "name": "guide-target-input",
+    "title": "Shoulder의 목표 각도 입력",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      310
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          316,
+          451,
+          26
+        ],
+        "label": "Property에서 target 검색"
+      },
+      {
+        "box": [
+          1230,
+          345,
+          363,
+          26
+        ],
+        "label": "Shoulder 선택"
+      },
+      {
+        "box": [
+          1322,
+          480,
+          244,
+          27
+        ],
+        "label": "Target Position=30, Target Velocity=0"
+      }
+    ]
+  },
+  {
+    "name": "guide-angle-result",
+    "title": "Play 후 실제 30도 회전",
+    "wrap_labels": true,
+    "crop": [
+      0,
+      25,
+      1127,
+      641
+    ],
+    "marks": [
+      {
+        "box": [
+          539,
+          248,
+          114,
+          216
+        ],
+        "label": "받침은 고정되고 팔만 기울어집니다."
+      },
+      {
+        "box": [
+          6,
+          287,
+          31,
+          33
+        ],
+        "label": "Pause: 현재 자세에서 일시정지"
+      },
+      {
+        "box": [
+          6,
+          327,
+          31,
+          30
+        ],
+        "label": "Stop: 실험 전 상태로 복원"
+      }
+    ]
+  },
+  {
+    "name": "guide-save-format",
+    "title": "my_joint_control 저장",
+    "wrap_labels": true,
+    "crop": [
+      266,
+      264,
+      1083,
+      450
+    ],
+    "marks": [
+      {
+        "box": [
+          317,
+          294,
+          999,
+          26
+        ],
+        "label": "폴더: /data/isaacsim_basic/"
+      },
+      {
+        "box": [
+          337,
+          686,
+          348,
+          27
+        ],
+        "label": "이번 파일 이름: my_joint_control"
+      },
+      {
+        "box": [
+          804,
+          686,
+          300,
+          27
+        ],
+        "label": "형식: *.usda"
+      },
+      {
+        "box": [
+          1107,
+          686,
+          117,
+          27
+        ],
+        "label": "이름·형식 확인 후 Save"
+      }
+    ]
+  },
+  {
+    "name": "guide-open-dialog",
+    "title": "2장에서 저장한 관절 파일 열기",
+    "wrap_labels": true,
+    "crop": [
+      266,
+      264,
+      1083,
+      450
+    ],
+    "marks": [
+      {
+        "box": [
+          317,
+          294,
+          999,
+          26
+        ],
+        "label": "폴더: /data/isaacsim_basic/"
+      },
+      {
+        "box": [
+          337,
+          686,
+          463,
+          27
+        ],
+        "label": "파일 이름: my_joint.usda"
+      },
+      {
+        "box": [
+          1107,
+          686,
+          117,
+          27
+        ],
+        "label": "Open File 클릭"
+      }
+    ]
   }
 ]

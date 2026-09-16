@@ -1,130 +1,369 @@
 # 2장 · 마우스로 관절과 모터 만들기
 
-받침과 팔을 직접 만들고 회전 관절로 연결한 뒤, 목표 각도와 응답을 비교합니다. 실물 장비는 사용하지 않습니다.
-**1~5절은 마우스로 제작·조작·저장하고, 마지막 6절에서 같은 모형을 코드로 구현합니다.**
-마우스로 만든 모형의 연결 관계와 실제 움직임을 먼저 확인합니다.
+받침과 팔을 만들고 관절로 연결한 뒤, 목표 각도를 바꾸어 움직임을 관찰합니다. **실물 리더암은 연결하지 않습니다.**
+**1~5절은 마우스 실습, 마지막 6절은 같은 작업을 Python으로 구현하는 실습입니다.**
+
+사진의 빨간 박스는 클릭하거나 확인할 곳입니다. 숫자는 Ctrl 키를 누른 채 칸을 클릭하고 입력한 뒤 Enter로 확정합니다.
+X·Y·Z는 왼쪽부터 한 칸씩 입력합니다. 위치는 m, 회전은 도, 질량은 kg입니다.
+메뉴만 확대한 사진은 메뉴 위치를 보여 줍니다. **현재 선택할 객체와 입력값은 각 단계에 따로 적었습니다.**
 
 ## 1. 공통 바닥과 두 강체 만들기
 
-마우스 실습용 빈 편집기를 사용 중이면 그대로 이어갑니다. 앞 장의 코드 예제가 열려 있으면 결과를 저장하고 Isaac Sim 창을 닫습니다.
-아래 명령은 **같은 노트북의 저장소 최상위 폴더(`lekiwi` 파일이 있는 곳)**에서 실행합니다.
-이 명령은 편집 화면만 열며, 실습 객체는 이후 메뉴로 직접 만듭니다.
+### 1.1. 편집 화면 열기
+
+1. 앞 장의 코드를 실행 중이면 결과를 저장하고 Isaac Sim 창을 닫습니다. 이미 빈 편집 화면을 사용 중이면 그대로 진행합니다.
+2. 같은 노트북의 **저장소 최상위 폴더(`lekiwi` 파일이 있는 폴더)**에서 다음 명령을 실행합니다.
 
 ```bash
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-Isaac Sim 창이 열리고 로딩이 끝나면 Viewport를 클릭해 조작합니다. 처음 실행은 캐시 준비로 시간이 걸릴 수 있습니다.
-명령을 중복 실행하지 말고, 오류가 나면 실행 터미널의 마지막 오류를 확인합니다.
+3. 창이 반응할 때까지 기다립니다. 명령을 중복 실행하지 않습니다. 이 명령은 편집 화면만 열며 팔을 만들어 주지는 않습니다.
+4. 화면 왼쪽 ▶는 Play, 실행 중 나타나는 ■는 Stop입니다. **관절 연결을 끝내는 4절까지 Stop 상태를 유지**합니다.
 
-일반 Isaac Sim 설치에서는 앱을 직접 엽니다. 이전 실습이 실행 중이면 저장을 마치고 종료한 뒤 시작합니다.
+### 1.2. 공통 바닥을 열고 작업용 사본 저장하기
 
-`File > Open`으로 1장에서 저장한 `base_scene.usda`를 엽니다.
-World·PhysicsScene·Light·Ground만 있는지 확인합니다. 파일이 없다면 [1장](../01_object_physics/README.md) 1~2절을 먼저 마칩니다.
-`File > Save As`로 `my_joint.usda`라는 새 파일을 만든 뒤 아래 작업을 이어갑니다.
-Xform은 위치·회전을 묶어 관리하는 그룹입니다. Base는 받침, Arm은 움직일 팔입니다.
-**이 장의 제작은 Stop 상태에서 진행**합니다.
+1. 상단 **File → Open**을 클릭합니다.
 
-1. World 아래에 `Create > Xform`으로 `Hinge`를 만듭니다.
-2. Hinge 아래에 Xform 두 개를 만들고 `Base`, `Arm`으로 이름을 정합니다. 생성 후 Property의 Prim Path를 확인합니다.
-3. Base와 Arm에 각각 `Add > Physics > Rigid Body`, `Add > Physics > Mass`를 추가합니다. 아래 값을 입력합니다.
-4. 각각의 Xform 아래에 `Create > Shape > Cube`를 만들어 `Shape`로 이름을 정합니다. Shape의 **Size는 1**로 바꾸고 아래 Scale을 입력합니다.
-5. 각 Shape에 Collider를 추가합니다. **Rigid Body는 부모 Xform에만**, Collider는 자식 Shape에 둡니다.
+![File과 Open 위치](images/guide-open-menu.png)
 
-| 객체 경로 | Translate (m) | Scale | Mass (kg) |
+2. 파일 창 위쪽 주소 칸에 **`/data/isaacsim_basic/`**를 입력하고 Enter를 누릅니다.
+3. 아래 File name에 **`base_scene.usda`**를 입력하고 **Open File**을 클릭합니다. 직접 다른 이름으로 저장했다면 그 파일 이름을 사용합니다.
+
+![공통 바닥 파일을 선택하는 주소와 파일 이름 칸](images/guide-open-dialog.png)
+
+4. 현재 장면을 저장할지 묻는 창이 뜨면 필요한 변경을 먼저 저장합니다. 판단이 어려우면 Cancel로 돌아옵니다.
+5. 오른쪽 Stage에서 World 왼쪽의 펼치기 표시를 누릅니다. **Light·PhysicsScene·Ground만 있고, 실험 큐브는 없는지** 확인합니다. 파일이 없으면 [1장 2절](../01_object_physics/README.md#2-world조명중력바닥-만들기)을 먼저 마칩니다.
+6. **File → Save As**를 클릭합니다. 주소는 같은 폴더, File name은 **`my_joint`**, 형식은 **`*.usda`**로 선택하고 Save를 누릅니다.
+
+![Save As를 여는 메뉴](images/guide-save-menu.png)
+
+![파일 형식 목록에서 usda 선택](images/guide-save-format.png)
+
+사진처럼 새 파일 이름은 **my_joint**, 형식은 ***.usda**로 선택합니다.
+`base_scene`를 덮어쓰지 않습니다. 호스트에서는 저장소의 `data/isaacsim_basic/my_joint.usda`에 해당합니다.
+
+### 1.3. Hinge 그룹 만들기
+
+1. Stage에서 **World**를 한 번 클릭합니다.
+2. 상단 **Create → Xform**을 클릭합니다. Xform은 여러 부품을 묶는 그룹입니다.
+
+![Create에서 Xform 선택](images/guide-create-xform.png)
+
+3. 새 Xform 이름 위에서 **우클릭 → Rename**을 선택하고 **`Hinge`**를 입력한 뒤 Enter를 누릅니다.
+
+![새 객체의 Rename 메뉴](images/guide-rename.png)
+
+4. Hinge가 World 밖에 있으면 Hinge 이름을 잡고 World 이름 위로 끌어 놓습니다.
+5. Hinge를 선택하고 Property의 **Prim Path가 `/World/Hinge`**인지 확인합니다.
+6. Property의 Transform에서 Translate·Rotate 또는 Orient는 모두 `0`, Scale은 모두 `1`로 맞춥니다.
+
+지금은 그룹만 만들었으므로 뷰포트에 팔이 보이지 않아도 맞습니다.
+
+### 1.4. 받침의 중심 Base 만들기
+
+1. Hinge를 선택하고 **Create → Xform**으로 새 그룹을 만듭니다.
+2. 새 객체를 Rename으로 **`Base`**로 바꿉니다. Hinge 밖에 생겼으면 Hinge 위로 드래그합니다.
+3. Base를 선택하고 **Prim Path=`/World/Hinge/Base`**를 확인합니다. 이후 값은 이 경로의 Base에 입력합니다.
+4. Property의 Transform을 펼치고 아래 값을 각각 입력합니다. 회전 줄이 Orient이면 그 줄의 세 각도 칸을 사용합니다.
+
+| Base의 줄 | X | Y | Z |
 |---|---|---|---|
-| `/World/Hinge` | `(0,0,0)` | `(1,1,1)` | 없음 |
-| `/World/Hinge/Base` | `(0,0,0.15)` | `(1,1,1)` | `1` |
-| `/World/Hinge/Base/Shape` | `(0,0,0)` | `(0.18,0.18,0.3)` | 부모에 설정 |
-| `/World/Hinge/Arm` | `(0,0,0.45)` | `(1,1,1)` | `0.1` |
-| `/World/Hinge/Arm/Shape` | `(0,0,0)` | `(0.06,0.06,0.3)` | 부모에 설정 |
+| Translate | `0` | `0` | `0.15` |
+| Rotate 또는 Orient | `0` | `0` | `0` |
+| Scale | `1` | `1` | `1` |
 
-모든 Rotate는 `(0,0,0)`입니다. 객체를 Stage에서 부모 아래로 옮기면 위치가 보정될 수 있으므로 **옮긴 뒤 표의 로컬 Transform을 입력**합니다.
-Base 윗면과 Arm 아랫면이 모두 월드 Z=0.3에서 만납니다.
+![Base의 경로와 위치 회전 크기 입력](images/step-base-transform.png)
 
-![완성할 링크와 관절의 Stage 구조](images/01-structure.png)
+**객체를 부모 아래로 옮긴 다음 값을 입력**합니다. 옮길 때 위치가 보정될 수 있기 때문입니다.
 
-사진은 완성된 구조입니다. 여기까지 만들었으면 Base·Arm·자식 Shape가 같은 계층에 있는지 확인합니다. 관절은 다음 단계에서 추가합니다.
+### 1.5. Base에 강체와 질량 추가하기
+
+1. Stage에서 **Base Xform**을 선택합니다. 아직 자식 Shape는 만들지 않았습니다.
+2. 오른쪽 Property의 **Add → Physics → Rigid Body**를 클릭합니다.
+
+![Rigid Body 메뉴 위치](images/guide-add-rigid-body.png)
+
+3. 같은 Base를 선택한 상태에서 **Add → Physics → Mass**를 클릭합니다.
+
+![Mass 메뉴 위치](images/guide-add-mass.png)
+
+4. Property 맨 위 검색창에 `mass`를 입력합니다. Physics의 **Mass 숫자 칸에 `1`**을 입력하고 Enter를 누릅니다.
+5. 검색창 오른쪽 `×`로 검색어를 지웁니다. 검색창이 남아 있으면 다음 Transform·Rigid Body 항목이 안 보일 수 있습니다.
+6. Rigid Body의 **Rigid Body Enabled는 체크**, **Disable Gravity는 해제** 상태인지 확인합니다.
+
+![Base의 실제 질량 입력 칸](images/step-base-mass.png)
+
+검색 결과 위쪽 Geometry의 Mass는 표시용입니다. **아래 Physics → Mass의 검은 숫자 칸**을 수정합니다.
+
+질량 `0`은 무중력이라는 뜻이 아닙니다. 여기서는 표에 적힌 `1 kg`을 직접 입력합니다.
+
+### 1.6. Base의 눈에 보이는 Shape 만들기
+
+1. Base를 선택하고 **Create → Shape → Cube**를 클릭합니다. Mesh가 아닌 **Shape**입니다.
+
+![Shape Cube 생성 메뉴](images/guide-create-cube.png)
+
+2. 새 Cube를 **`Shape`**로 이름을 바꿉니다. Base 아래로 옮겨 **`/World/Hinge/Base/Shape`**인지 확인합니다.
+3. Shape의 Transform을 아래처럼 입력합니다. 이 위치는 **부모 Base 기준**입니다.
+
+| Base/Shape의 줄 | X | Y | Z |
+|---|---|---|---|
+| Translate | `0` | `0` | `0` |
+| Rotate 또는 Orient | `0` | `0` | `0` |
+| Scale | `0.18` | `0.18` | `0.3` |
+
+![Base 자식 Shape의 크기 세 칸](images/step-base-shape.png)
+
+4. Property 검색창에 `size`를 입력하고 Geometry의 **Size를 `1`**로 바꿉니다. 검색어를 지웁니다.
+![Shape Size를 검색하고 1 입력](images/step-shape-size.png)
+
+5. **Shape를 선택한 채 Add → Physics → Collider**를 클릭합니다.
+
+![Collider를 추가하는 메뉴](images/guide-add-collider.png)
+
+6. 검색창에 `collision`을 입력해 **Collision Enabled가 체크**인지 확인하고 검색어를 지웁니다.
+
+**Base에는 Rigid Body·Mass, Base/Shape에는 Collider**가 붙습니다. Shape에 Rigid Body를 또 추가하지 않습니다.
+색상을 따로 바꾸지 않았으면 회색으로 보여도 맞습니다. 뒤 사진의 파란색·주황색은 부품 구분용입니다.
+
+### 1.7. 같은 순서로 움직일 Arm 만들기
+
+1. **Hinge를 다시 선택**합니다. Base를 선택한 채 진행하면 Arm이 Base 아래에 생길 수 있습니다.
+2. Create → Xform으로 **`Arm`**을 만듭니다. Prim Path를 **`/World/Hinge/Arm`**으로 맞춥니다.
+3. Arm의 Transform을 입력하고 Rigid Body·Mass를 추가합니다.
+
+| Arm의 줄 | X | Y | Z |
+|---|---|---|---|
+| Translate | `0` | `0` | `0.45` |
+| Rotate 또는 Orient | `0` | `0` | `0` |
+| Scale | `1` | `1` | `1` |
+
+![Arm 위치 Z 0.45와 크기 1](images/step-arm-transform.png)
+
+4. Arm의 **Mass는 `0.1` kg**입니다. Base의 `1`과 구분합니다.
+![Arm 질량 0.1 입력 위치](images/step-arm-mass.png)
+
+5. Arm 아래에 Shape Cube를 만들고 **`Shape`**로 이름을 바꿉니다. 경로는 **`/World/Hinge/Arm/Shape`**입니다.
+6. Arm/Shape의 **Size=`1`**, Translate·회전=`0`, **Scale=`(0.06, 0.06, 0.3)`**을 입력합니다.
+7. Arm/Shape에 Collider를 추가하고 Collision Enabled를 확인합니다.
+
+![Arm 자식 Shape의 크기 입력](images/step-arm-shape.png)
+
+이제 Stage가 다음과 같아야 합니다. **FixedBase·Shoulder는 아직 없습니다.**
+
+```text
+World
+├─ Light
+├─ PhysicsScene
+├─ Ground
+└─ Hinge
+   ├─ Base           ← Xform, 강체·질량 1 kg
+   │  └─ Shape       ← Cube, 충돌·크기
+   └─ Arm            ← Xform, 강체·질량 0.1 kg
+      └─ Shape       ← Cube, 충돌·크기
+```
+
+뷰포트에는 넓은 받침 위에 가느다란 팔이 세워져 있습니다. 잘 안 보이면 Stage의 Hinge를 선택하고 뷰포트에 마우스를 놓은 뒤 **F**로 선택한 모형을 화면에 맞춥니다.
+Base 윗면과 Arm 아랫면은 높이 Z=`0.3 m`에서 만납니다. **아직 Play하지 않습니다.** Arm을 연결할 관절이 없기 때문입니다.
 
 ## 2. 받침을 월드에 고정하기
 
-1. Base Xform 하나만 선택합니다. `Create > Physics > Joint > Fixed Joint`로 고정 관절을 만듭니다.
-2. 이름을 `FixedBase`로 바꾸고 Hinge 바로 아래로 옮깁니다. 최종 경로는 `/World/Hinge/FixedBase`입니다.
-3. 관절 Property의 Body 0은 비우고 Body 1에 `/World/Hinge/Base`를 지정합니다. 관계 입력의 폴더 버튼·Add Target으로 Stage의 Base를 선택합니다.
-4. Local Position 0=`(0,0,0.15)`, Local Position 1=`(0,0,0)`을 입력합니다. Local Rotation 0·1은 모두 `(0,0,0)`으로 둡니다.
-5. FixedBase에 `Add > Physics > Articulation Root`를 추가합니다. 다른 객체에 중복 추가하지 않습니다.
+### 2.1. Fixed Joint 생성과 이름 정리
 
-Body 0이 비어 있으면 월드가 상대입니다. 따라서 첫 접점은 월드 Z=0.15, 두 번째 접점은 Base 중심을 가리켜 서로 일치합니다.
-다음 단계까지 마친 뒤 Play합니다. 아직 Arm이 연결되지 않은 상태에서 실행하면 Arm이 떨어집니다.
+1. Stage에서 **Base 이름 하나만 클릭**합니다. Shape가 아닌 Base입니다.
+2. 상단 **Create → Physics → Joint → Fixed Joint**를 클릭합니다.
+
+![고정 관절 Fixed Joint까지의 메뉴](images/guide-fixed-menu.png)
+
+3. 새 관절을 Rename으로 **`FixedBase`**로 바꿉니다.
+4. Hinge 바로 아래로 옮깁니다. **`/World/Hinge/FixedBase`**인지 확인합니다. Base 안쪽이 아닙니다.
+
+### 2.2. Body 0과 Body 1 연결하기
+
+Body는 관절이 연결하는 강체입니다. 이 고정 관절은 **월드와 Base**를 연결합니다.
+
+1. Stage에서 FixedBase를 선택합니다. Property 검색창을 비우고 **Physics → Joint**를 펼칩니다.
+2. **Body 0**에 경로가 들어 있으면 그 경로 줄의 오른쪽 `×`로 대상을 제거합니다. Body 0은 비워 둡니다.
+3. **Body 1**에 `/World/Hinge/Base`가 이미 있으면 그대로 둡니다.
+4. 다른 경로가 있으면 제거한 뒤 Body 1의 **Add Target**을 클릭합니다. 기존 대상 줄 오른쪽의 **폴더 버튼**으로 대상을 다시 선택할 수도 있습니다.
+5. 대상 선택 창에서 **World → Hinge → Base**를 찾아 선택하고 창의 선택 완료 버튼으로 확정합니다. **Base 아래 Shape를 선택하지 않습니다.**
+6. 창이 닫힌 뒤 Body 1에 표시된 실제 경로가 **`/World/Hinge/Base`**인지 다시 읽습니다.
+
+![Body 관계의 대상 경로와 폴더 버튼 위치](images/guide-body-target.png)
+
+사진처럼 Property 검색창에 `body`를 입력하면 두 연결 대상만 찾기 쉽습니다. 폴더 버튼을 누른 뒤 **Base → Select** 순서로 선택합니다.
+
+![대상 선택 창에서 Base를 고르고 Select 클릭](images/step-fixed-target-dialog.png)
+
+확정 후 Body 1의 경로를 다시 확인하고, 다음 단계에서는 검색어를 지웁니다.
+
+### 2.3. 접점과 Articulation Root 설정하기
+
+1. 같은 FixedBase의 Joint 속성에서 다음 값을 입력합니다.
+
+| FixedBase의 줄 | X | Y | Z |
+|---|---|---|---|
+| Local Position 0 | `0` | `0` | `0.15` |
+| Local Position 1 | `0` | `0` | `0` |
+| Local Rotation 0 | `0` | `0` | `0` |
+| Local Rotation 1 | `0` | `0` | `0` |
+
+Property 검색창에 `local`을 입력하면 네 접점·회전 줄만 볼 수 있습니다. 입력을 마치면 검색어를 지웁니다.
+
+![FixedBase의 네 접점 회전 입력 줄](images/step-fixed-local.png)
+
+Body 0이 비어 있으므로 Local Position 0은 **월드 기준**입니다. Body 1의 접점은 Base 중심입니다.
+두 접점이 모두 월드 높이 `0.15 m`를 가리킵니다.
+
+2. **FixedBase를 선택한 상태**에서 Property의 **Add → Physics → Articulation Root**를 클릭합니다.
+
+![Articulation Root를 추가하는 메뉴 위치](images/guide-articulation-menu.png)
+
+3. Property에서 Articulation 관련 항목이 나타나는지 확인합니다. Hinge·Base·Arm·Shoulder에 중복으로 추가하지 않습니다.
+
+`articulation`을 검색하면 아래 항목이 나타납니다. 확인 후 검색어를 지웁니다.
+
+![FixedBase의 Articulation Root 적용 확인](images/step-fixed-root.png)
+
+Articulation Root는 이 관절 묶음을 로봇의 관절 계통으로 다루는 시작점입니다. 아래 회전 관절까지 만들고 실행합니다.
 
 ## 3. 팔을 회전 관절로 연결하기
 
-![두 강체를 선택한 뒤 회전 관절 생성 메뉴 열기](images/08-create-joint.png)
+### 3.1. 두 강체를 선택하고 Revolute Joint 만들기
 
-1. Stage에서 **Base Xform을 먼저**, Ctrl을 누른 채 **Arm Xform을 두 번째로** 선택합니다. 자식 Shape를 선택하지 않습니다.
-2. `Create > Physics > Joint > Revolute Joint`를 누릅니다. 교재의 5.1 촬영 화면에서는 메뉴 이름이 `Joint`입니다.
-3. 생성된 관절을 `Shoulder`로 이름 짓고 Hinge 바로 아래로 옮깁니다.
-4. Shoulder의 Property를 다음과 같이 설정합니다. 자동 생성값을 그대로 쓰지 말고 두 Body와 접점을 확인합니다.
+1. Stage에서 **Base Xform을 먼저 클릭**합니다.
+2. **Ctrl 키를 누른 채 Arm Xform을 한 번 클릭**합니다. Base·Arm 두 줄이 모두 선택되어야 합니다. Shape를 선택하지 않습니다.
+3. 상단 **Create → Physics → Joint → Revolute Joint**를 클릭합니다.
 
-| Shoulder 속성 | 값 |
-|---|---|
-| Body 0 | `/World/Hinge/Base` |
-| Body 1 | `/World/Hinge/Arm` |
-| Local Position 0 | `(0,0,0.15)` |
-| Local Position 1 | `(0,0,-0.15)` |
-| Local Rotation 0 / 1 | 둘 다 `(0,0,0)` |
-| Collision Enabled | 체크 해제 |
-| Revolute Joint > Axis | `Y` |
-| Lower Limit / Upper Limit | `-60` / `60` 도 |
+![Base와 Arm을 선택하고 Revolute Joint 생성](images/guide-revolute-menu.png)
 
-![관절 접점·회전축·제한 입력 위치](images/02-joint.png)
+4. 생성된 관절을 **`Shoulder`**로 이름 바꾸고 **Hinge 바로 아래**로 옮깁니다.
+5. Shoulder를 선택한 뒤 Prim Path가 **`/World/Hinge/Shoulder`**인지 확인합니다.
 
-두 접점의 월드 높이를 계산합니다. Base는 `0.15 + 0.15 = 0.3`, Arm은 `0.45 - 0.15 = 0.3`입니다.
-접점이 다르면 시작 순간에 모형이 튀거나 벌어질 수 있습니다. 사진과 표를 확인한 뒤 진행합니다.
+### 3.2. 연결 대상과 접점 입력하기
+
+1. Property 검색창을 비우고 **Physics → Joint**를 펼칩니다.
+2. **Body 0=`/World/Hinge/Base`**, **Body 1=`/World/Hinge/Arm`**인지 확인합니다. 잘못 연결됐으면 2.2절의 폴더 버튼으로 바꿉니다.
+`body` 검색으로 연결 대상을 확인합니다. 다음 값은 `local`로 바꾸어 검색합니다.
+
+![Shoulder Body 0 Base와 Body 1 Arm](images/step-shoulder-body.png)
+
+3. Local Position·Rotation은 다음처럼 입력합니다. 사진의 네 줄을 한 줄씩 비교합니다.
+
+| Shoulder의 줄 | X | Y | Z |
+|---|---|---|---|
+| Local Position 0 | `0` | `0` | `0.15` |
+| Local Position 1 | `0` | `0` | `-0.15` |
+| Local Rotation 0 | `0` | `0` | `0` |
+| Local Rotation 1 | `0` | `0` | `0` |
+
+![회전 관절의 두 접점과 회전 입력 칸](images/guide-joint-anchors.png)
+
+4. 검색어를 지우고 **Collision Enabled의 체크를 해제**합니다. 찾기 어려우면 `collision`을 검색합니다. 연결된 Base와 Arm끼리 충돌하지 않도록 하는 설정입니다. 자식 Shape의 Collider를 끄는 작업과 다릅니다.
+
+Base 쪽 접점은 `0.15 + 0.15 = 0.3`, Arm 쪽 접점은 `0.45 - 0.15 = 0.3`입니다.
+이 두 높이가 다르면 Play 순간 모형이 튀거나 벌어질 수 있습니다.
+
+### 3.3. 회전축과 제한 입력하기
+
+1. Property를 아래로 내려 **Revolute Joint**를 펼칩니다.
+2. **Axis 오른쪽 목록 → Y**를 선택합니다.
+3. **Lower Limit=`-60`**, **Upper Limit=`60`**을 각각 입력하고 Enter를 누릅니다. 두 값의 단위는 도입니다.
+
+![Y축과 -60부터 60도 제한 입력](images/guide-joint-limits.png)
+
+이제 완성된 연결 구조를 확인합니다.
+
+![Hinge 아래 Base Arm FixedBase Shoulder의 완성 구조](images/guide-joint-tree.png)
+
+사진의 Materials는 색상 표시용 객체입니다. 직접 만든 장면에 없어도 됩니다. 필수 구조는 다음과 같습니다.
+
+```text
+Hinge
+├─ Base
+│  └─ Shape
+├─ Arm
+│  └─ Shape
+├─ FixedBase         ← Body 0=월드, Body 1=Base; Articulation Root
+└─ Shoulder          ← Body 0=Base, Body 1=Arm; Y축 회전
+```
 
 ## 4. 모터 역할을 하는 Angular Drive 추가하기
 
-![새로 생성한 관절에 Angular Drive를 추가하는 메뉴](images/09-add-drive.png)
+### 4.1. Drive 추가와 기준값 입력
 
-이 사진은 메뉴로 생성한 직후의 `RevoluteJoint`를 보여 줍니다. 본인의 관절은 앞 단계대로 Hinge 아래 `Shoulder`로 이름과 경로를 맞춥니다.
+1. Stage에서 **Shoulder만 선택**합니다.
+2. Property 위쪽 **Add → Physics → Angular Drive**를 클릭합니다.
 
-1. Shoulder를 선택하고 `Add > Physics > Angular Drive`를 추가합니다.
-2. Property의 `Physics > Drive > Angular`를 펼쳐 아래 값을 입력합니다. 보이지 않는 항목은 Advanced를 펼칩니다.
+![Angular Drive까지의 메뉴](images/guide-drive-menu.png)
 
-| 속성 | 기본값 |
-|---|---|
-| Type | `force` |
-| Target Position / Target Velocity | `0` / `0` |
-| Stiffness | `1000` |
-| Damping | `50` |
-| Max Force | `100` |
+3. Property를 아래로 내려 **Drive → Angular**를 펼칩니다. 검색창에 남은 글자가 있으면 먼저 지웁니다.
+4. 사진의 칸에 아래 값을 한 개씩 입력합니다. 펼침 항목에 숨겨져 있으면 Advanced도 확인합니다.
 
-![Drive와 각도 제한 설정](images/05-gains.png)
+![Angular Drive의 여섯 설정 칸](images/guide-drive-values.png)
 
-Play를 눌러 팔이 세워진 상태를 유지하는지 확인하고 Stop합니다.
-Target Position을 `30`, `-30`, `80`으로 하나씩 바꾸며 같은 과정을 반복합니다. 80도 목표는 관절 상한 60도와 비교합니다.
+| 항목 | 입력값 | 의미 |
+|---|---|---|
+| Type | 목록에서 `force` | 힘·토크로 목표를 따라갑니다. |
+| Max Force | `100` | 구동 토크 상한입니다. |
+| Target Position | `0` | 목표 각도입니다. |
+| Target Velocity | `0` | 목표 각속도입니다. |
+| Damping | `50` | 흔들림을 줄이는 정도입니다. |
+| Stiffness | `1000` | 목표로 되돌리는 반응의 세기입니다. |
 
-![Target Position을 직접 입력하기](images/03-drive.png)
+### 4.2. 처음 Play하고 0도 확인하기
 
-![30도 목표를 적용한 실제 모형](images/04-result.png)
+1. 왼쪽 **▶ Play**를 한 번 누릅니다.
+2. 받침이 바닥에 고정되고 팔이 세워진 상태를 유지하는지 봅니다.
+3. **■ Stop**을 눌러 실행 전 상태로 돌아옵니다. Pause는 현재 자세에서 잠깐 멈추므로 여기서는 Stop을 사용합니다.
 
-사진은 기존 모형의 관측 예시입니다. 본인 모형의 실제 움직임을 확인합니다. Target Position은 명령값이므로 그것만 보고 실제 도달각이라고 판단하지 않습니다.
-Stiffness는 목표로 되돌리는 반응의 세기, Damping은 흔들림을 줄이는 정도, Max Force는 구동 토크의 상한입니다.
-목표 30도에서 Stiffness만 `1000 → 20`으로 낮춰 보고, `1000`으로 복원한 뒤 Damping만 `50 → 5`로 낮춰 응답을 비교합니다.
-각 변경은 Stop 상태에서 하고 Play로 확인합니다. 목표값과 실제 팔의 모습이 같다고 가정하지 않습니다.
+받침까지 떨어지면 FixedBase의 Body 0·1과 접점을, 팔이 떨어지면 Shoulder의 두 Body와 Rigid Body를 확인합니다.
+고쳐지지 않으면 같은 실행을 반복하지 말고 해당 Property 화면을 강사에게 보여 주세요.
+
+### 4.3. 30도·-30도·80도 비교하기
+
+1. Stop 상태에서 Shoulder를 선택합니다.
+2. Property 검색창에 **`target`**을 입력합니다.
+3. **Target Position 숫자 칸을 Ctrl+클릭 → `30` 입력 → Enter** 순서로 조작합니다.
+
+![Shoulder 선택과 target 검색 및 30 입력](images/guide-target-input.png)
+
+4. Play를 눌러 팔만 기울어지는지 봅니다. 움직임을 살펴본 뒤 Stop합니다.
+
+![Play 후 받침은 고정되고 팔이 기울어진 모습](images/guide-angle-result.png)
+
+5. 같은 방법으로 **`-30` → Play → Stop**, **`80` → Play → Stop**을 각각 수행합니다.
+6. 마지막 목표 80도에서는 실제 팔이 상한인 약 60도까지만 움직이는지 봅니다.
+
+![목표는 80도지만 실제 관절은 약 60도에서 제한](images/step-angle-limit.png)
+
+**Target Position은 요청한 값이며 실제 도달각을 표시하는 측정값이 아닙니다.** 80이라고 보여도 물리 관절은 제한을 받습니다.
+사진은 위 설정으로 실행한 결과입니다. Stop 뒤 선택 대상이 World 등으로 바뀌면 **Shoulder를 다시 선택하고 `target`을 검색한 다음** 다음 각도를 입력합니다.
+
+### 4.4. 응답을 바꾸어 비교하기
+
+각 실험 전에 Stop하고 Property 검색어를 지웁니다. 목표 각도는 `30`으로 맞춥니다.
+
+1. **Stiffness만 `1000 → 20`**으로 바꿉니다. Play 후 움직임을 보고 Stop합니다.
+2. Stiffness를 **`1000`으로 복원**합니다.
+3. **Damping만 `50 → 5`**로 바꿉니다. Play 후 흔들림과 멈추는 과정을 보고 Stop합니다.
+4. Damping을 **`50`으로 복원**합니다. 여러 값을 동시에 바꾸지 않습니다.
 
 ## 5. 저장하고 연결 관계 정리하기
 
-Stop 상태에서 Target Position=0, Target Velocity=0, Stiffness=1000, Damping=50, Max Force=100으로 복원합니다.
-Axis=Y, 제한=-60/60도, Base·Arm의 위치도 앞 표와 같은지 확인하고 `File > Save`로 저장합니다.
-Docker 수업의 경로 예시는 `/data/isaacsim_basic/my_joint.usda`입니다. 기존 파일이 있으면 새 이름을 사용합니다.
-`File > Open`으로 다시 열어 같은 구조인지 확인합니다. 이 파일을 4·5장에서 재사용합니다.
+1. Stop 상태인지 확인합니다.
+2. Shoulder의 **Target Position=0, Target Velocity=0, Stiffness=1000, Damping=50, Max Force=100**으로 복원합니다.
+3. Axis=Y, 제한=-60/60도, Base Z=0.15, Arm Z=0.45를 확인합니다.
+4. **File → Save** 또는 Ctrl+S로 `my_joint.usda`를 저장합니다. 아직 새 이름으로 저장하지 않았다면 **Save As → 이름 my_joint → 형식 *.usda**를 사용합니다.
+5. **File → Open**으로 `/data/isaacsim_basic/my_joint.usda`를 다시 엽니다.
+6. Hinge의 여섯 객체(Base·Arm·두 Shape·FixedBase·Shoulder)와 목표 0도를 확인합니다. 이 파일을 **4·5장에서 재사용**합니다.
 
-직접 만든 모형을 보면서 다음을 설명합니다.
+다음을 화면에서 짚어 설명할 수 있으면 코드 실습으로 넘어갑니다.
 
-- FixedBase가 없을 때 받침이 어떻게 될지
-- Shoulder의 두 접점이 같은 위치에 있어야 하는 이유
-- 목표 80도를 넣어도 관절이 약 60도까지만 움직이는 이유
+- Base·Arm과 자식 Shape에 서로 다른 물리 속성을 붙인 이유
+- FixedBase가 고정하는 두 대상과 Shoulder가 연결하는 두 대상
+- 80도를 요청해도 약 60도에서 제한되는 이유
 
 ## 6. 마지막: 같은 작업을 코드로 구현하기
 

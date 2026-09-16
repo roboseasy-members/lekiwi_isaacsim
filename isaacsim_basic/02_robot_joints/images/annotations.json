@@ -286,5 +286,1329 @@
         "label": "Angular Drive를 추가하고 본문의 목표 각도·Stiffness·Damping 값을 입력합니다."
       }
     ]
+  },
+  {
+    "name": "guide-open-menu",
+    "title": "File에서 Open 선택",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          110,
+          308,
+          26
+        ],
+        "label": "Open 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      220
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-open-dialog",
+    "title": "폴더와 파일 이름 입력",
+    "marks": [
+      {
+        "box": [
+          308,
+          285,
+          1001,
+          25
+        ],
+        "label": "주소: /data/isaacsim_basic/ 입력 → Enter"
+      },
+      {
+        "box": [
+          260,
+          676,
+          534,
+          26
+        ],
+        "label": "File name: base_scene.usda"
+      },
+      {
+        "box": [
+          1096,
+          676,
+          119,
+          26
+        ],
+        "label": "Open File 클릭"
+      }
+    ],
+    "crop": [
+      255,
+      253,
+      1082,
+      456
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-save-menu",
+    "title": "Save As 열기",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          221,
+          308,
+          24
+        ],
+        "label": "Save As 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-create-xform",
+    "title": "Xform 그룹 생성",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          192,
+          163,
+          23
+        ],
+        "label": "Xform 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      380,
+      370
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-rename",
+    "title": "이름 바꾸기",
+    "marks": [
+      {
+        "box": [
+          1138,
+          104,
+          113,
+          25
+        ],
+        "label": "Xform 이름 위에서 우클릭"
+      },
+      {
+        "box": [
+          1192,
+          258,
+          181,
+          28
+        ],
+        "label": "Rename 클릭"
+      }
+    ],
+    "crop": [
+      1115,
+      24,
+      479,
+      445
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-create-cube",
+    "title": "Shape Cube 생성",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          70,
+          164,
+          25
+        ],
+        "label": "Shape에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          229,
+          137,
+          112,
+          24
+        ],
+        "label": "Cube 클릭. Mesh가 아닙니다."
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      360,
+      265
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-add-rigid-body",
+    "title": "Rigid Body 메뉴",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "메뉴 위치 예시입니다. 선택할 객체는 본문을 따릅니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          607,
+          239,
+          24
+        ],
+        "label": "Rigid Body 클릭"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      610
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-add-mass",
+    "title": "Mass 메뉴",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "메뉴 위치 예시입니다. 선택할 객체는 본문을 따릅니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          627,
+          239,
+          24
+        ],
+        "label": "Mass 클릭"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      610
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-add-collider",
+    "title": "Collider 메뉴",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "메뉴 위치 예시입니다. 선택할 객체는 본문을 따릅니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          627,
+          239,
+          25
+        ],
+        "label": "Collider 클릭. 강체 추가 여부는 본문을 따릅니다."
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-joint-tree",
+    "title": "관절 모형의 Stage",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1160,
+          205,
+          436,
+          143
+        ],
+        "label": "Base·Arm 아래 Shape, Hinge 아래 두 관절"
+      }
+    ],
+    "crop": [
+      1130,
+      92,
+      480,
+      270
+    ]
+  },
+  {
+    "name": "guide-joint-limits",
+    "title": "축과 각도 제한",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1145,
+          510,
+          445,
+          31
+        ],
+        "label": "Axis 목록에서 Y 선택"
+      },
+      {
+        "box": [
+          1145,
+          543,
+          445,
+          32
+        ],
+        "label": "Lower Limit: -60"
+      },
+      {
+        "box": [
+          1145,
+          575,
+          445,
+          29
+        ],
+        "label": "Upper Limit: 60"
+      }
+    ],
+    "crop": [
+      1130,
+      480,
+      480,
+      160
+    ]
+  },
+  {
+    "name": "guide-drive-values",
+    "title": "Angular Drive 기준값",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1145,
+          714,
+          430,
+          28
+        ],
+        "label": "Type: force"
+      },
+      {
+        "box": [
+          1145,
+          744,
+          430,
+          29
+        ],
+        "label": "Max Force: 100"
+      },
+      {
+        "box": [
+          1145,
+          773,
+          430,
+          29
+        ],
+        "label": "Target Position: 0"
+      },
+      {
+        "box": [
+          1145,
+          802,
+          430,
+          29
+        ],
+        "label": "Target Velocity: 0"
+      },
+      {
+        "box": [
+          1145,
+          831,
+          430,
+          28
+        ],
+        "label": "Damping: 50"
+      },
+      {
+        "box": [
+          1145,
+          860,
+          430,
+          29
+        ],
+        "label": "Stiffness: 1000"
+      }
+    ],
+    "crop": [
+      1130,
+      653,
+      480,
+      281
+    ]
+  },
+  {
+    "name": "guide-fixed-menu",
+    "title": "Fixed Joint 생성",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          60,
+          1,
+          46,
+          23
+        ],
+        "label": "Create"
+      },
+      {
+        "box": [
+          61,
+          239,
+          162,
+          26
+        ],
+        "label": "Physics"
+      },
+      {
+        "box": [
+          225,
+          337,
+          200,
+          25
+        ],
+        "label": "Joint"
+      },
+      {
+        "box": [
+          431,
+          362,
+          171,
+          25
+        ],
+        "label": "Fixed Joint"
+      }
+    ],
+    "crop": [
+      48,
+      0,
+      565,
+      543
+    ]
+  },
+  {
+    "name": "guide-revolute-menu",
+    "title": "Revolute Joint 생성",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1187,
+          203,
+          406,
+          42
+        ],
+        "label": "Base를 먼저, Ctrl+클릭으로 Arm도 선택"
+      },
+      {
+        "box": [
+          60,
+          1,
+          46,
+          23
+        ],
+        "label": "Create"
+      },
+      {
+        "box": [
+          61,
+          239,
+          162,
+          26
+        ],
+        "label": "Physics"
+      },
+      {
+        "box": [
+          225,
+          337,
+          200,
+          25
+        ],
+        "label": "Joint"
+      },
+      {
+        "box": [
+          431,
+          389,
+          171,
+          25
+        ],
+        "label": "Revolute Joint"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      1614,
+      548
+    ]
+  },
+  {
+    "name": "guide-articulation-menu",
+    "title": "Articulation Root 메뉴",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1142,
+          544,
+          55,
+          25
+        ],
+        "label": "Add"
+      },
+      {
+        "box": [
+          1144,
+          706,
+          109,
+          23
+        ],
+        "label": "Physics"
+      },
+      {
+        "box": [
+          1255,
+          707,
+          232,
+          23
+        ],
+        "label": "FixedBase에 추가"
+      }
+    ],
+    "crop": [
+      1130,
+      537,
+      380,
+      205
+    ]
+  },
+  {
+    "name": "guide-drive-menu",
+    "title": "Angular Drive 메뉴",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1142,
+          544,
+          55,
+          25
+        ],
+        "label": "Add"
+      },
+      {
+        "box": [
+          1144,
+          706,
+          109,
+          23
+        ],
+        "label": "Physics"
+      },
+      {
+        "box": [
+          1255,
+          848,
+          232,
+          23
+        ],
+        "label": "Angular Drive: Shoulder에 추가"
+      }
+    ],
+    "crop": [
+      1130,
+      537,
+      380,
+      400
+    ]
+  },
+  {
+    "name": "step-base-transform",
+    "title": "Base: 위치와 경로",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "Base Xform 선택: /World/Hinge/Base"
+      },
+      {
+        "box": [
+          1140,
+          480,
+          450,
+          99
+        ],
+        "label": "Translate Z=0.15, Rotate=0, Scale=1"
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      312
+    ]
+  },
+  {
+    "name": "step-base-mass",
+    "title": "Base의 질량 입력",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "Property 검색창에 mass 입력"
+      },
+      {
+        "box": [
+          1317,
+          557,
+          257,
+          26
+        ],
+        "label": "Physics → Mass의 숫자 칸에 1 입력"
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      348
+    ]
+  },
+  {
+    "name": "step-arm-mass",
+    "title": "Arm의 질량 입력",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1230,
+          344,
+          363,
+          30
+        ],
+        "label": "Arm을 선택했는지 이름 확인"
+      },
+      {
+        "box": [
+          1317,
+          557,
+          257,
+          26
+        ],
+        "label": "Physics → Mass에 0.1 kg 입력"
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      348
+    ]
+  },
+  {
+    "name": "step-fixed-target-dialog",
+    "title": "FixedBase의 Body 1 선택",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          673,
+          447,
+          233,
+          24
+        ],
+        "label": "World → Hinge → Base를 클릭합니다."
+      },
+      {
+        "box": [
+          612,
+          659,
+          388,
+          25
+        ],
+        "label": "아래 Select 버튼으로 확정합니다."
+      }
+    ],
+    "crop": [
+      604,
+      287,
+      407,
+      409
+    ]
+  },
+  {
+    "name": "step-target-input",
+    "title": "목표 각도 30 입력",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1142,
+          316,
+          451,
+          26
+        ],
+        "label": "Property에서 target 검색"
+      },
+      {
+        "box": [
+          1230,
+          345,
+          363,
+          26
+        ],
+        "label": "Shoulder를 선택했는지 확인"
+      },
+      {
+        "box": [
+          1322,
+          480,
+          244,
+          27
+        ],
+        "label": "Target Position=30, 아래 Velocity=0"
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      310
+    ]
+  },
+  {
+    "name": "step-base-shape",
+    "title": "Base/Shape: 크기 입력",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1229,
+          375,
+          365,
+          29
+        ],
+        "label": "Base 아래 Shape를 선택합니다."
+      },
+      {
+        "box": [
+          1268,
+          544,
+          310,
+          30
+        ],
+        "label": "Scale X=0.18, Y=0.18, Z=0.3"
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      312
+    ]
+  },
+  {
+    "name": "step-arm-transform",
+    "title": "Arm: 위치와 경로",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          375,
+          366,
+          28
+        ],
+        "label": "Base의 자식이 아닌 /World/Hinge/Arm"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          31
+        ],
+        "label": "Translate Z=0.45"
+      },
+      {
+        "box": [
+          1268,
+          514,
+          310,
+          59
+        ],
+        "label": "Rotate=0, Scale=1"
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      312
+    ]
+  },
+  {
+    "name": "step-arm-shape",
+    "title": "Arm/Shape: 크기 입력",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1229,
+          375,
+          365,
+          29
+        ],
+        "label": "Arm 아래 Shape를 선택합니다."
+      },
+      {
+        "box": [
+          1268,
+          544,
+          310,
+          30
+        ],
+        "label": "Scale X=0.06, Y=0.06, Z=0.3"
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      312
+    ]
+  },
+  {
+    "name": "step-shape-size",
+    "title": "Shape의 Size입력",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      214
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "Property에서 size 검색"
+      },
+      {
+        "box": [
+          1318,
+          447,
+          260,
+          27
+        ],
+        "label": "Geometry → Mesh → Size에 1 입력"
+      }
+    ]
+  },
+  {
+    "name": "guide-body-target",
+    "title": "FixedBase의 두 연결 대상",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      271
+    ],
+    "marks": [
+      {
+        "box": [
+          1230,
+          345,
+          363,
+          29
+        ],
+        "label": "FixedBase 선택"
+      },
+      {
+        "box": [
+          1317,
+          447,
+          258,
+          27
+        ],
+        "label": "Body 0은 대상이 없어야 합니다."
+      },
+      {
+        "box": [
+          1320,
+          480,
+          213,
+          28
+        ],
+        "label": "Body 1=/World/Hinge/Base"
+      },
+      {
+        "box": [
+          1533,
+          480,
+          20,
+          28
+        ],
+        "label": "폴더 버튼으로 Base를 선택합니다."
+      }
+    ]
+  },
+  {
+    "name": "step-fixed-local",
+    "title": "FixedBase의 접점 입력",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      294
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "Property 검색어를 local로 바꿉니다."
+      },
+      {
+        "box": [
+          1142,
+          446,
+          432,
+          116
+        ],
+        "label": "Position 0의 Z만 0.15, 나머지는 모두 0"
+      }
+    ]
+  },
+  {
+    "name": "step-fixed-root",
+    "title": "Articulation Root 확인",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      274
+    ],
+    "marks": [
+      {
+        "box": [
+          1230,
+          345,
+          363,
+          29
+        ],
+        "label": "FixedBase에 적용했는지 이름 확인"
+      },
+      {
+        "box": [
+          1142,
+          416,
+          434,
+          59
+        ],
+        "label": "Articulation Root와 Enabled 체크 확인"
+      }
+    ]
+  },
+  {
+    "name": "step-shoulder-body",
+    "title": "Shoulder의 두 연결 대상",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      310
+    ],
+    "marks": [
+      {
+        "box": [
+          1230,
+          345,
+          363,
+          29
+        ],
+        "label": "Shoulder 선택"
+      },
+      {
+        "box": [
+          1318,
+          451,
+          258,
+          33
+        ],
+        "label": "Body 0은 Base"
+      },
+      {
+        "box": [
+          1318,
+          516,
+          258,
+          35
+        ],
+        "label": "Body 1은 Arm. Shape를 연결하지 않습니다."
+      }
+    ]
+  },
+  {
+    "name": "guide-joint-anchors",
+    "title": "Shoulder의 접점 입력",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      294
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "Property에서 local 검색"
+      },
+      {
+        "box": [
+          1142,
+          447,
+          434,
+          27
+        ],
+        "label": "Local Position 0: Z=0.15"
+      },
+      {
+        "box": [
+          1142,
+          504,
+          434,
+          29
+        ],
+        "label": "Local Position 1: Z=-0.15"
+      },
+      {
+        "box": [
+          1318,
+          535,
+          258,
+          29
+        ],
+        "label": "Local Rotation 0과 1은 모두 0"
+      }
+    ]
+  },
+  {
+    "name": "guide-target-input",
+    "title": "Shoulder의 목표 각도 입력",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      310
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          316,
+          451,
+          26
+        ],
+        "label": "Property에서 target 검색"
+      },
+      {
+        "box": [
+          1230,
+          345,
+          363,
+          26
+        ],
+        "label": "Shoulder 선택"
+      },
+      {
+        "box": [
+          1322,
+          480,
+          244,
+          27
+        ],
+        "label": "Target Position=30, Target Velocity=0"
+      }
+    ]
+  },
+  {
+    "name": "guide-angle-result",
+    "title": "Play 후 실제 30도 회전",
+    "wrap_labels": true,
+    "crop": [
+      0,
+      25,
+      1127,
+      641
+    ],
+    "marks": [
+      {
+        "box": [
+          539,
+          248,
+          114,
+          216
+        ],
+        "label": "받침은 고정되고 팔만 기울어집니다."
+      },
+      {
+        "box": [
+          6,
+          287,
+          31,
+          33
+        ],
+        "label": "Pause: 현재 자세에서 일시정지"
+      },
+      {
+        "box": [
+          6,
+          327,
+          31,
+          30
+        ],
+        "label": "Stop: 실험 전 상태로 복원"
+      }
+    ]
+  },
+  {
+    "name": "step-angle-limit",
+    "title": "80도 목표와 실제 60도 제한",
+    "wrap_labels": true,
+    "crop": [
+      0,
+      25,
+      1614,
+      641
+    ],
+    "marks": [
+      {
+        "box": [
+          530,
+          257,
+          193,
+          211
+        ],
+        "label": "물리 관절은 상한 약 60도에서 멈춥니다."
+      },
+      {
+        "box": [
+          1322,
+          480,
+          244,
+          27
+        ],
+        "label": "80은 요청 각도입니다. 실제 각도 표시가 아닙니다."
+      }
+    ]
+  },
+  {
+    "name": "guide-save-format",
+    "title": "my_joint와 usda 형식 선택",
+    "wrap_labels": true,
+    "crop": [
+      266,
+      264,
+      1083,
+      528
+    ],
+    "marks": [
+      {
+        "box": [
+          316,
+          294,
+          1000,
+          26
+        ],
+        "label": "폴더: /data/isaacsim_basic/"
+      },
+      {
+        "box": [
+          337,
+          686,
+          348,
+          27
+        ],
+        "label": "파일 이름: my_joint"
+      },
+      {
+        "box": [
+          812,
+          737,
+          300,
+          24
+        ],
+        "label": "형식 목록에서 *.usda 클릭"
+      },
+      {
+        "box": [
+          1107,
+          686,
+          117,
+          27
+        ],
+        "label": "형식을 선택한 뒤 Save"
+      }
+    ]
   }
 ]

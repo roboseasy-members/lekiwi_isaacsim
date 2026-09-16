@@ -1,98 +1,295 @@
 # 6장 · 환경을 직접 구성하고 LeKiwi 데이터 수집하기
 
-로봇 자산을 배치하고 큐브·열린 바구니·관찰 카메라를 직접 만든 뒤, 실제 시연 데이터 수집으로 이어갑니다.
-**1~5절은 마우스로 구성·관찰·저장하고, 마지막 6절에서 같은 구성 요소의 코드와 기록·변환·학습을 다룹니다.**
-앞부분은 큐브 하나·바구니 하나로 구성 원리를 익히는 실습입니다. 전체 도로·색상별 코스와
-전방·손목 카메라가 있는 데이터 수집 환경은 마지막 절의 준비된 프로그램으로 엽니다.
+로봇 자산을 불러오고, 큐브·열린 바구니·카메라를 직접 배치합니다.
+**1~5절은 마우스 실습, 마지막 6절은 구성 요소의 코드와 시연 수집·변환·업로드·학습 실습입니다.**
+앞부분은 큐브 하나와 바구니 하나로 원리를 익히는 장면입니다. 마지막에는 도로·색상별 코스·전방/손목 카메라가 있는 준비된 기록 프로그램을 엽니다.
 
 ## 1. 공통 바닥을 열고 로봇 자산 배치하기
 
-마우스 실습용 빈 편집기를 사용 중이면 그대로 이어갑니다. 앞 장의 코드 예제가 열려 있으면 결과를 저장하고 Isaac Sim 창을 닫습니다.
-아래 명령은 **같은 노트북의 저장소 최상위 폴더(`lekiwi` 파일이 있는 곳)**에서 실행합니다.
-이 명령은 편집 화면만 열며, 실습 객체는 이후 메뉴로 직접 만듭니다.
+### 1.1. 빈 편집기에서 공통 바닥 열기
+
+1. 다른 코드 실행 창이 열려 있으면 결과를 저장하고 닫습니다. 빈 편집기가 이미 열려 있으면 그대로 사용합니다.
+2. 같은 노트북의 **저장소 최상위 폴더**에서 실행합니다.
 
 ```bash
 ./lekiwi basic --script 01_object_physics/experiments/00_empty_stage.py
 ```
 
-Isaac Sim 창이 열리고 로딩이 끝나면 Viewport를 클릭해 조작합니다. 처음 실행은 캐시 준비로 시간이 걸릴 수 있습니다.
-명령을 중복 실행하지 말고, 오류가 나면 실행 터미널의 마지막 오류를 확인합니다.
+3. 로딩 후 **File → Open**을 클릭합니다.
 
-일반 Isaac Sim 설치에서는 앱을 직접 엽니다. 이전 실습이 실행 중이면 저장을 마치고 종료한 뒤 시작합니다.
+![File Open 메뉴 위치](images/guide-open-menu.png)
 
-`File > Open`으로 1장의 `base_scene.usda`를 열고 `File > Save As`로 `my_lekiwi_scene.usda`를 만듭니다.
-World·PhysicsScene·Light·Ground가 있어야 합니다. 공통 바닥 파일이 없으면 [1장](../01_object_physics/README.md) 1~2절을 먼저 마칩니다.
+4. 파일 창의 주소에 **`/data/isaacsim_basic/`**를 입력하고 Enter를 누릅니다.
+5. File name에 **`base_scene.usda`**를 입력하고 **Open File**을 클릭합니다.
 
-1. Stage의 빈 곳에서 `Create > Xform`을 선택하고 이름을 `LeKiwi`로 바꿉니다. 최종 경로는 `/LeKiwi`입니다. World 아래에 생겼다면 루트로 옮겨 경로를 맞춥니다.
-2. LeKiwi의 Property에서 `Add > Reference`를 선택하고 로봇 USD를 지정합니다.
-3. Docker 안의 경로는 `/opt/lekiwi/isaac_sim/assets/lekiwi_soarm/usd/lekiwi_soarm.usd`입니다. 일반 설치에서는 저장소 안의 같은 파일을 선택합니다.
-4. LeKiwi의 Translate를 `(0,0,0.055)` m, Rotate=0, Scale=1로 입력합니다.
-5. 로봇 형상·관절이 나타나는지 확인합니다. 제공된 로봇 자산은 형상·물리·관절을 포함합니다. 같은 강체·관절을 다시 추가하지 않습니다.
+![주소와 base_scene 파일 이름 입력](images/guide-open-dialog.png)
 
-로봇 자산은 부품이 묶인 USD를 재사용합니다. 복잡한 로봇 외형을 큐브로 다시 모델링하는 과정은 이 실습 범위가 아닙니다.
-참조한 자산 파일 자체를 덮어쓰지 않고, 자신이 조립한 장면을 별도 USD로 저장합니다.
+6. Stage에서 World를 펼쳐 Light·PhysicsScene·Ground만 있는지 확인합니다. 없다면 [1장 2절](../01_object_physics/README.md#2-world조명중력바닥-만들기)을 먼저 마칩니다.
+7. **File → Save As**로 주소는 같은 폴더, 이름은 **`my_lekiwi_scene`**, 형식은 **`*.usda`**로 저장합니다.
+
+![새 장면 이름으로 Save As](images/guide-save-menu.png)
+
+![저장 형식 usda 선택](images/guide-save-format.png)
+
+### 1.2. 로봇을 담을 LeKiwi 그룹 만들기
+
+1. **Stop 상태**에서 Stage의 객체 이름이 없는 빈 영역을 클릭해 선택을 해제합니다.
+2. **Create → Xform**을 클릭합니다.
+
+![Xform 생성 메뉴](images/guide-create-xform.png)
+
+3. 새 Xform을 우클릭 → Rename으로 **`LeKiwi`**로 바꿉니다.
+4. **이번 LeKiwi는 World 안쪽이 아닌 Stage 최상위**에 둡니다. World 아래에 생겼으면 Stage의 루트 빈 영역으로 끌어 옮깁니다.
+5. LeKiwi를 선택하고 Property의 **Prim Path가 `/LeKiwi`**인지 확인합니다. `/World/LeKiwi`이면 한 단계 위로 옮겨야 합니다.
+
+```text
+World
+├─ Light
+├─ PhysicsScene
+└─ Ground
+LeKiwi               ← World와 같은 들여쓰기
+```
+
+지금은 빈 그룹이므로 로봇이 보이지 않아도 됩니다. 다음 단계에서 제공된 모델을 연결합니다.
+
+### 1.3. 제공된 로봇 USD를 Reference로 연결
+
+1. Stage에서 **LeKiwi 하나만 선택**합니다.
+2. Property 위쪽 **Add → Reference**를 클릭합니다.
+
+![Property Add 메뉴의 Reference 위치](images/guide-add-reference.png)
+
+사진의 Property 이름과 Prim Path가 **LeKiwi, /LeKiwi**인지 먼저 확인합니다.
+
+3. 참조할 파일 선택 창에서 주소를 다음 폴더로 이동합니다.
+
+```text
+/opt/lekiwi/isaac_sim/assets/lekiwi_soarm/usd/
+```
+
+4. 아래 File name에 **`lekiwi_soarm.usd`**를 입력하고 **Select**를 클릭합니다. 별도 Prim Path 선택이 요구되지 않으면 자산의 기본 Prim을 사용합니다.
+![Reference 파일 창에서 로봇 USD 선택](images/step-reference-file.png)
+
+5. 잠시 기다렸다가 Stage의 LeKiwi 왼쪽 펼치기 표시를 클릭합니다. 로봇의 부품·관절과 뷰포트의 로봇 형상이 나타나는지 확인합니다.
+6. Stage에서 **맨 위 LeKiwi**를 다시 클릭합니다. Transform을 다음처럼 입력합니다.
+
+| LeKiwi의 줄 | X | Y | Z |
+|---|---|---|---|
+| Translate | `0` | `0` | `0.055` |
+| Rotate 또는 Orient | `0` | `0` | `0` |
+| Scale | `1` | `1` | `1` |
+
+![로봇 루트 경로와 Z 0.055 배치](images/step-robot-transform.png)
+
+일반 설치에서는 저장소의 `isaac_sim/assets/lekiwi_soarm/usd/lekiwi_soarm.usd`를 선택합니다.
+파일이 안 보이면 호스트 파일 탐색기가 아닌 **Isaac Sim 안의 파일 창**인지 확인합니다. `/opt/lekiwi/`는 수업 Docker 안의 경로입니다.
+참조가 실패하면 경로와 오류를 확인합니다. 빈 그룹만 보인다고 같은 로봇을 반복해서 추가하지 않습니다.
+
+이 자산은 형상·강체·충돌·관절을 포함합니다. 로봇 각 부품에 Rigid Body나 관절을 다시 추가하지 않습니다.
+**원본 로봇 USD를 열어서 덮어쓰지 말고, 지금 만든 my_lekiwi_scene.usda에 배치를 저장**합니다.
 
 ## 2. 바닥과 큐브 만들기
 
-설정은 Stop 상태에서 바꿉니다. Ground의 Size=1, Scale=`(7.4,7.4,0.1)`, Translate=`(0,0,-0.071)`로 맞춥니다.
-바닥 윗면 높이는 `-0.021 m`이며 Collider만 있습니다.
+### 2.1. Ground를 코스 높이에 맞추기
 
-1. World 아래에 `Create > Shape > Cube`로 `PracticeCube`를 만듭니다.
-2. Size=`0.04`, Scale=`(1,1,1)`, Rotate=`(0,0,0)`, Translate=`(0.7,0.35,0.001)`을 입력합니다.
-3. `Add > Physics > Rigid Body`, `Collider`, `Mass`를 추가합니다. 질량은 `0.035` kg, Disable Gravity는 해제합니다.
+1. Stage에서 **World → Ground**를 클릭합니다. 로봇 아래의 다른 부품을 선택하지 않습니다.
+2. Prim Path가 **`/World/Ground`**인지 확인합니다.
+3. Transform 값을 입력합니다. 숫자는 Ctrl+클릭으로 바꾸고 Enter로 확정합니다.
 
-![Shape Cube를 추가하는 메뉴](images/manual-create-cube.png)
+| Ground의 줄 | X | Y | Z |
+|---|---|---|---|
+| Translate | `0` | `0` | `-0.071` |
+| Rotate 또는 Orient | `0` | `0` | `0` |
+| Scale | `7.4` | `7.4` | `0.1` |
 
-사진은 기존 바구니 장면의 메뉴 위치입니다. 이번 실습의 값은 위 표기를 따릅니다.
+![Ground의 위치와 크기 세 칸](images/step-ground-transform.png)
+
+4. Property 검색창에 `size`를 입력해 **Size=`1`**을 확인합니다. 검색어를 지웁니다.
+5. `collision`을 검색해 **Collision Enabled가 체크**인지 확인합니다. 바닥에는 Collider만 두고 Rigid Body는 추가하지 않습니다.
+
+바닥 윗면은 `-0.071 + 0.1/2 = -0.021 m`입니다. 뒤에서 바구니 밑면도 이 높이에 맞춥니다.
+
+### 2.2. PracticeCube 만들기
+
+1. Stage에서 **World**를 클릭합니다.
+2. **Create → Shape → Cube**를 선택합니다.
+
+![작은 큐브를 만드는 Shape Cube 메뉴](images/guide-create-cube.png)
+
+3. 새 Cube를 **`PracticeCube`**로 이름 바꾸고 World 아래로 옮깁니다. 경로는 **`/World/PracticeCube`**입니다.
+4. Transform을 입력합니다.
+
+| PracticeCube의 줄 | X | Y | Z |
+|---|---|---|---|
+| Translate | `0.7` | `0.35` | `0.001` |
+| Rotate 또는 Orient | `0` | `0` | `0` |
+| Scale | `1` | `1` | `1` |
+
+![PracticeCube의 위치 입력](images/step-cube-transform.png)
+
+5. Property에서 `size`를 검색해 **Size=`0.04`**를 입력합니다. 한 변이 4 cm인 큐브입니다. 검색어를 지웁니다.
+![PracticeCube의 한 변 길이 0.04 입력](images/step-cube-size.png)
+
+6. **PracticeCube를 선택한 채** Add → Physics에서 **Rigid Body**, **Collider**, **Mass**를 각각 추가합니다.
+
+![큐브에 Rigid Body를 추가하는 메뉴](images/guide-add-rigid-body.png)
+
+![큐브에 Collider를 추가하는 메뉴](images/guide-add-collider.png)
+
+![큐브에 Mass를 추가하는 메뉴](images/guide-add-mass.png)
+
+7. Property에서 `mass`를 검색해 **Mass=`0.035` kg**을 입력합니다. 검색어를 지웁니다.
+![PracticeCube의 Physics Mass에 0.035 입력](images/step-cube-mass.png)
+
+8. Rigid Body Enabled·Collision Enabled는 체크, **Disable Gravity는 해제**인지 확인합니다.
+
+이제 로봇 옆 바닥 가까이에 작은 큐브가 있습니다. 사진과 색이 달라도 크기·위치·물리 설정을 기준으로 확인합니다.
 
 ## 3. 바닥과 네 벽으로 열린 바구니 만들기
 
-1. World 아래 `Create > Xform`으로 `Basket`을 만듭니다. Translate=`(1.2,0,-0.021)`, Rotate=0, Scale=1로 둡니다.
-2. Basket 아래 `Create > Shape > Cube`로 다섯 객체를 만들고 아래 이름과 값을 입력합니다.
-3. 모두 Size=1, Rotate=0입니다. Translate는 **Basket 기준 로컬 위치**이며 각 객체에 Collider만 추가합니다.
+### 3.1. Basket 그룹의 위치부터 정하기
 
-| 이름 | Translate (m) | Scale |
+1. Stage의 **World를 선택 → Create → Xform**으로 그룹을 만듭니다.
+2. 이름을 **`Basket`**으로 바꾸고 **`/World/Basket`** 경로를 확인합니다.
+3. Basket의 **Translate=`(1.2, 0, -0.021)`**, 회전=`(0,0,0)`, Scale=`(1,1,1)`을 입력합니다.
+
+![Basket 부모의 위치와 경로](images/step-basket-transform.png)
+
+Basket 자체에는 Rigid Body나 Collider를 추가하지 않습니다. 아래 다섯 Cube가 바구니의 실제 표면입니다.
+
+### 3.2. 바구니 밑판 Bottom 만들기
+
+1. **Basket를 선택**하고 Create → Shape → Cube를 클릭합니다.
+2. 새 Cube를 **`Bottom`**으로 이름 바꿉니다. Basket 밖에 생겼으면 Basket 위로 드래그합니다.
+3. Prim Path가 **`/World/Basket/Bottom`**인지 확인한 뒤 값을 입력합니다.
+
+| Bottom의 줄 | X | Y | Z |
+|---|---|---|---|
+| Translate | `0` | `0` | `0.0075` |
+| Rotate 또는 Orient | `0` | `0` | `0` |
+| Scale | `0.44` | `0.44` | `0.015` |
+
+![Bottom의 로컬 위치와 크기](images/step-bottom-transform.png)
+
+4. `size`를 검색해 **Size=`1`**로 바꾸고 검색어를 지웁니다.
+5. **Bottom에 Add → Physics → Collider만 추가**합니다. Collision Enabled를 확인합니다.
+
+위치는 **Basket 기준 로컬 위치**입니다. Bottom의 Z 칸에 바닥의 월드 높이 `-0.021`을 다시 넣지 않습니다.
+
+### 3.3. 네 벽을 하나씩 만들기
+
+각 벽마다 **Basket 클릭 → Create → Shape → Cube → 이름 변경 → Basket 아래 경로 확인 → 값 입력 → Collider 추가**를 반복합니다.
+이름을 바꾼 것만으로 모양이 바뀌지는 않습니다. 네 벽의 Size=`1`, 회전=`0`을 모두 확인합니다.
+
+| 이름 | Translate X / Y / Z | Scale X / Y / Z |
 |---|---|---|
-| Bottom | `(0,0,0.0075)` | `(0.44,0.44,0.015)` |
-| Left | `(0,0.2125,0.09)` | `(0.41,0.015,0.18)` |
-| Right | `(0,-0.2125,0.09)` | `(0.41,0.015,0.18)` |
-| Front | `(0.2125,0,0.09)` | `(0.015,0.44,0.18)` |
-| Back | `(-0.2125,0,0.09)` | `(0.015,0.44,0.18)` |
+| `Left` | `0` / `0.2125` / `0.09` | `0.41` / `0.015` / `0.18` |
+| `Right` | `0` / `-0.2125` / `0.09` | `0.41` / `0.015` / `0.18` |
+| `Front` | `0.2125` / `0` / `0.09` | `0.015` / `0.44` / `0.18` |
+| `Back` | `-0.2125` / `0` / `0.09` | `0.015` / `0.44` / `0.18` |
 
-4. Viewport의 표시 메뉴에서 `Show By Type > Physics > Colliders > Selected`로 선택한 벽과 바닥의 접촉 형상을 확인합니다.
-5. 입구가 비어 있는지 확인합니다. 바구니 전체를 덮는 하나의 Collider는 만들지 않습니다.
+1. 먼저 Left 한 개를 완성합니다. 경로는 `/World/Basket/Left`입니다.
+![Left 벽의 위치와 크기](images/step-left-transform.png)
 
-![바닥과 네 벽의 Collider가 분리된 바구니 예시](images/manual-basket-colliders.png)
+2. Basket를 다시 선택해 Right를 만들고 **Y의 마이너스 부호**를 확인합니다.
+![Right 벽의 Y 마이너스 부호 확인](images/step-right-transform.png)
 
-이 사진은 기존 바구니 실습의 형상 확인 화면입니다. 본인이 만든 다섯 객체도 입구를 막지 않아야 합니다.
+3. Basket를 다시 선택해 Front를 만듭니다. 이번에는 **Scale X가 얇고 Y가 길어집니다.**
+![Front 벽의 X 위치와 얇은 X 크기](images/step-front-transform.png)
 
-Stage에서 World를 선택하고 낙하를 확인할 큐브를 하나 더 만듭니다. 경로는 `/World/DropCube`, Size=0.04, Scale=1, Rotate=0,
-월드 Translate=`(1.2,0,0.4)`로 두고 Rigid Body·Collider·Mass=0.035를 추가합니다.
-Play로 큐브가 바구니 안에 안착하는지 보고 Stop합니다. 이 확인에서는 로봇을 조작하지 않습니다.
+4. 마지막으로 Back을 만들고 **Translate X의 마이너스 부호**를 확인합니다.
+![Back 벽의 X 마이너스 부호 확인](images/step-back-transform.png)
+
+5. 네 벽에도 Collider만 추가합니다. **Rigid Body는 추가하지 않습니다.**
+
+Stage는 다음 구조가 됩니다. 다섯 부품은 서로 부모·자식이 아니라 모두 Basket의 자식입니다.
+
+```text
+World
+└─ Basket
+   ├─ Bottom
+   ├─ Left
+   ├─ Right
+   ├─ Front
+   └─ Back
+```
+
+### 3.4. 입구가 열린 충돌 구조 확인
+
+1. Stage에서 Bottom을 클릭하고 Ctrl을 누른 채 Left·Right·Front·Back을 클릭해 **다섯 Cube를 선택**합니다.
+2. 뷰포트 위쪽의 **눈 모양 표시 메뉴**를 엽니다.
+3. **Show By Type → Physics → Colliders → Selected**를 선택합니다.
+![충돌 표시 메뉴를 차례로 펼치는 위치](images/step-collider-menu.png)
+
+4. 다섯 부품의 충돌 윤곽이 보이는지 확인합니다. 메뉴 위치는 [NVIDIA 물리 안내](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/physics/simulation_fundamentals.html)의 충돌 형상 표시 순서와 같습니다.
+
+![선택한 바구니의 다섯 충돌 형상](images/step-basket-colliders.png)
+
+표시된 충돌 윤곽에서 **밑판과 네 벽, 열린 윗면**을 확인합니다.
+위쪽 전체를 덮는 하나의 충돌 상자가 있으면 큐브가 안으로 들어가지 못합니다. Basket 부모에 큰 Collider를 추가하지 않습니다.
+
+### 3.5. DropCube를 떨어뜨려 확인
+
+1. 표시 메뉴를 닫고 **Stage의 World**를 클릭합니다. Basket를 선택한 채 만들지 않습니다.
+2. Create → Shape → Cube로 새 물체를 만들고 **`DropCube`**로 이름 바꿉니다.
+3. 경로가 **`/World/DropCube`**인지 확인합니다.
+4. **Translate=`(1.2,0,0.4)`**, 회전=`0`, Scale=`1`, **Size=`0.04`**를 입력합니다.
+![DropCube의 바구니 위 시작 위치](images/step-drop-transform.png)
+
+5. Rigid Body·Collider·Mass를 추가하고 **Mass=`0.035`**, Disable Gravity=해제로 맞춥니다.
+6. 왼쪽 **▶ Play**를 한 번 누릅니다. DropCube가 내려와 바구니 안에 안착하는지 관찰합니다.
+![DropCube가 바구니 안에 안착한 결과](images/step-drop-result.png)
+
+7. **■ Stop**으로 처음 높이에 되돌립니다. 이 단계에서는 키보드로 로봇을 조작하지 않습니다.
+
+큐브가 바구니 밖에 떨어지면 경로·월드 위치를, 통과하면 Bottom과 큐브의 Collider를 확인합니다.
+바구니 전체가 떨어지면 벽·밑판·Basket에 잘못 추가한 Rigid Body가 없는지 확인합니다.
 
 ## 4. 관찰 카메라 추가하기
 
-1. Viewport를 Perspective로 두고 마우스로 바구니와 큐브가 함께 보이는 시점을 잡습니다.
-2. Viewport 위쪽 카메라 메뉴의 `Camera > Create from View`를 선택합니다.
-3. Stage에서 새 카메라 이름을 `OverviewCamera`로 바꾸고, 카메라 선택 메뉴에서 이 카메라를 선택합니다.
-4. Camera 타입의 객체를 클릭해 Property의 Focal Length·Aperture·Clipping을 확인합니다.
-5. Focal Length를 현재 값의 두 배로 바꿔 보이는 범위를 비교한 뒤 원래 값으로 복원합니다.
+### 4.1. 현재 시점을 카메라로 만들기
 
-현재 시점으로 Camera를 만드는 메뉴는 [NVIDIA 5.1 카메라 안내](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/robot_setup_tutorials/tutorial_gui_camera_sensors.html)에 설명되어 있습니다.
+1. Stop 상태에서 뷰포트 위쪽의 활성 시점이 **Perspective**인지 확인합니다.
+2. Stage의 Basket를 선택하고 뷰포트에 마우스를 놓은 뒤 **F**를 눌러 바구니를 화면에 맞춥니다.
+3. 마우스 휠로 조금 뒤로 물러나 큐브와 바구니가 함께 보이게 합니다. 아직 Camera 객체를 조절하는 단계가 아닙니다.
+4. 뷰포트 위쪽 **Perspective 버튼을 클릭 → 메뉴 아래쪽 Create from View**를 클릭합니다. Cameras 하위 목록과 구분합니다.
 
-![Camera 타입에서 확인하는 렌즈 속성](images/manual-camera-properties.png)
+![현재 시점으로 카메라를 만드는 메뉴](images/step-create-from-view.png)
+5. Stage에 생긴 새 Camera를 **`OverviewCamera`**로 이름 바꿉니다.
+6. 뷰포트의 카메라 메뉴에서 **OverviewCamera**를 선택하고, 활성 시점 이름도 바뀌었는지 확인합니다.
 
-사진은 전방 카메라의 속성 위치입니다. 여기서는 직접 만든 OverviewCamera의 값을 확인합니다.
-이 카메라는 장면을 관찰하는 고정 카메라입니다. 데이터 수집에 사용하는 전방·손목 카메라는 다음 코드 절에서 별도로 확인합니다.
+![뷰포트 위쪽에서 활성 시점 이름을 확인하는 위치](images/guide-view-menu.png)
+
+사진처럼 활성 시점 이름이 **OverviewCamera**로 바뀌어야 합니다.
+Create from View는 현재 보이는 시점을 카메라로 만드는 기능입니다. [NVIDIA 카메라 안내](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/robot_setup_tutorials/tutorial_gui_camera_sensors.html)에도 이 순서가 설명되어 있습니다.
+
+### 4.2. 렌즈 변경과 복원
+
+1. Stage에서 **OverviewCamera**를 클릭합니다. Type이 Camera인지 확인합니다.
+2. Property의 **Camera → Lens → Focal Length**를 찾습니다. 기존 값을 먼저 읽습니다.
+
+![Camera의 Lens Focal Length 숫자 칸 위치](images/guide-camera-focal.png)
+
+**본인 OverviewCamera의 현재 값**을 기준으로 비교합니다. Create from View로 가져온 시점에 따라 값이 달라질 수 있습니다.
+
+3. 현재 값의 **두 배**를 입력합니다. 예를 들어 24이면 48입니다.
+4. 바구니가 더 크게 보이고 주변이 덜 보이는지 확인합니다.
+5. **처음 읽은 값으로 복원**합니다. 촬영 시점에서는 마우스로 카메라를 움직이지 않습니다.
+
+OverviewCamera는 관찰용 고정 카메라입니다. 마지막 기록 프로그램의 전방·손목 카메라와는 별개입니다.
 
 ## 5. 저장하고 직접 만든 환경 정리하기
 
-Stop 상태에서 `File > Save`로 `my_lekiwi_scene.usda`를 저장합니다. Docker 수업에서는 `/data/isaacsim_basic/` 아래를 사용합니다.
-원본 로봇 자산 파일은 덮어쓰지 않습니다. `File > Open`으로 본인의 장면을 다시 열어 로봇·큐브·바구니·카메라를 확인합니다.
+1. Stop 상태인지 확인합니다. DropCube는 처음 높이로 돌아와야 합니다.
+2. Stage에서 `/LeKiwi`, World 아래 Ground·PracticeCube·Basket·DropCube와 OverviewCamera를 확인합니다.
+3. **File → Save**로 `my_lekiwi_scene.usda`를 저장합니다. 처음에 사본 저장을 건너뛰었다면 Save As에서 이 이름과 `*.usda` 형식을 선택합니다.
+![직접 구성한 환경을 my_lekiwi_scene으로 저장](images/step-save-scene.png)
 
-저장한 장면에서 바구니 Collider·낙하 결과·카메라 시점을 직접 확인합니다.
-바구니 입구를 하나의 충돌 형상이 막으면 큐브가 들어갈 수 없는 이유를 설명합니다.
-**이 USD에는 장면이 저장됩니다. 사람의 시연이나 시간별 RGB·명령 데이터는 아직 기록하지 않았습니다.**
+4. **File → Open**으로 `/data/isaacsim_basic/my_lekiwi_scene.usda`를 다시 엽니다.
+5. 로봇·열린 바구니·큐브가 보이는지, OverviewCamera를 선택하면 시점이 바뀌는지 확인합니다.
+
+**지금 저장한 USD는 장면입니다. 사람의 시연이나 시간별 RGB·명령 데이터는 아직 기록하지 않았습니다.**
+아래 코드 절에서는 직접 만든 구성 요소를 코드와 비교하고, 실제 수집용 코스를 별도로 실행합니다.
 
 ## 6. 마지막: 같은 작업을 코드로 구현하기
 

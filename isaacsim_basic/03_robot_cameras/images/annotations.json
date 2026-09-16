@@ -361,5 +361,740 @@
         "label": "Rotate를 선택합니다. 이미 Rotate가 있으면 중복 추가하지 않습니다."
       }
     ]
+  },
+  {
+    "name": "guide-open-menu",
+    "title": "File에서 Open 선택",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          110,
+          308,
+          26
+        ],
+        "label": "Open 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      220
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-open-dialog",
+    "title": "폴더와 파일 이름 입력",
+    "marks": [
+      {
+        "box": [
+          308,
+          285,
+          1001,
+          25
+        ],
+        "label": "주소: /data/isaacsim_basic/ 입력 → Enter"
+      },
+      {
+        "box": [
+          260,
+          676,
+          534,
+          26
+        ],
+        "label": "File name: base_scene.usda"
+      },
+      {
+        "box": [
+          1096,
+          676,
+          119,
+          26
+        ],
+        "label": "Open File 클릭"
+      }
+    ],
+    "crop": [
+      255,
+      253,
+      1082,
+      456
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-save-menu",
+    "title": "Save As 열기",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          221,
+          308,
+          24
+        ],
+        "label": "Save As 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-create-cube",
+    "title": "Shape Cube 생성",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          70,
+          164,
+          25
+        ],
+        "label": "Shape에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          229,
+          137,
+          112,
+          24
+        ],
+        "label": "Cube 클릭. Mesh가 아닙니다."
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      360,
+      265
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-create-xform",
+    "title": "Xform 그룹 생성",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          192,
+          163,
+          23
+        ],
+        "label": "Xform 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      380,
+      370
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-create-camera",
+    "title": "World 선택 후 Camera 생성",
+    "marks": [
+      {
+        "box": [
+          1163,
+          103,
+          270,
+          24
+        ],
+        "label": "World를 부모로 사용할 준비를 합니다. 생성 후 Camera의 경로를 확인합니다."
+      },
+      {
+        "box": [
+          58,
+          2,
+          49,
+          21
+        ],
+        "label": "상단 Create 메뉴를 엽니다."
+      },
+      {
+        "box": [
+          62,
+          143,
+          161,
+          25
+        ],
+        "label": "Camera를 선택하고 이름을 Camera로 맞춥니다."
+      }
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-add-rotation",
+    "title": "Rotate 추가 메뉴",
+    "marks": [
+      {
+        "box": [
+          1141,
+          544,
+          56,
+          26
+        ],
+        "label": "Camera의 Property에서 Add를 엽니다."
+      },
+      {
+        "box": [
+          1144,
+          686,
+          110,
+          25
+        ],
+        "label": "TransformOp 하위 메뉴를 엽니다."
+      },
+      {
+        "box": [
+          1255,
+          787,
+          146,
+          24
+        ],
+        "label": "Rotate를 선택합니다. 이미 Rotate가 있으면 중복 추가하지 않습니다."
+      }
+    ],
+    "wrap_labels": true,
+    "crop": [
+      1130,
+      534,
+      295,
+      290
+    ]
+  },
+  {
+    "name": "step-cube-transform",
+    "title": "관찰용 큐브 위치",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/PracticeCube"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          97
+        ],
+        "label": "Translate Z=0.7, 회전 0, Scale 1"
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      312
+    ]
+  },
+  {
+    "name": "guide-camera-position",
+    "title": "Camera의 위치와 크기",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      345,
+      485,
+      249
+    ],
+    "marks": [
+      {
+        "box": [
+          1229,
+          375,
+          365,
+          28
+        ],
+        "label": "경로: /World/Camera"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          29
+        ],
+        "label": "Translate: 1.2, -1.6, 1.1"
+      },
+      {
+        "box": [
+          1268,
+          545,
+          310,
+          28
+        ],
+        "label": "Scale: 1, 1, 1"
+      }
+    ]
+  },
+  {
+    "name": "guide-camera-rotation",
+    "title": "Camera 회전 입력",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      436,
+      485,
+      160
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          515,
+          452,
+          28
+        ],
+        "label": "Rotate XYZ: 69.443955, 0, 36.869898"
+      }
+    ]
+  },
+  {
+    "name": "guide-camera-focal",
+    "title": "Focal Length 입력",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      203
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "Camera 선택 후 focal 검색"
+      },
+      {
+        "box": [
+          1318,
+          447,
+          260,
+          28
+        ],
+        "label": "Lens → Focal Length: 24"
+      }
+    ]
+  },
+  {
+    "name": "guide-lens-fields",
+    "title": "독립 카메라의 Aperture",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      274
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "Property 검색어: aperture"
+      },
+      {
+        "box": [
+          1318,
+          447,
+          260,
+          28
+        ],
+        "label": "Horizontal Aperture=20.955"
+      },
+      {
+        "box": [
+          1318,
+          515,
+          260,
+          28
+        ],
+        "label": "Vertical Aperture=15.2908"
+      }
+    ]
+  },
+  {
+    "name": "step-clipping",
+    "title": "Clipping Range 입력",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      230
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "Property 검색어: clipping"
+      },
+      {
+        "box": [
+          1318,
+          475,
+          260,
+          28
+        ],
+        "label": "Clipping Range: 왼쪽 0.01, 오른쪽 100"
+      }
+    ]
+  },
+  {
+    "name": "step-camera-picker",
+    "title": "뷰포트 카메라 선택",
+    "wrap_labels": true,
+    "crop": [
+      259,
+      26,
+      360,
+      230
+    ],
+    "marks": [
+      {
+        "box": [
+          275,
+          31,
+          110,
+          29
+        ],
+        "label": "Perspective 버튼 클릭"
+      },
+      {
+        "box": [
+          276,
+          77,
+          228,
+          26
+        ],
+        "label": "Cameras에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          505,
+          77,
+          100,
+          26
+        ],
+        "label": "오른쪽 Camera 클릭"
+      }
+    ]
+  },
+  {
+    "name": "guide-camera-view",
+    "title": "Camera 시점과 Focal Length 24",
+    "wrap_labels": true,
+    "crop": [
+      46,
+      25,
+      1568,
+      641
+    ],
+    "marks": [
+      {
+        "box": [
+          276,
+          32,
+          87,
+          30
+        ],
+        "label": "활성 시점 이름: Camera"
+      },
+      {
+        "box": [
+          545,
+          120,
+          85,
+          77
+        ],
+        "label": "같은 위치의 관찰용 큐브"
+      },
+      {
+        "box": [
+          1318,
+          447,
+          260,
+          28
+        ],
+        "label": "Focal Length=24"
+      }
+    ]
+  },
+  {
+    "name": "step-focal48",
+    "title": "같은 위치에서 Focal Length 48",
+    "wrap_labels": true,
+    "crop": [
+      46,
+      25,
+      1568,
+      641
+    ],
+    "marks": [
+      {
+        "box": [
+          276,
+          32,
+          87,
+          30
+        ],
+        "label": "Camera 시점을 유지합니다."
+      },
+      {
+        "box": [
+          1318,
+          447,
+          260,
+          28
+        ],
+        "label": "Focal Length만 48로 변경합니다."
+      }
+    ]
+  },
+  {
+    "name": "step-camera-parent",
+    "title": "CameraMount 아래 Camera",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      184,
+      485,
+      412
+    ],
+    "marks": [
+      {
+        "box": [
+          1157,
+          204,
+          332,
+          44
+        ],
+        "label": "CameraMount 아래 들여쓰기된 Camera"
+      },
+      {
+        "box": [
+          1229,
+          375,
+          365,
+          28
+        ],
+        "label": "경로: /World/CameraMount/Camera"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          93
+        ],
+        "label": "자식 Camera의 위치·회전은 기존 값 유지"
+      }
+    ]
+  },
+  {
+    "name": "step-mount-move",
+    "title": "부모 카메라 그룹 이동",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      308
+    ],
+    "marks": [
+      {
+        "box": [
+          1229,
+          375,
+          365,
+          28
+        ],
+        "label": "Camera가 아닌 CameraMount를 선택"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          30
+        ],
+        "label": "부모 CameraMount의 Translate X=0.3"
+      }
+    ]
+  },
+  {
+    "name": "step-mount-rotate",
+    "title": "부모 카메라 그룹 회전",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      308
+    ],
+    "marks": [
+      {
+        "box": [
+          1229,
+          375,
+          365,
+          28
+        ],
+        "label": "Camera가 아닌 CameraMount를 선택"
+      },
+      {
+        "box": [
+          1268,
+          514,
+          310,
+          30
+        ],
+        "label": "부모 CameraMount의 Rotate Z=15"
+      }
+    ]
+  },
+  {
+    "name": "guide-save-format",
+    "title": "my_camera와 usda 형식",
+    "wrap_labels": true,
+    "crop": [
+      266,
+      264,
+      1083,
+      450
+    ],
+    "marks": [
+      {
+        "box": [
+          317,
+          294,
+          999,
+          26
+        ],
+        "label": "폴더: /data/isaacsim_basic/"
+      },
+      {
+        "box": [
+          337,
+          686,
+          348,
+          27
+        ],
+        "label": "이번 파일 이름: my_camera"
+      },
+      {
+        "box": [
+          804,
+          686,
+          300,
+          27
+        ],
+        "label": "형식: *.usda"
+      },
+      {
+        "box": [
+          1107,
+          686,
+          117,
+          27
+        ],
+        "label": "이름·형식 확인 후 Save"
+      }
+    ]
+  },
+  {
+    "name": "step-cube-size",
+    "title": "관찰용 큐브 크기",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      214
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "PracticeCube 선택 후 size 검색"
+      },
+      {
+        "box": [
+          1318,
+          447,
+          260,
+          27
+        ],
+        "label": "Size=0.1. 한 변 10 cm입니다."
+      }
+    ]
   }
 ]

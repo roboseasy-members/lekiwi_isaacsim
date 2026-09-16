@@ -346,5 +346,1115 @@
         "label": "LEKIWI_DATASET_JOB result=PASS는 검사 완료 표시입니다."
       }
     ]
+  },
+  {
+    "name": "guide-open-menu",
+    "title": "File에서 Open 선택",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          110,
+          308,
+          26
+        ],
+        "label": "Open 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      220
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-open-dialog",
+    "title": "폴더와 파일 이름 입력",
+    "marks": [
+      {
+        "box": [
+          308,
+          285,
+          1001,
+          25
+        ],
+        "label": "주소: /data/isaacsim_basic/ 입력 → Enter"
+      },
+      {
+        "box": [
+          260,
+          676,
+          534,
+          26
+        ],
+        "label": "File name: base_scene.usda"
+      },
+      {
+        "box": [
+          1096,
+          676,
+          119,
+          26
+        ],
+        "label": "Open File 클릭"
+      }
+    ],
+    "crop": [
+      255,
+      253,
+      1082,
+      456
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-save-menu",
+    "title": "Save As 열기",
+    "marks": [
+      {
+        "box": [
+          3,
+          1,
+          30,
+          23
+        ],
+        "label": "File 클릭"
+      },
+      {
+        "box": [
+          16,
+          221,
+          308,
+          24
+        ],
+        "label": "Save As 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      350,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-create-xform",
+    "title": "Xform 그룹 생성",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          192,
+          163,
+          23
+        ],
+        "label": "Xform 클릭"
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      380,
+      370
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-create-cube",
+    "title": "Shape Cube 생성",
+    "marks": [
+      {
+        "box": [
+          58,
+          1,
+          46,
+          23
+        ],
+        "label": "Create 클릭"
+      },
+      {
+        "box": [
+          61,
+          70,
+          164,
+          25
+        ],
+        "label": "Shape에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          229,
+          137,
+          112,
+          24
+        ],
+        "label": "Cube 클릭. Mesh가 아닙니다."
+      }
+    ],
+    "crop": [
+      0,
+      0,
+      360,
+      265
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-add-rigid-body",
+    "title": "Rigid Body 메뉴",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "메뉴 위치 예시입니다. 선택할 객체는 본문을 따릅니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          607,
+          239,
+          24
+        ],
+        "label": "Rigid Body 클릭"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      610
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-add-mass",
+    "title": "Mass 메뉴",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "메뉴 위치 예시입니다. 선택할 객체는 본문을 따릅니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          627,
+          239,
+          24
+        ],
+        "label": "Mass 클릭"
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      610
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "guide-add-collider",
+    "title": "Collider 메뉴",
+    "marks": [
+      {
+        "box": [
+          1215,
+          346,
+          359,
+          26
+        ],
+        "label": "메뉴 위치 예시입니다. 선택할 객체는 본문을 따릅니다."
+      },
+      {
+        "box": [
+          1128,
+          346,
+          56,
+          25
+        ],
+        "label": "Add 클릭"
+      },
+      {
+        "box": [
+          1129,
+          567,
+          136,
+          24
+        ],
+        "label": "Physics에 마우스를 올립니다."
+      },
+      {
+        "box": [
+          1266,
+          627,
+          239,
+          25
+        ],
+        "label": "Collider 클릭. 강체 추가 여부는 본문을 따릅니다."
+      }
+    ],
+    "crop": [
+      1115,
+      285,
+      479,
+      470
+    ],
+    "wrap_labels": true
+  },
+  {
+    "name": "step-robot-transform",
+    "title": "로봇 배치",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /LeKiwi"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "step-ground-transform",
+    "title": "바닥 위치와 크기",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/Ground"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "step-cube-transform",
+    "title": "수집용 큐브 위치",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/PracticeCube"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "step-basket-transform",
+    "title": "바구니 부모 그룹",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/Basket"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "step-bottom-transform",
+    "title": "바구니 밑판",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/Basket/Bottom"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "step-left-transform",
+    "title": "바구니 Left 벽",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/Basket/Left"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "step-right-transform",
+    "title": "바구니 Right 벽",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/Basket/Right"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "step-front-transform",
+    "title": "바구니 Front 벽",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/Basket/Front"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "step-back-transform",
+    "title": "바구니 Back 벽",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/Basket/Back"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "step-drop-transform",
+    "title": "낙하 확인용 큐브",
+    "wrap_labels": true,
+    "marks": [
+      {
+        "box": [
+          1228,
+          376,
+          366,
+          26
+        ],
+        "label": "경로: /World/DropCube"
+      },
+      {
+        "box": [
+          1268,
+          480,
+          310,
+          98
+        ],
+        "label": "위에서부터 Translate·Rotate·Scale을 본문 표와 맞춥니다."
+      }
+    ],
+    "crop": [
+      1129,
+      288,
+      485,
+      309
+    ]
+  },
+  {
+    "name": "guide-add-reference",
+    "title": "LeKiwi에 Reference 추가",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      286
+    ],
+    "marks": [
+      {
+        "box": [
+          1230,
+          345,
+          363,
+          29
+        ],
+        "label": "LeKiwi 하나만 선택합니다."
+      },
+      {
+        "box": [
+          1143,
+          345,
+          53,
+          26
+        ],
+        "label": "Property의 Add 클릭"
+      },
+      {
+        "box": [
+          1144,
+          387,
+          109,
+          24
+        ],
+        "label": "Reference 클릭"
+      }
+    ]
+  },
+  {
+    "name": "step-reference-file",
+    "title": "제공된 로봇 USD 선택",
+    "wrap_labels": true,
+    "crop": [
+      266,
+      264,
+      1083,
+      450
+    ],
+    "marks": [
+      {
+        "box": [
+          317,
+          294,
+          999,
+          26
+        ],
+        "label": "폴더: /opt/lekiwi/isaac_sim/assets/lekiwi_soarm/usd/"
+      },
+      {
+        "box": [
+          337,
+          686,
+          463,
+          27
+        ],
+        "label": "파일 이름: lekiwi_soarm.usd"
+      },
+      {
+        "box": [
+          974,
+          457,
+          350,
+          25
+        ],
+        "label": "Prim Path는 <Default Prim> 유지"
+      },
+      {
+        "box": [
+          1107,
+          686,
+          117,
+          27
+        ],
+        "label": "Select로 참조 연결"
+      }
+    ]
+  },
+  {
+    "name": "step-cube-size",
+    "title": "큐브 한 변 0.04 m",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      214
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "PracticeCube 선택 후 size 검색"
+      },
+      {
+        "box": [
+          1318,
+          447,
+          260,
+          27
+        ],
+        "label": "Size=0.04"
+      }
+    ]
+  },
+  {
+    "name": "step-cube-mass",
+    "title": "큐브 질량 0.035 kg",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      348
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "PracticeCube 선택 후 mass 검색"
+      },
+      {
+        "box": [
+          1318,
+          557,
+          260,
+          28
+        ],
+        "label": "아래 Physics → Mass 입력 칸: 0.035"
+      }
+    ]
+  },
+  {
+    "name": "step-collider-menu",
+    "title": "선택한 충돌 형상 표시",
+    "wrap_labels": true,
+    "crop": [
+      228,
+      26,
+      905,
+      486
+    ],
+    "marks": [
+      {
+        "box": [
+          237,
+          33,
+          27,
+          29
+        ],
+        "label": "눈 모양 표시 메뉴"
+      },
+      {
+        "box": [
+          236,
+          102,
+          237,
+          27
+        ],
+        "label": "Show By Type"
+      },
+      {
+        "box": [
+          473,
+          264,
+          187,
+          29
+        ],
+        "label": "Physics"
+      },
+      {
+        "box": [
+          661,
+          342,
+          218,
+          29
+        ],
+        "label": "Colliders"
+      },
+      {
+        "box": [
+          881,
+          368,
+          247,
+          28
+        ],
+        "label": "Selected 클릭"
+      }
+    ]
+  },
+  {
+    "name": "step-basket-colliders",
+    "title": "바구니의 열린 충돌 구조",
+    "wrap_labels": true,
+    "crop": [
+      47,
+      25,
+      1567,
+      641
+    ],
+    "marks": [
+      {
+        "box": [
+          377,
+          246,
+          410,
+          319
+        ],
+        "label": "밑판과 네 벽의 충돌 윤곽. 위쪽을 덮는 면은 없습니다."
+      },
+      {
+        "box": [
+          1137,
+          106,
+          450,
+          140
+        ],
+        "label": "Bottom·Left·Right·Front·Back 다섯 부품 선택"
+      }
+    ]
+  },
+  {
+    "name": "step-drop-result",
+    "title": "큐브가 바구니 안에 안착",
+    "wrap_labels": true,
+    "crop": [
+      0,
+      25,
+      1614,
+      641
+    ],
+    "marks": [
+      {
+        "box": [
+          558,
+          383,
+          73,
+          65
+        ],
+        "label": "밑판 위에 놓인 DropCube"
+      },
+      {
+        "box": [
+          1490,
+          480,
+          89,
+          29
+        ],
+        "label": "안착 뒤 중심 높이는 약 0.014 m"
+      },
+      {
+        "box": [
+          6,
+          327,
+          31,
+          30
+        ],
+        "label": "Stop을 누르면 시작 높이 0.4 m로 복원"
+      }
+    ]
+  },
+  {
+    "name": "step-create-from-view",
+    "title": "현재 시점으로 Camera 만들기",
+    "wrap_labels": true,
+    "crop": [
+      260,
+      26,
+      360,
+      230
+    ],
+    "marks": [
+      {
+        "box": [
+          276,
+          31,
+          109,
+          30
+        ],
+        "label": "Perspective 메뉴 클릭"
+      },
+      {
+        "box": [
+          276,
+          212,
+          230,
+          30
+        ],
+        "label": "아래 Create from View 클릭"
+      }
+    ]
+  },
+  {
+    "name": "guide-view-menu",
+    "title": "OverviewCamera 시점 확인",
+    "wrap_labels": true,
+    "crop": [
+      47,
+      25,
+      1567,
+      641
+    ],
+    "marks": [
+      {
+        "box": [
+          276,
+          31,
+          149,
+          30
+        ],
+        "label": "활성 시점 이름: OverviewCamera"
+      },
+      {
+        "box": [
+          1230,
+          345,
+          363,
+          29
+        ],
+        "label": "Property 편집 대상도 OverviewCamera"
+      }
+    ]
+  },
+  {
+    "name": "guide-camera-focal",
+    "title": "OverviewCamera의 렌즈 값",
+    "wrap_labels": true,
+    "crop": [
+      1129,
+      288,
+      485,
+      203
+    ],
+    "marks": [
+      {
+        "box": [
+          1142,
+          315,
+          452,
+          28
+        ],
+        "label": "Property에서 focal 검색"
+      },
+      {
+        "box": [
+          1230,
+          345,
+          363,
+          29
+        ],
+        "label": "OverviewCamera 선택 확인"
+      },
+      {
+        "box": [
+          1318,
+          447,
+          260,
+          28
+        ],
+        "label": "현재 값을 읽고 두 배로 비교한 뒤 복원"
+      }
+    ]
+  },
+  {
+    "name": "step-save-scene",
+    "title": "직접 만든 LeKiwi 장면 저장",
+    "wrap_labels": true,
+    "crop": [
+      266,
+      264,
+      1083,
+      450
+    ],
+    "marks": [
+      {
+        "box": [
+          317,
+          294,
+          999,
+          26
+        ],
+        "label": "폴더: /data/isaacsim_basic/"
+      },
+      {
+        "box": [
+          337,
+          686,
+          348,
+          27
+        ],
+        "label": "이름: my_lekiwi_scene"
+      },
+      {
+        "box": [
+          804,
+          686,
+          300,
+          27
+        ],
+        "label": "형식: *.usda"
+      },
+      {
+        "box": [
+          1107,
+          686,
+          117,
+          27
+        ],
+        "label": "확인 후 Save"
+      }
+    ]
+  },
+  {
+    "name": "guide-save-format",
+    "title": "my_lekiwi_scene 저장",
+    "wrap_labels": true,
+    "crop": [
+      266,
+      264,
+      1083,
+      450
+    ],
+    "marks": [
+      {
+        "box": [
+          317,
+          294,
+          999,
+          26
+        ],
+        "label": "폴더: /data/isaacsim_basic/"
+      },
+      {
+        "box": [
+          337,
+          686,
+          348,
+          27
+        ],
+        "label": "이름: my_lekiwi_scene"
+      },
+      {
+        "box": [
+          804,
+          686,
+          300,
+          27
+        ],
+        "label": "형식: *.usda"
+      },
+      {
+        "box": [
+          1107,
+          686,
+          117,
+          27
+        ],
+        "label": "확인 후 Save"
+      }
+    ]
   }
 ]

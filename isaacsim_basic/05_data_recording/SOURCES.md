@@ -43,3 +43,42 @@
 - `images/manual-joint-structure.png`: [02_robot_joints/images/01-structure.png](../02_robot_joints/images/01-structure.png)를 동일 바이트로 복사했습니다. 단일 장 노션 ZIP 안에서도 필요한 속성 화면을 볼 수 있도록 포함합니다.
 
 - `images/manual-drive-target.png`: [02_robot_joints/images/03-drive.png](../02_robot_joints/images/03-drive.png)를 동일 바이트로 복사했습니다. 단일 장 노션 ZIP 안에서도 필요한 속성 화면을 볼 수 있도록 포함합니다.
+
+## 2026-09-16 · 입문자용 클릭·입력 화면 보강
+
+마우스로 제작 → 값 변경과 관찰 → 저장 → 마지막 코드 실습 순서로 본문을 세분화했습니다.
+선택할 객체의 경로, 클릭할 메뉴, 입력할 숫자를 분리하고 실제 화면에 빨간 박스를 추가했습니다.
+
+이번 장 표시본은 새 촬영 기반 4개, 기존 실제 화면 재사용 5개입니다. 여러 장에서 공유하는 촬영은 중복 집계됩니다.
+원본 PNG는 `images/screenshots/`, 빨간 박스와 설명은 SVG 및 `annotations.json`, 본문 표시본은 PNG입니다.
+화면 내용을 합성하거나 숫자를 이미지 편집으로 바꾸지 않았습니다. SVG는 원본 PNG 바이트를 그대로 포함하며 화면 밖에 설명을 붙입니다.
+
+### 촬영·확인 범위
+
+재부팅 후 RTX 5060 Laptop GPU와 NVIDIA 드라이버 580.178.04가 정상 인식되는 환경에서 Isaac Sim 5.1 실제 GUI를 촬영했습니다.
+촬영용 부품·속성 배치 일부는 별도 임시 USD/API로 준비했습니다. 따라서 이 자료는 모든 객체를 처음부터 마우스로 제작한 전체 학생 리허설의 기록은 아닙니다.
+
+my_joint_recording.usda 저장 창을 촬영했습니다. 저장된 관절 장면에 현재 학생 파일의 record/replay 함수를 실행해 180프레임, 프레임 사이 상태 연속성, 유한한 숫자, 재생 오차 출력 0.000000 rad를 확인했습니다.
+
+기존 학생 Python 코드는 수정하지 않았습니다. 코드 검증은 촬영 앱을 재사용한 범위이며, 일반 실행 명령 전체·새 PC 설치·실물 USB 리더·데이터 업로드·학습을 이번에 다시 시험한 것은 아닙니다. 자세한 결과는 [검증 기록](../VALIDATION.md)에 있습니다.
+
+### 원본 출처
+
+| 표시본 | 원본 출처 | 원본 SHA256 |
+|---|---|---|
+| `guide-target-input` | 2026-09-16 실제 촬영, `images/screenshots/guide-target-input.png` | `6e45b1547441d0db54ab0ecaa31f73bfa7c558cc3516b0ffefca16279674ad02` |
+| `guide-angle-result` | 2026-09-16 실제 촬영, `images/screenshots/guide-angle-result.png` | `6e45b1547441d0db54ab0ecaa31f73bfa7c558cc3516b0ffefca16279674ad02` |
+| `guide-save-format` | 2026-09-16 실제 촬영, `images/screenshots/guide-save-format.png` | `334404eceb256f14c8b769a44af07991e4a5214f5da32bf9e6a3fb0b5a2a28fc` |
+| `guide-open-dialog` | 2026-09-16 실제 촬영, `images/screenshots/guide-open-dialog.png` | `56865a7a41676dc255951ffe98bf751918f903a7c26edb9c5c819617bbbb5cb5` |
+| `guide-open-menu` | 기존 촬영: `01_object_physics/images/screenshots/61-open-menu.png` | `52027f9b1eac98c368810803cdee216d636db53cdc20f5067bc8cfac899fee84` |
+| `guide-save-menu` | 기존 촬영: `01_object_physics/images/screenshots/42-file-save-menu.png` | `6e816f7d0ba36e96d4bc35ebe1a2b37ffaefa356f18b65d1b2cb0451a7928699` |
+| `guide-joint-tree` | 기존 촬영: `02_robot_joints/images/screenshots/01-structure.png` | `921fa14cadd1004e1c3f0c20f7bafb9c39cfd0c0d737fddea9c5c6f95c125c49` |
+| `guide-joint-limits` | 기존 촬영: `02_robot_joints/images/screenshots/05-gains.png` | `023b9b2966a3ac1e76fb09d42b817c554958b1207a4e427dd6ee2a1618f9cde1` |
+| `guide-drive-values` | 기존 촬영: `02_robot_joints/images/screenshots/05-gains.png` | `023b9b2966a3ac1e76fb09d42b817c554958b1207a4e427dd6ee2a1618f9cde1` |
+
+### 표시본과 Notion 자료 재생성
+
+```bash
+python3 isaacsim_basic/01_object_physics/images/build_annotations.py isaacsim_basic/05_data_recording/images
+/usr/bin/python3 isaacsim_basic/export_lessons.py isaacsim_basic/05_data_recording
+```
